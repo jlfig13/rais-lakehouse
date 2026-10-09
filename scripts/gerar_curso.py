@@ -19,7 +19,6 @@ DOCS = RAIZ / "curso" / "docs"
 CONTEUDO = RAIZ / "curso" / "conteudo"
 GUIA = RAIZ / "docs" / "guia" / "rais-lakehouse-guia.md"
 ONDE = {"host": "Host (WSL/Linux)", "container": "Container spark"}
-COMPLEMENTO = '<span class="rl-complemento">Complemento didático</span>'
 
 
 # ---------------------------------------------------------------------- guia original
@@ -64,15 +63,6 @@ def linkar_guia(texto: str, base: str, todo_apendice: bool = False) -> str:
         return re.sub(r"\bApêndice ([A-D])(?= do guia)", apendice, t)
 
     return fora_de_codigo(texto, aplicar)
-
-
-def marcar_complemento(texto: str) -> str:
-    """'**\\[Complemento didático\\]**' vira uma etiqueta visível (ver assets/portal.css)."""
-    def trocar(m: re.Match) -> str:  # "**\[Complemento didático\] — título**" mantém o título
-        return COMPLEMENTO + (f" **{m.group(1)}**" if m.group(1) else "")
-
-    return fora_de_codigo(texto, lambda t: re.sub(
-        r"\*\*\\\[Complemento(?: didático)?\\\](?:\s*—\s*)?([^*]*)\*\*", trocar, t))
 
 
 def paginas_guia() -> dict[str, str]:
@@ -216,7 +206,7 @@ def pagina_aula(a: dict) -> str:
     ]
     if fonte.exists():
         texto = limpar_conteudo(fonte.read_text(encoding="utf-8"))
-        linhas += [marcar_complemento(linkar_guia(texto, "../guia/")), ""]
+        linhas += [linkar_guia(texto, "../guia/"), ""]
     else:
         linhas += [
             '!!! warning "Conteúdo ainda não importado"',
@@ -289,7 +279,7 @@ def pagina_apendices(meta: dict) -> str:
     fonte = CONTEUDO / "apendices.md"
     if fonte.exists():
         texto = limpar_conteudo(fonte.read_text(encoding="utf-8"))
-        return "# Apêndices\n\n" + marcar_complemento(linkar_guia(texto, "guia/"))
+        return "# Apêndices\n\n" + linkar_guia(texto, "guia/")
     linhas = ["# Apêndices", "", "O texto dos apêndices ainda não está em "
               "`curso/conteudo/apendices.md`.", ""]
     linhas += [f"- Apêndice {t}" for t in meta["apendices"]]

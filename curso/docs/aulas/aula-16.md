@@ -21,8 +21,6 @@ checks: ['a16_testes_passam', 'a16_lint_passa', 'a16_workflow_ci', 'a16_readme_c
 
 A última aula transforma o lakehouse num projeto profissional: testes que rodam a cada push, análise estática, histórico de commits legível e um README que mostra decisões, resultados e limitações.
 
-**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
-
 ## 1. Objetivos e pré-requisitos
 
 1. Distinguir teste de unidade, teste de fumaça, checagem de dados e os checks da plataforma.
@@ -35,7 +33,7 @@ A última aula transforma o lakehouse num projeto profissional: testes que rodam
 
 ## 2. Contextualização
 
-Código de dados quebra de forma silenciosa: um ajuste numa regra da silver passa sem erro e muda um número da gold. Testes automatizados avisam antes de alguém ver um gráfico estranho. <span class="rl-complemento">Complemento didático</span> E, num projeto de portfólio, o repositório é avaliado pelo que mostra sem que você esteja presente: CI verde, commits claros e um README que explica as escolhas dizem mais que o código em si.
+Código de dados quebra de forma silenciosa: um ajuste numa regra da silver passa sem erro e muda um número da gold. Testes automatizados avisam antes de alguém ver um gráfico estranho. E, num projeto de portfólio, o repositório é avaliado pelo que mostra sem que você esteja presente: CI verde, commits claros e um README que explica as escolhas dizem mais que o código em si.
 
 ## 3. Fundamentação teórica
 
@@ -46,11 +44,11 @@ Código de dados quebra de forma silenciosa: um ajuste numa regra da silver pass
 | Teste de unidade | Uma função isolada, com dados minúsculos | A cada commit (CI) | Não | `tests/` |
 | Teste de fumaça | A infraestrutura funciona de ponta a ponta | Ao subir o ambiente | Sim | `scripts/smoke_test.py` |
 | Checagem de dados | O dado real faz sentido | A cada execução do pipeline | Sim | `src/checks.py` |
-| Checks da plataforma <span class="rl-complemento">Complemento didático</span> | O aluno concluiu cada aula | Sob demanda (`make check`) | Depende da aula | `labcheck/` |
+| Checks da plataforma | O aluno concluiu cada aula | Sob demanda (`make check`) | Depende da aula | `labcheck/` |
 
 ### 3.2 Análise estática com ruff
 
-<span class="rl-complemento">Complemento didático</span> Análise estática lê o código sem executá-lo e aponta problemas. As regras escolhidas pelo guia:
+Análise estática lê o código sem executá-lo e aponta problemas. As regras escolhidas pelo guia:
 
 | Grupo | Detecta |
 | --- | --- |
@@ -187,7 +185,7 @@ jobs:
 | `setup-java` (temurin 17) | Java para o PySpark |
 | `ruff check .` e `pytest -q` | Falha o CI se lint ou testes falharem |
 
-<span class="rl-complemento">Complemento didático</span> **passo da plataforma.** Depois que o site do curso existir (`curso/mkdocs.yml`), acrescente um passo que faça o build do site para pegar links quebrados. O comando exato do Zensical deve ser confirmado na documentação dele (plano técnico, seção 4).
+**passo da plataforma.** Depois que o site do curso existir (`curso/mkdocs.yml`), acrescente um passo que faça o build do site para pegar links quebrados. O comando exato do Zensical deve ser confirmado na documentação dele (plano técnico, seção 4).
 
 ### Passo 4 — Publicar no GitHub
 
@@ -204,7 +202,7 @@ Abra a aba **Actions** do repositório: o workflow deve ficar verde.
 
 ```bash
 git switch -c feat/gold-faixa-etaria       # uma branch por funcionalidade
-# ...trabalho e commits...
+# ...trabalho e commits..
 git push -u origin feat/gold-faixa-etaria  # depois abra um PR no GitHub
 ```
 
@@ -269,7 +267,7 @@ O guia sugere marcos como v0.1 = bronze/silver e v0.2 = gold; a v1.0.0 marca o c
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Um teste que pega uma regressão.** <span class="rl-complemento">Complemento didático</span> Mude temporariamente o `rlike` do município na silver para `^\d{5}$`, extraia a validação para uma função pura e escreva um teste com `"261160"`: o teste falha e mostra o erro antes de qualquer pipeline rodar.
+**Exemplo 1 — Um teste que pega uma regressão.** Mude temporariamente o `rlike` do município na silver para `^\d{5}$`, extraia a validação para uma função pura e escreva um teste com `"261160"`: o teste falha e mostra o erro antes de qualquer pipeline rodar.
 
 **Exemplo 2 — Histórico legível.**
 
@@ -316,7 +314,7 @@ docs: limitações do eSocial no README
 
 **Contribuição ao projeto:** o projeto final fica testado, documentado e publicado.
 
-<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula16.py`:
+`labcheck/test_aula16.py`:
 
 ```python
 """Checks da Aula 16: qualidade e publicação."""

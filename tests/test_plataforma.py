@@ -59,13 +59,11 @@ def test_limpar_conteudo():
     assert "- [ ] item a\n- [ ] item b" in saida
 
 
-def test_linkar_guia_e_complemento():
-    from scripts.gerar_curso import linkar_guia, marcar_complemento
+def test_linkar_guia():
+    from scripts.gerar_curso import linkar_guia
 
     t = linkar_guia("(guia, Partes 5.1–5.2) e Apêndice B do guia; Apêndice C. `Parte 9`",
                     "../guia/")
     assert "[5.1](../guia/parte-05.md#parte-5-1)–[5.2](../guia/parte-05.md#parte-5-2)" in t
     assert "[Apêndice B](../guia/apendice-b.md) do guia" in t
     assert "Apêndice C." in t and "`Parte 9`" in t  # apêndice do curso e código ficam intactos
-    m = marcar_complemento(r"**\[Complemento didático\] — por que Spark?** texto")
-    assert m.startswith('<span class="rl-complemento">') and "**por que Spark?**" in m

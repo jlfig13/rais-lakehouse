@@ -2,7 +2,7 @@
 
 Oct 9, 2026
 
-Material de consulta do curso: armadilhas, solução de problemas, glossário, comandos, checklists, versões e próximos passos. Os apêndices A a C e G vêm dos apêndices do guia, ampliados com o conteúdo das aulas; D, E e F consolidam o que está espalhado pelas 16 aulas. Trechos novos estão marcados como **\[Complemento didático\]**.
+Material de consulta do curso: armadilhas, solução de problemas, glossário, comandos, checklists, versões e próximos passos. Os apêndices A a C e G vêm dos apêndices do guia, ampliados com o conteúdo das aulas; D, E e F consolidam o que está espalhado pelas 16 aulas.
 
 ## Apêndice A — Armadilhas da RAIS (guia, Apêndice A)
 
@@ -27,8 +27,8 @@ Organizado pela ordem em que o erro costuma aparecer. As linhas sem marcação v
 
 | Sintoma | Causa provável | Solução | Aula |
 | --- | --- | --- | --- |
-| `Cannot connect to the Docker daemon` **\[Complemento\]** | Docker Desktop fechado / serviço parado | Abrir / iniciar | 02 |
-| `Unable to locate package openjdk-17-jre-headless` **\[Complemento\]** | Imagem base sem `-bookworm` | Voltar a `python:3.11-slim-bookworm` | 02 |
+| `Cannot connect to the Docker daemon` | Docker Desktop fechado / serviço parado | Abrir / iniciar | 02 |
+| `Unable to locate package openjdk-17-jre-headless` | Imagem base sem `-bookworm` | Voltar a `python:3.11-slim-bookworm` | 02 |
 | `ClassNotFoundException: S3AFileSystem` | JAR não baixou no build | `docker compose build --no-cache spark` | 02, 06 |
 | `Permission denied` em `/app` ou `/staging` | UID diferente entre host e container | Ajustar `HOST_UID` (`id -u`) e reconstruir | 02, 03 |
 
@@ -36,10 +36,10 @@ Organizado pela ordem em que o erro costuma aparecer. As linhas sem marcação v
 
 | Sintoma | Causa provável | Solução | Aula |
 | --- | --- | --- | --- |
-| `required variable ... is missing a value` **\[Complemento\]** | `.env` ausente ou incompleto | Copiar de `.env.example` | 03 |
+| `required variable ... is missing a value` | `.env` ausente ou incompleto | Copiar de `.env.example` | 03 |
 | `minio-init` termina com erro | Credenciais ou sintaxe do `mc` | `docker compose logs minio-init`; ajustar à versão do `mc` | 03, 04 |
 | `spark` não sobe | `minio-init` falhou (dependência) | Resolver o `minio-init` primeiro | 03 |
-| `port is already allocated` **\[Complemento\]** | Outro processo na porta | Parar o processo ou mudar a porta do host | 03 |
+| `port is already allocated` | Outro processo na porta | Parar o processo ou mudar a porta do host | 03 |
 | `make: *** missing separator` | Espaços no lugar de TAB no Makefile | Usar TAB | 03 |
 | Container morre com código 137 | `mem_limit` estourado | Reduzir `SPARK_MEM` ou aumentar `CONTAINER_MEM` | 03, 15 |
 
@@ -50,7 +50,7 @@ Organizado pela ordem em que o erro costuma aparecer. As linhas sem marcação v
 | `Connection refused` ao acessar o MinIO | `localhost` dentro do container | `http://minio:9000` | 03, 04 |
 | `403` / `InvalidAccessKeyId` | Usuário da aplicação não criado ou sem política | Log do `minio-init`; conferir `APP_ACCESS_KEY` | 04 |
 | `UnknownHostException: rais.minio` | Faltou path-style | `fs.s3a.path.style.access=true` | 04, 06 |
-| Acesso negado só em alguns caminhos **\[Complemento\]** | Bucket diferente no `.env` e no JSON | Alinhar `RAIS_BUCKET` e `policy-rais.json` | 04 |
+| Acesso negado só em alguns caminhos | Bucket diferente no `.env` e no JSON | Alinhar `RAIS_BUCKET` e `policy-rais.json` | 04 |
 
 ### B.4 Spark, Delta e pipeline
 
@@ -58,62 +58,62 @@ Organizado pela ordem em que o erro costuma aparecer. As linhas sem marcação v
 | --- | --- | --- | --- |
 | `OutOfMemoryError` | Heap da JVM pequeno | Menos threads ou mais `SPARK_MEM` | 15 |
 | Spark UI não abre | Sem sessão ativa ou porta errada | A UI só existe com sessão; tentar 4041 | 06, 15 |
-| Mudou `SPARK_MEM` e nada mudou **\[Complemento\]** | Sessão já existia | Reiniciar kernel/processo | 06 |
-| `ValueError: Colunas duplicadas após normalizar` **\[Complemento\]** | Cabeçalhos que colidem | Tratar antes de normalizar | 10, 11 |
-| Erro de schema ao gravar **\[Complemento\]** | Enforcement do Delta | Corrigir dado ou `mergeSchema` só na bronze | 10 |
-| Erro de `replaceWhere` **\[Complemento\]** | Linhas fora do ano | Filtrar o DataFrame pelo ano | 10 |
-| Contagem silver ≠ bronze **\[Complemento\]** | `filter` na silver | Anular em vez de filtrar | 12 |
-| UF nula na gold **\[Complemento\]** | Arquivo NI ou município inválido | `left_anti` com `dim_uf`; decidir e documentar | 08, 13 |
-| Time travel falha para versão antiga **\[Complemento\]** | `VACUUM` já removeu os arquivos | Esperado; reter mais tempo | 14 |
+| Mudou `SPARK_MEM` e nada mudou | Sessão já existia | Reiniciar kernel/processo | 06 |
+| `ValueError: Colunas duplicadas após normalizar` | Cabeçalhos que colidem | Tratar antes de normalizar | 10, 11 |
+| Erro de schema ao gravar | Enforcement do Delta | Corrigir dado ou `mergeSchema` só na bronze | 10 |
+| Erro de `replaceWhere` | Linhas fora do ano | Filtrar o DataFrame pelo ano | 10 |
+| Contagem silver ≠ bronze | `filter` na silver | Anular em vez de filtrar | 12 |
+| UF nula na gold | Arquivo NI ou município inválido | `left_anti` com `dim_uf`; decidir e documentar | 08, 13 |
+| Time travel falha para versão antiga | `VACUUM` já removeu os arquivos | Esperado; reter mais tempo | 14 |
 
 ### B.5 Git e CI
 
 | Sintoma | Causa provável | Solução | Aula |
 | --- | --- | --- | --- |
-| `.env` no `git status` **\[Complemento\]** | `.gitignore` ausente/errado | `git check-ignore -v .env` | 05 |
+| `.env` no `git status` | `.gitignore` ausente/errado | `git check-ignore -v .env` | 05 |
 | `.env` commitado | — | Remover do índice **e trocar as senhas** | 05, 16 |
-| CI sem Java **\[Complemento\]** | Falta `setup-java` | Ver `ci.yml` | 16 |
-| CI com `ModuleNotFoundError: src` **\[Complemento\]** | Falta `pythonpath` | `pyproject.toml` | 16 |
+| CI sem Java | Falta `setup-java` | Ver `ci.yml` | 16 |
+| CI com `ModuleNotFoundError: src` | Falta `pythonpath` | `pyproject.toml` | 16 |
 
 ## Apêndice C — Glossário
 
-Termos do Apêndice C do guia, mais os introduzidos nas aulas (**\[Complemento didático\]** nos não listados no guia).
+Termos do Apêndice C do guia, mais os introduzidos nas aulas.
 
 | Termo | Definição | Aula |
 | --- | --- | --- |
 | ACID | Atomicidade, consistência, isolamento e durabilidade: a transação acontece inteira ou não acontece | 01, 10 |
-| ADR **\[Complemento\]** | Architecture Decision Record: registro curto de uma decisão, com contexto, alternativas e consequências | 01 |
+| ADR | Architecture Decision Record: registro curto de uma decisão, com contexto, alternativas e consequências | 01 |
 | AQE | Adaptive Query Execution: o Spark reotimiza o plano durante a execução | 15 |
-| Ação **\[Complemento\]** | Operação que dispara a execução (`show`, `count`, `write`) | 07, 08 |
+| Ação | Operação que dispara a execução (`show`, `count`, `write`) | 07, 08 |
 | Bind mount | Pasta do host montada no container | 02, 03 |
 | Broadcast join | Join em que a tabela pequena é copiada para todas as tarefas, sem shuffle | 08 |
-| Bucket **\[Complemento\]** | Contêiner de objetos num object storage | 04 |
-| cgroups **\[Complemento\]** | Recurso do kernel Linux que limita CPU e memória de um processo | 02, 15 |
-| Chave / prefixo **\[Complemento\]** | Nome completo de um objeto S3 / início comum entre chaves (as "pastas") | 04 |
-| Contrato de camada **\[Complemento\]** | O que o consumidor de uma camada pode assumir: grão, tipos, garantias | 01 |
+| Bucket | Contêiner de objetos num object storage | 04 |
+| cgroups | Recurso do kernel Linux que limita CPU e memória de um processo | 02, 15 |
+| Chave / prefixo | Nome completo de um objeto S3 / início comum entre chaves (as "pastas") | 04 |
+| Contrato de camada | O que o consumidor de uma camada pode assumir: grão, tipos, garantias | 01 |
 | Data skew | Dados concentrados em poucas chaves, gerando tarefas desbalanceadas | 15 |
-| Fixture **\[Complemento\]** | Recurso preparado pelo pytest e injetado nos testes (ex.: `spark`, `tmp_path`) | 10, 16 |
-| Função pura **\[Complemento\]** | Recebe e devolve DataFrames sem ler nem gravar nada; testável sem lake | 13 |
-| Grão **\[Complemento\]** | O que uma linha representa (na RAIS, um vínculo) | 01, 09 |
+| Fixture | Recurso preparado pelo pytest e injetado nos testes (ex.: `spark`, `tmp_path`) | 10, 16 |
+| Função pura | Recebe e devolve DataFrames sem ler nem gravar nada; testável sem lake | 13 |
+| Grão | O que uma linha representa (na RAIS, um vínculo) | 01, 09 |
 | Idempotência | Executar várias vezes produz o mesmo resultado | 01, 14 |
 | Imagem / container | Pacote imutável / instância em execução de uma imagem | 02 |
-| Init container **\[Complemento\]** | Serviço que prepara algo e termina (`minio-init`) | 03 |
+| Init container | Serviço que prepara algo e termina (`minio-init`) | 03 |
 | Lazy evaluation | Transformações só executam quando há uma ação | 08 |
 | Medallion | Organização em bronze, silver e gold | 01 |
-| `mergeSchema` / `overwriteSchema` **\[Complemento\]** | Acrescentar colunas novas / substituir o schema inteiro na escrita Delta | 10 |
-| `OPTIMIZE` / `VACUUM` **\[Complemento\]** | Compactar arquivos pequenos / remover arquivos sem referência | 14 |
+| `mergeSchema` / `overwriteSchema` | Acrescentar colunas novas / substituir o schema inteiro na escrita Delta | 10 |
+| `OPTIMIZE` / `VACUUM` | Compactar arquivos pequenos / remover arquivos sem referência | 14 |
 | Partition pruning | Ler só as partições exigidas pelo filtro | 08 |
-| Path-style **\[Complemento\]** | Endereço S3 no formato `host/bucket/chave`, exigido pelo MinIO | 04 |
-| `replaceWhere` **\[Complemento\]** | Sobrescrita atômica só dos dados que satisfazem uma condição | 10 |
+| Path-style | Endereço S3 no formato `host/bucket/chave`, exigido pelo MinIO | 04 |
+| `replaceWhere` | Sobrescrita atômica só dos dados que satisfazem uma condição | 10 |
 | S3A | Conector Hadoop/Spark para storage compatível com S3 | 04 |
 | Schema enforcement / evolution | Recusar ou aceitar mudanças de schema na escrita | 10, 14 |
 | Shuffle | Redistribuição de dados entre partições; a operação mais cara do Spark | 08 |
 | SM | Salário mínimo; unidade de remuneração comparável entre anos | 09 |
 | Spill | Dados despejados em disco quando não cabem na memória | 15 |
 | Time travel | Ler uma versão antiga de uma tabela Delta | 14 |
-| `try_cast` **\[Complemento\]** | Conversão que devolve NULL em vez de erro | 10 |
+| `try_cast` | Conversão que devolve NULL em vez de erro | 10 |
 | Vínculo | Relação de emprego registrada; a unidade de uma linha na RAIS | 09 |
-| Window function **\[Complemento\]** | Cálculo por linha olhando um grupo, sem reduzir linhas | 08 |
+| Window function | Cálculo por linha olhando um grupo, sem reduzir linhas | 08 |
 
 ## Apêndice D — Referência de comandos
 
@@ -141,9 +141,9 @@ docker history rais-spark:local   # camadas da imagem
 | `make smoke` | Teste de fumaça (Aula 06) |
 | `make pipeline ANOS="2021 2022" ETAPAS="silver gold"` | Pipeline (Aula 14) |
 | `make test` / `lint` / `fmt` | Testes, análise e formatação (Aula 16) |
-| `make check AULA=NN ANO=2022` **\[Complemento\]** | Checks de uma aula no container |
-| `make check-host AULA=NN` **\[Complemento\]** | Checks das aulas de infraestrutura no host |
-| `make progresso` **\[Complemento\]** | Gera a página de progresso |
+| `make check AULA=NN ANO=2022` | Checks de uma aula no container |
+| `make check-host AULA=NN` | Checks das aulas de infraestrutura no host |
+| `make progresso` | Gera a página de progresso |
 
 ### D.3 Cliente `mc` (Aula 04)
 
@@ -197,7 +197,7 @@ git tag v1.0.0 && git push --tags
 - [ ] Testes, lint e CI verdes
 - [ ] README com arquitetura, decisões, resultados e limitações
 
-### E.2 Validação por aula na plataforma **\[Complemento didático\]**
+### E.2 Validação por aula na plataforma
 
 | Aulas | Comando | Onde roda |
 | --- | --- | --- |
@@ -206,7 +206,7 @@ git tag v1.0.0 && git push --tags
 | 06–16 | `make check AULA=NN ANO=2022` | Container |
 | Todas | `make progresso` | Container |
 
-### E.3 Antes de rodar o pipeline **\[Complemento didático\]**
+### E.3 Antes de rodar o pipeline
 
 - [ ] `make ps`: minio e spark `running`, minio-init `exited (0)`
 - [ ] `.7z` de cada ano em `staging/landing/<ano>/`, versão final, hash registrado
@@ -214,14 +214,14 @@ git tag v1.0.0 && git push --tags
 - [ ] `ANOS` em `config/settings.py` coerente com os arquivos
 - [ ] Configuração de recursos do ADR de tuning no `.env`
 
-### E.4 Depois de rodar **\[Complemento didático\]**
+### E.4 Depois de rodar
 
 - [ ] Nenhum `AssertionError` de `checar_silver`
 - [ ] Totais por ano na gold coerentes entre si (saltos explicados por notas técnicas)
 - [ ] `staging/raw/` vazia
 - [ ] `make check` das Aulas 11–14 passando
 
-### E.5 Manutenção periódica **\[Complemento didático\]**
+### E.5 Manutenção periódica
 
 - [ ] `OPTIMIZE` nas tabelas silver após várias cargas
 - [ ] `VACUUM(168)` depois, respeitando a janela de time travel
@@ -294,7 +294,7 @@ git tag v1.0.0 && git push --tags
 6. **Visualização:** suba Metabase ou Superset no Compose e conecte à gold.
 7. **Cluster:** transforme o serviço `spark` em master + workers (Spark standalone) e observe o que muda no tuning.
 
-### G.2 Da plataforma de estudo **\[Complemento didático\]**
+### G.2 Da plataforma de estudo
 
 1. Fazer a página de progresso mostrar o total **declarado** de checks por aula, lendo o front matter (desafio da Aula 06).
 2. Criar a amostra sintética no formato da RAIS para testes de integração no CI (plano técnico, seção 2).

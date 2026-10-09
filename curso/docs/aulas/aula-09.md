@@ -21,8 +21,6 @@ checks: ['a09_7z_na_landing', 'a09_7z_contem_txt', 'a09_dicionario_preenchido']
 
 Antes de processar a RAIS, é preciso entender o que cada linha representa, como os arquivos são publicados e onde estão as armadilhas. Ao final desta aula você terá o primeiro `.7z` na landing e o `docs/dicionario.md` preenchido.
 
-**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
-
 ## 1. Objetivos e pré-requisitos
 
 1. Explicar o que é a RAIS e qual o grão dos microdados de vínculos.
@@ -35,7 +33,7 @@ Antes de processar a RAIS, é preciso entender o que cada linha representa, como
 
 ## 2. Contextualização
 
-Engenharia de dados sem conhecimento do domínio produz tabelas tecnicamente corretas e analiticamente erradas. Na RAIS, o erro mais grave — chamar vínculos de "trabalhadores" — não é de código: é de entendimento. Esta aula vem antes da bronze porque todas as decisões da silver e da gold dependem dela. <span class="rl-complemento">Complemento didático</span>
+Engenharia de dados sem conhecimento do domínio produz tabelas tecnicamente corretas e analiticamente erradas. Na RAIS, o erro mais grave — chamar vínculos de "trabalhadores" — não é de código: é de entendimento. Esta aula vem antes da bronze porque todas as decisões da silver e da gold dependem dela.
 
 ## 3. Fundamentação teórica (guia, Parte [6.1](../guia/parte-06.md#parte-6-1))
 
@@ -83,7 +81,7 @@ R$ nominal não é comparável entre anos (inflação e reajuste do mínimo). Pa
 
 ### 3.7 Qual é o último ano disponível?
 
-O guia usa `ANOS = 2019–2024`. <span class="rl-complemento">Complemento didático</span> O site do MTE tem material de apresentação identificado como "RAIS ano-base 2025"; confirme se os **microdados** desse ano já estão publicados e, se estiverem, ajuste `ANOS` em `config/settings.py` (Aula 05).
+O guia usa `ANOS = 2019–2024`. O site do MTE tem material de apresentação identificado como "RAIS ano-base 2025"; confirme se os **microdados** desse ano já estão publicados e, se estiverem, ajuste `ANOS` em `config/settings.py` (Aula 05).
 
 ## 4. Arquitetura e fluxo
 
@@ -107,10 +105,10 @@ O guia usa `ANOS = 2019–2024`. <span class="rl-complemento">Complemento didát
 ```bash
 mkdir -p staging/landing/2022
 ls -lh staging/landing/2022/
-sha256sum staging/landing/2022/*.7z > staging/landing/2022/SHA256SUMS   # [Complemento didático]
+sha256sum staging/landing/2022/*.7z > staging/landing/2022/SHA256SUMS
 ```
 
-<span class="rl-complemento">Complemento didático</span> O `sha256sum` registra uma "impressão digital" do arquivo. Se um dia o arquivo for baixado de novo, comparar os hashes diz se o MTE publicou uma versão diferente (ex.: parcial → final).
+O `sha256sum` registra uma "impressão digital" do arquivo. Se um dia o arquivo for baixado de novo, comparar os hashes diz se o MTE publicou uma versão diferente (ex.: parcial → final).
 
 ### Passo 2 — Documentar as colunas em `docs/dicionario.md`
 
@@ -136,7 +134,7 @@ Os nomes estão na forma **normalizada** pelo código do projeto (minúsculas, s
 | `vl_remun_dezembro_sm` | Remuneração de dezembro em salários mínimos | decimal | **comparável entre anos** |
 | `vl_remun_media_sm` | Remuneração média em salários mínimos | decimal | **comparável entre anos** |
 
-Acrescente ao arquivo, por coluna: o nome original no cabeçalho do seu ano, os códigos de "ignorado" e a decisão tomada. <span class="rl-complemento">Complemento didático</span> Exemplo:
+Acrescente ao arquivo, por coluna: o nome original no cabeçalho do seu ano, os códigos de "ignorado" e a decisão tomada. Exemplo:
 
 ```markdown
 ## vl_remun_dezembro_nom
@@ -155,7 +153,7 @@ Acrescente ao arquivo, por coluna: o nome original no cabeçalho do seu ano, os 
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Por que CBO é texto.** <span class="rl-complemento">Complemento didático</span> Um código como `"012345"` convertido para número vira `12345`; ao juntar com uma tabela de ocupações, o join falha silenciosamente. Por isso códigos com zero à esquerda ficam `string` da bronze à gold (guia, Parte [10.1](../guia/parte-10.md#parte-10-1)).
+**Exemplo 1 — Por que CBO é texto.** Um código como `"012345"` convertido para número vira `12345`; ao juntar com uma tabela de ocupações, o join falha silenciosamente. Por isso códigos com zero à esquerda ficam `string` da bronze à gold (guia, Parte [10.1](../guia/parte-10.md#parte-10-1)).
 
 **Exemplo 2 — UF a partir do município.** `261160` → UF `26` (PE). A silver deriva `cod_uf` assim, e a gold junta com `dim_uf` (Aulas 10 e 12).
 
@@ -186,7 +184,7 @@ Acrescente ao arquivo, por coluna: o nome original no cabeçalho do seu ano, os 
 1. Começar com 1 ano e 1 região (guia).
 2. Documentar cada decisão sobre o dado em `docs/dicionario.md`.
 3. Guardar o `.7z` original intocado; ele é a fonte da verdade.
-4. <span class="rl-complemento">Complemento didático</span> Registrar data do download e hash do arquivo.
+4. Registrar data do download e hash do arquivo.
 
 ## 10. Riscos
 
@@ -195,13 +193,13 @@ Acrescente ao arquivo, por coluna: o nome original no cabeçalho do seu ano, os 
 | Integridade analítica | Conclusões sobre pessoas a partir de vínculos | Grão no contrato; rótulos "vínculos" |
 | Integridade | Misturar versão parcial e final | Hash e data no dicionário |
 | Custo | Disco cheio com `.txt` | Apagar `raw` após a bronze |
-| Privacidade | Microdados são anonimizados, mas cruzamentos muito finos podem ser sensíveis | <span class="rl-complemento">Complemento didático</span> Publicar só agregados (gold) |
+| Privacidade | Microdados são anonimizados, mas cruzamentos muito finos podem ser sensíveis | Publicar só agregados (gold) |
 
 ## 11. Laboratório e validação na plataforma
 
 **Contribuição ao projeto:** a landing é a entrada do pipeline; o dicionário orienta a silver.
 
-<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula09.py` (container):
+`labcheck/test_aula09.py` (container):
 
 ```python
 """Checks da Aula 09: arquivo real na landing e dicionário documentado."""

@@ -13,7 +13,6 @@ entrega: ["src/utils.py (get_spark)", "scripts/smoke_test.py", "labcheck/conftes
 checks: [a06_versao_spark, a06_config_s3a, a06_smoke_1000, a06_smoke_e_delta]
 ```
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -27,7 +26,7 @@ checks: [a06_versao_spark, a06_config_s3a, a06_smoke_1000, a06_smoke_e_delta]
 
 ## 2. Contextualização
 
-Até aqui cada peça foi testada isolada: a imagem (Aula 02), os serviços (Aula 03), o MinIO (Aula 04). Falta o elo: o Spark, dentro do container, gravando tabelas Delta no MinIO com as credenciais da aplicação. Um **teste de fumaça** (*smoke test*) é o teste mínimo de ponta a ponta: não verifica regras de negócio, só se a infraestrutura "liga sem soltar fumaça". **\[Complemento didático\]** Ele vem antes de qualquer pipeline porque um erro de infraestrutura no meio de um processamento de horas é muito mais caro de diagnosticar.
+Até aqui cada peça foi testada isolada: a imagem (Aula 02), os serviços (Aula 03), o MinIO (Aula 04). Falta o elo: o Spark, dentro do container, gravando tabelas Delta no MinIO com as credenciais da aplicação. Um **teste de fumaça** (*smoke test*) é o teste mínimo de ponta a ponta: não verifica regras de negócio, só se a infraestrutura "liga sem soltar fumaça". Ele vem antes de qualquer pipeline porque um erro de infraestrutura no meio de um processamento de horas é muito mais caro de diagnosticar.
 
 ## 3. Fundamentação teórica
 
@@ -179,7 +178,7 @@ Num notebook do JupyterLab (`localhost:8888`), rode `from src.utils import get_s
 
 ### Passo 5 — Instalar o mecanismo de progresso da plataforma
 
-**\[Complemento didático\]** — código da plataforma (plano técnico, seção 7). `labcheck/conftest.py` serve aos checks do container e do host:
+`labcheck/conftest.py` serve aos checks do container e do host:
 
 ```python
 """Configuração comum dos checks: opção --ano, fixture spark e registro do progresso."""
@@ -290,7 +289,7 @@ if __name__ == "__main__":
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Conferir a configuração efetiva.** **\[Complemento didático\]** Num notebook:
+**Exemplo 1 — Conferir a configuração efetiva.** Num notebook:
 
 ```python
 from src.utils import get_spark
@@ -335,7 +334,7 @@ Aparecem duas linhas `WRITE`, versões 0 e 1. Prévia da Aula 14.
 2. Recursos por variável de ambiente, com padrões conservadores.
 3. Teste de fumaça após qualquer mudança de imagem, versão ou credencial.
 4. Áreas de teste separadas no lake (`_smoke/`, `_lab/`).
-5. **\[Complemento didático\]** Nunca imprimir chaves de configuração de credenciais em notebooks ou logs.
+5. Nunca imprimir chaves de configuração de credenciais em notebooks ou logs.
 
 ## 10. Riscos
 
@@ -350,7 +349,7 @@ Aparecem duas linhas `WRITE`, versões 0 e 1. Prévia da Aula 14.
 
 **Contribuição ao projeto:** `get_spark` é usado por todas as camadas e checks; o mecanismo de progresso passa a valer para todas as aulas.
 
-**\[Complemento didático\]** `labcheck/test_aula06.py` (roda no container):
+`labcheck/test_aula06.py` (roda no container):
 
 ```python
 """Checks da Aula 06: Spark, Delta e MinIO integrados."""

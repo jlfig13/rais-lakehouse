@@ -13,7 +13,6 @@ entrega: ["labs/aula08.py"]
 checks: [a08_maior_salario_por_uf, a08_join_broadcast, a08_detecta_shuffle, a08_particionado_pruning]
 ```
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -27,7 +26,7 @@ checks: [a08_maior_salario_por_uf, a08_join_broadcast, a08_detecta_shuffle, a08_
 
 ## 2. Contextualização
 
-Na RAIS, a silver de um ano tem dezenas de milhões de linhas, e a gold faz `groupBy` e `join` sobre ela. A diferença entre um job de minutos e um de horas quase sempre está em: quantos shuffles ele faz, se a dimensão foi "broadcastada" e quantas partições existem. Esta aula dá as ferramentas para enxergar isso antes de rodar no volume real. **\[Complemento didático\]**
+Na RAIS, a silver de um ano tem dezenas de milhões de linhas, e a gold faz `groupBy` e `join` sobre ela. A diferença entre um job de minutos e um de horas quase sempre está em: quantos shuffles ele faz, se a dimensão foi "broadcastada" e quantas partições existem. Esta aula dá as ferramentas para enxergar isso antes de rodar no volume real.
 
 ## 3. Fundamentação teórica
 
@@ -42,7 +41,7 @@ Na RAIS, a silver de um ano tem dezenas de milhões de linhas, e a gold faz `gro
 
 **Custo.** Um join normal faz *shuffle*: redistribui as duas tabelas pela chave, para que linhas com a mesma chave fiquem na mesma tarefa. Com `F.broadcast(tabela_pequena)`, o Spark copia a tabela pequena inteira para todas as tarefas e evita o shuffle. Use em **dimensões** (códigos e rótulos) — como `dim_uf` na gold (Aula 13).
 
-**\[Complemento didático\]** O Spark também faz broadcast automático quando estima que uma tabela é pequena (limite configurável). O `F.broadcast` explícito torna a intenção clara e não depende da estimativa.
+O Spark também faz broadcast automático quando estima que uma tabela é pequena (limite configurável). O `F.broadcast` explícito torna a intenção clara e não depende da estimativa.
 
 **Risco:** broadcast de uma tabela que não é pequena estoura a memória.
 
@@ -57,7 +56,7 @@ Diferente do `groupBy`, uma window **não reduz** as linhas: calcula um valor po
 | `F.row_number().over(w)` | 1, 2, 3... por grupo, sem empates |
 | `F.avg(...).over(Window.partitionBy("uf"))` | Média do grupo repetida em cada linha |
 
-**\[Complemento didático\]** `row_number` desempata arbitrariamente; `rank` dá a mesma posição a empates e pula a seguinte; `dense_rank` não pula. Na gold, `top_cnae` usa `row_number` para garantir no máximo 10 linhas por UF.
+`row_number` desempata arbitrariamente; `rank` dá a mesma posição a empates e pula a seguinte; `dense_rank` não pula. Na gold, `top_cnae` usa `row_number` para garantir no máximo 10 linhas por UF.
 
 ### 3.3 Lazy evaluation — o conceito mais importante (guia, Parte 5.7)
 
@@ -66,7 +65,7 @@ Diferente do `groupBy`, uma window **não reduz** as linhas: calcula um valor po
 
 O otimizador (Catalyst) enxerga o plano inteiro antes de executar — por exemplo, aplica o filtro antes de ler colunas desnecessárias (*predicate pushdown*). Por isso, evite `collect()` e `toPandas()` em dados grandes: eles trazem tudo para a memória do driver.
 
-**\[Complemento didático\]** Consequência prática: um erro numa transformação (ex.: divisão que gera problema em certos dados) só aparece quando a ação roda, às vezes linhas depois no notebook. E cada ação reexecuta o plano desde o início, a menos que haja cache (Aula 15).
+Consequência prática: um erro numa transformação (ex.: divisão que gera problema em certos dados) só aparece quando a ação roda, às vezes linhas depois no notebook. E cada ação reexecuta o plano desde o início, a menos que haja cache (Aula 15).
 
 ### 3.4 Shuffle e o `explain()`
 
@@ -90,7 +89,7 @@ O otimizador (Catalyst) enxerga o plano inteiro antes de executar — por exempl
 
 `partitionBy` habilita **partition pruning**: uma consulta com filtro por `uf` lê só a pasta necessária. No curso, bronze, silver e gold são particionadas por `ano`.
 
-**Partição de memória × partição de disco.** **\[Complemento didático\]** `repartition` muda como o DataFrame está dividido para processamento; `partitionBy` na escrita muda como os arquivos são organizados em pastas. São conceitos diferentes com o mesmo nome.
+**Partição de memória × partição de disco.** `repartition` muda como o DataFrame está dividido para processamento; `partitionBy` na escrita muda como os arquivos são organizados em pastas. São conceitos diferentes com o mesmo nome.
 
 **Modos de escrita (guia, Parte 5.8):** `error` (padrão, falha se existir), `overwrite`, `append`, `ignore`.
 
@@ -107,7 +106,7 @@ O otimizador (Catalyst) enxerga o plano inteiro antes de executar — por exempl
  └─ 4. show() executa: tarefas por partição, em paralelo nas threads
 ```
 
-**\[Complemento didático\]** O `HashAggregate` aparece duas vezes porque o Spark agrega parcialmente em cada partição antes do shuffle, para mandar menos dados pela rede.
+O `HashAggregate` aparece duas vezes porque o Spark agrega parcialmente em cada partição antes do shuffle, para mandar menos dados pela rede.
 
 ## 5. Tutorial
 
@@ -162,7 +161,7 @@ No terminal do container (`make shell`): `ls /tmp/estudo_parquet` mostra `uf=BA`
 
 ### Passo 5 — `labs/aula08.py`
 
-**\[Complemento didático\]** Assinaturas para implementar (respostas na seção 12):
+Assinaturas para implementar (respostas na seção 12):
 
 ```python
 """Exercícios da Aula 08 (PySpark II)."""
@@ -183,17 +182,17 @@ def plano(df: DataFrame) -> str:
 
 def tem_shuffle(df: DataFrame) -> bool:
     """True se o plano tem Exchange que NÃO seja BroadcastExchange."""
-    ...
+    ..
 
 
 def maior_salario_por_uf(df: DataFrame) -> DataFrame:
     """Uma linha por UF com a pessoa de maior salário (window + row_number)."""
-    ...
+    ..
 
 
 def com_nome_uf(df: DataFrame, ufs: DataFrame) -> DataFrame:
     """Left join com a dimensão de UFs, usando broadcast."""
-    ...
+    ..
 ```
 
 ## 6. Funcionamento e resultados esperados
@@ -208,7 +207,7 @@ def com_nome_uf(df: DataFrame, ufs: DataFrame) -> DataFrame:
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Códigos órfãos com `left_anti`.** **\[Complemento didático\]** Na RAIS, para achar municípios cuja UF não está em `dim_uf` (o problema de "UF nula" da Aula 13): `silver.select("cod_uf").distinct().join(dim_uf(spark), "cod_uf", "left_anti").show()`.
+**Exemplo 1 — Códigos órfãos com `left_anti`.** Na RAIS, para achar municípios cuja UF não está em `dim_uf` (o problema de "UF nula" da Aula 13): `silver.select("cod_uf").distinct().join(dim_uf(spark), "cod_uf", "left_anti").show()`.
 
 **Exemplo 2 — Top N por grupo.** `gold_top_cnae_uf_ano` (Aula 13) é exatamente o padrão do passo 2: window por `ano, cod_uf` ordenada por massa salarial, `row_number`, filtro `<= 10`.
 
@@ -230,7 +229,7 @@ def com_nome_uf(df: DataFrame, ufs: DataFrame) -> DataFrame:
 
 1. `broadcast` em dimensões pequenas (guia).
 2. Ler `explain()` antes de rodar algo caro no volume real.
-3. Particionar por coluna de filtro frequente e baixa cardinalidade (`ano`, não `cod_municipio`). **\[Complemento didático\]**
+3. Particionar por coluna de filtro frequente e baixa cardinalidade (`ano`, não `cod_municipio`).
 4. `coalesce` para reduzir arquivos de saída; `repartition` só quando precisar redistribuir por chave.
 5. Evitar `collect()` fora de resultados pequenos (guia).
 
@@ -247,7 +246,7 @@ def com_nome_uf(df: DataFrame, ufs: DataFrame) -> DataFrame:
 
 **Contribuição ao projeto:** broadcast, window e partitionBy são usados na gold e em todas as camadas; ler planos é a base do tuning (Aula 15).
 
-**\[Complemento didático\]** `labcheck/test_aula08.py`:
+`labcheck/test_aula08.py`:
 
 ```python
 """Checks da Aula 08."""

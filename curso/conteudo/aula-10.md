@@ -13,7 +13,6 @@ entrega: ["src/utils.py (completo)", "src/delta_io.py", "src/dims.py", "tests/co
 checks: [a10_testes_utils, a10_gravar_ano_idempotente, a10_replacewhere_protege, a10_dims_tipos]
 ```
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -38,10 +37,10 @@ silver/rais_vinculos/
 ├── _delta_log/
 │   ├── 00000000000000000000.json   ← versão 0: "adicionou os arquivos A, B, C"
 │   ├── 00000000000000000001.json   ← versão 1: "removeu B, adicionou D"
-│   └── ...
+│   └── ..
 ├── ano=2022/
 │   ├── part-0000-A.parquet
-│   └── ...
+│   └── ..
 ```
 
 - **Delta = arquivos Parquet + log de transações** (`_delta_log/`).
@@ -49,7 +48,7 @@ silver/rais_vinculos/
 - **ACID:** a gravação acontece por inteiro ou não acontece. Se o job cair no meio, os leitores continuam vendo a versão anterior.
 - **Arquivos não são apagados na hora:** ficam "órfãos" até o `VACUUM`. É isso que permite o *time travel* (Aula 14).
 
-**\[Complemento didático\]** Por isso arquivos Parquet "soltos" na pasta não fazem parte da tabela se o log não os listar — e por isso nunca se deve apagar ou copiar arquivos de uma tabela Delta à mão.
+Por isso arquivos Parquet "soltos" na pasta não fazem parte da tabela se o log não os listar — e por isso nunca se deve apagar ou copiar arquivos de uma tabela Delta à mão.
 
 ### 3.2 `replaceWhere`: sobrescrever só um ano, atomicamente
 
@@ -65,7 +64,7 @@ Com `mode("overwrite").option("replaceWhere", "ano = 2022")`, o Delta troca só 
 
 ### 3.4 Conversão tolerante: `try_cast`
 
-`try_cast` devolve `NULL` em vez de erro quando a conversão falha. Em dado público "sujo", evita que uma linha estragada derrube milhões de linhas boas; a Aula 16 mede quantos `NULL` surgiram (guia, Parte 7.3). **\[Complemento didático\]** O preço: erros viram NULL em silêncio. Por isso todo `try_cast` precisa de uma checagem de quantidade de NULL depois.
+`try_cast` devolve `NULL` em vez de erro quando a conversão falha. Em dado público "sujo", evita que uma linha estragada derrube milhões de linhas boas; a Aula 16 mede quantos `NULL` surgiram (guia, Parte 7.3). O preço: erros viram NULL em silêncio. Por isso todo `try_cast` precisa de uma checagem de quantidade de NULL depois.
 
 ### 3.5 `decimal` para dinheiro
 
@@ -150,7 +149,7 @@ def to_decimal(df: DataFrame, name: str, precision: int = 18, scale: int = 2) ->
 
 - `NFKD` + `encode("ascii", "ignore")` separa o acento da letra e descarta o acento.
 - As **crases** (`` `nome` ``) protegem nomes de coluna dentro de expressões SQL.
-- **O escape do ponto em `to_decimal`:** no código Python há quatro barras (`'\\\\.'`); o Python entrega duas ao SQL, que entrega `\.` à expressão regular — um ponto literal. **\[Complemento didático\]** Com menos barras, o ponto viraria "qualquer caractere" e apagaria todos os dígitos.
+- **O escape do ponto em `to_decimal`:** no código Python há quatro barras (`'\\\\.'`); o Python entrega duas ao SQL, que entrega `\.` à expressão regular — um ponto literal. Com menos barras, o ponto viraria "qualquer caractere" e apagaria todos os dígitos.
 - `to_decimal` remove o ponto de milhar e troca a vírgula por ponto, nessa ordem.
 
 ### Passo 2 — `src/delta_io.py` (guia, Parte 7.4)
@@ -277,7 +276,7 @@ def test_to_int_coluna_ausente(spark):
 make test
 ```
 
-**\[Complemento didático\]** Esta SparkSession de teste **não** usa `get_spark`: testes de unidade não precisam de MinIO nem Delta, e assim rodam no CI do GitHub (Aula 16).
+Esta SparkSession de teste **não** usa `get_spark`: testes de unidade não precisam de MinIO nem Delta, e assim rodam no CI do GitHub (Aula 16).
 
 ## 6. Funcionamento e resultados esperados
 
@@ -290,7 +289,7 @@ make test
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Idempotência na prática.** **\[Complemento didático\]** Num notebook:
+**Exemplo 1 — Idempotência na prática.** Num notebook:
 
 ```python
 from pyspark.sql import functions as F
@@ -345,7 +344,7 @@ print(ler(spark, lab).count())              # 100, não 200
 
 **Contribuição ao projeto:** os três módulos são importados por todas as camadas.
 
-**\[Complemento didático\]** `labcheck/test_aula10.py`. Ele grava apenas na área de teste `_lab/aula10`, nunca nas camadas do projeto.
+`labcheck/test_aula10.py`. Ele grava apenas na área de teste `_lab/aula10`, nunca nas camadas do projeto.
 
 ```python
 """Checks da Aula 10."""

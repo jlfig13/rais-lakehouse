@@ -13,7 +13,6 @@ entrega: [".gitignore", "config/settings.py", "estrutura de pastas", "primeiro c
 checks: [a05_repositorio_git, a05_env_ignorado, a05_env_nao_versionado, a05_estrutura, a05_settings_padrao]
 ```
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -28,7 +27,7 @@ checks: [a05_repositorio_git, a05_env_ignorado, a05_env_nao_versionado, a05_estr
 
 ## 2. Contextualização
 
-Um projeto de dados acumula três coisas que não podem ser tratadas igual: **código** (versão controlada, revisada), **configuração** (muda por máquina, inclui senhas) e **dados** (grandes, reconstruíveis). Misturar os três gera os problemas clássicos: senha no GitHub, repositório de vários GB, código que só roda na máquina de quem escreveu. Esta aula separa os três. **\[Complemento didático\]**
+Um projeto de dados acumula três coisas que não podem ser tratadas igual: **código** (versão controlada, revisada), **configuração** (muda por máquina, inclui senhas) e **dados** (grandes, reconstruíveis). Misturar os três gera os problemas clássicos: senha no GitHub, repositório de vários GB, código que só roda na máquina de quem escreveu. Esta aula separa os três.
 
 | Tipo | Onde vive | Vai para o Git? |
 | --- | --- | --- |
@@ -46,7 +45,7 @@ Um projeto de dados acumula três coisas que não podem ser tratadas igual: **c�
 - `config/` separa **configuração** de **lógica**: trocar de ambiente não exige mudar código.
 - `docker/` concentra a infraestrutura; `docs/` concentra as decisões e o conhecimento do domínio.
 
-**\[Complemento didático\]** Notebook não é código de produção porque mistura execução e estado (células rodadas fora de ordem), é difícil de testar e gera diffs ilegíveis no Git. Explore no notebook; quando algo funciona, mova para `src/` como função.
+Notebook não é código de produção porque mistura execução e estado (células rodadas fora de ordem), é difícil de testar e gera diffs ilegíveis no Git. Explore no notebook; quando algo funciona, mova para `src/` como função.
 
 ### 3.2 Configuração por ambiente (guia, Parte 7.1)
 
@@ -96,7 +95,7 @@ rais-lakehouse/
 └── requirements.txt  requirements-dev.txt
 ```
 
-**\[Complemento didático\] — pastas da plataforma** (plano técnico, seção 6): `curso/` (site), `labs/` (exercícios verificáveis), `labcheck/` (checks; `labcheck/host/` para os do host) e `progress/` (não versionado).
+**pastas da plataforma** (plano técnico, seção 6): `curso/` (site), `labs/` (exercícios verificáveis), `labcheck/` (checks; `labcheck/host/` para os do host) e `progress/` (não versionado).
 
 ## 5. Tutorial
 
@@ -109,7 +108,7 @@ git init -b main        # -b main: nome do branch inicial
 mkdir -p .github/workflows config docker/minio docker/spark docs notebooks scripts src staging tests
 touch config/__init__.py scripts/__init__.py src/__init__.py staging/.gitkeep
 
-# Pastas da plataforma [Complemento didático]
+# Pastas da plataforma
 mkdir -p labs labcheck/host progress curso/docs
 ```
 
@@ -145,7 +144,7 @@ metastore_db/
 derby.log
 ```
 
-Acrescente as entradas da plataforma **\[Complemento didático\]**:
+Acrescente as entradas da plataforma:
 
 ```gitignore
 # Plataforma
@@ -190,7 +189,7 @@ ANOS = list(range(2019, 2025))
 | `BRONZE`, `SILVER`, `GOLD` | `str` | Derivados de `LAKE` | Aulas 11 a 14 |
 | `ANOS` | `list[int]` | Fixo no código | Aula 14 |
 
-**Por que `Path` para staging e `str` para o lake:** o staging é disco local, manipulado com `pathlib`; o lake é uma URI (`s3a://`) que só o Spark entende. **\[Complemento didático\]** `range(2019, 2025)` gera 2019 a 2024 (o fim não entra); atualize quando o MTE publicar um ano novo.
+**Por que `Path` para staging e `str` para o lake:** o staging é disco local, manipulado com `pathlib`; o lake é uma URI (`s3a://`) que só o Spark entende. `range(2019, 2025)` gera 2019 a 2024 (o fim não entra); atualize quando o MTE publicar um ano novo.
 
 ### Passo 4 — `docs/` e `.env.example`
 
@@ -221,7 +220,7 @@ git commit -m "chore: estrutura inicial do projeto"
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — A mesma configuração, dois ambientes.** **\[Complemento didático\]**
+**Exemplo 1 — A mesma configuração, dois ambientes.**
 
 ```bash
 # No host (sem as variáveis do compose): valores padrão
@@ -246,7 +245,7 @@ O código não mudou; só o ambiente. É o 12-Factor na prática.
 | `.env` já foi commitado | Commit feito antes do `.gitignore` | `git rm --cached .env` + commit, **e troque todas as senhas**: o histórico guarda o conteúdo (guia, Parte 16.4) |
 | `ModuleNotFoundError: No module named 'config'` | Executado fora da raiz ou sem `__init__.py` | Rodar da raiz; no container, `PYTHONPATH=/app` (Aula 02) resolve |
 | Pasta `staging` sumiu do repositório clonado | Faltou `!staging/.gitkeep` | Ver passo 2 |
-| Repositório enorme | Dados commitados | Remover do índice; dados grandes no histórico exigem reescrever o histórico **\[Complemento didático\]** |
+| Repositório enorme | Dados commitados | Remover do índice; dados grandes no histórico exigem reescrever o histórico |
 
 ## 9. Boas práticas
 
@@ -254,7 +253,7 @@ O código não mudou; só o ambiente. É o 12-Factor na prática.
 2. Configuração só por variável de ambiente, com padrões seguros (Parte 7.1).
 3. `.env.example` sempre atualizado quando surgir variável nova.
 4. Commits pequenos, um por passo concluído (Parte 3.3).
-5. **\[Complemento didático\]** Revise `git status` antes de todo `git add .`; prefira `git add <arquivo>` quando estiver em dúvida.
+5. Revise `git status` antes de todo `git add .`; prefira `git add <arquivo>` quando estiver em dúvida.
 
 ## 10. Riscos
 
@@ -269,7 +268,7 @@ O código não mudou; só o ambiente. É o 12-Factor na prática.
 
 **Contribuição ao projeto:** o repositório passa a ser a fonte única do projeto; `settings.py` é importado por todas as camadas.
 
-**\[Complemento didático\]** `labcheck/host/test_aula05.py` (roda no host, na raiz):
+`labcheck/host/test_aula05.py` (roda no host, na raiz):
 
 ```python
 """Checks da Aula 05: repositório organizado e sem segredos versionados."""
@@ -335,7 +334,7 @@ def test_a05_settings_padrao():
 
 **Respostas sugeridas:** (1) para poder reincluir o `.gitkeep` com `!`; com `staging/` a pasta inteira é ignorada e a exceção não funciona; (2) um protege o repositório, o outro o contexto de build e a imagem; (3) o lake é uma URI do Spark, o staging é disco local; (4) remover do índice e trocar todas as senhas — apagar o commit não basta.
 
-**Desafio:** escreva um *pre-commit hook* (`.git/hooks/pre-commit`) que impeça commits contendo `.env` ou arquivos `.7z`. **\[Complemento didático\]**
+**Desafio:** escreva um *pre-commit hook* (`.git/hooks/pre-commit`) que impeça commits contendo `.env` ou arquivos `.7z`.
 
 ## 13. Referências cruzadas
 

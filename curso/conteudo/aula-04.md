@@ -13,7 +13,6 @@ entrega: ["docker/minio/init-minio.sh", "docker/minio/policy-rais.json"]
 checks: [a04_bucket_existe, a04_app_grava_no_rais, a04_app_nao_cria_bucket, a04_app_nao_e_admin]
 ```
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -42,7 +41,7 @@ Um lake precisa de um lugar barato, durável e acessível por rede para guardar 
 
 - Guarda **objetos** (arquivo + metadados) dentro de **buckets**, acessados por API HTTP (o padrão S3).
 - **Não existem diretórios de verdade.** `bronze/rais_vinculos/ano=2022/arq.parquet` é só o nome (a **chave**) do objeto; as "pastas" são uma convenção visual.
-- **\[Complemento didático\]** O trecho comum no início de várias chaves (`bronze/rais_vinculos/`) é chamado de **prefixo**. Listar "uma pasta" é, na verdade, listar objetos com um prefixo.
+- O trecho comum no início de várias chaves (`bronze/rais_vinculos/`) é chamado de **prefixo**. Listar "uma pasta" é, na verdade, listar objetos com um prefixo.
 
 | Sistema de arquivos | Object storage |
 | --- | --- |
@@ -50,7 +49,7 @@ Um lake precisa de um lugar barato, durável e acessível por rede para guardar 
 | Editar parte de um arquivo | Objeto é escrito inteiro |
 | Acesso por caminho local | Acesso por HTTP com credenciais |
 
-**Consequência prática.** **\[Complemento didático\]** Como renomear é caro e não atômico em S3, o Delta não depende de renomear arquivos para garantir transações: ele usa o log `_delta_log/` (Aula 10).
+**Consequência prática.** Como renomear é caro e não atômico em S3, o Delta não depende de renomear arquivos para garantir transações: ele usa o log `_delta_log/` (Aula 10).
 
 ### 3.2 S3A e path-style (guia, Parte 4.1)
 
@@ -86,7 +85,7 @@ O usuário *root* do MinIO serve só para administrar. A aplicação usa um usu�
 
 O que não está listado é negado: outros buckets e operações administrativas. O guia observa que, se o nome do bucket mudar no `.env`, o JSON precisa mudar também.
 
-**\[Complemento didático\]** `s3:*` inclui apagar o próprio bucket `rais`. Para uma política mais estreita, liste só as ações necessárias (desafio 1).
+`s3:*` inclui apagar o próprio bucket `rais`. Para uma política mais estreita, liste só as ações necessárias (desafio 1).
 
 ## 4. Arquitetura e fluxo
 
@@ -121,7 +120,7 @@ O root só aparece no `minio-init`; tudo que o curso processa usa o `rais-app`.
 
 O guia avisa: a sintaxe de `mc admin policy` mudou entre versões do `mc`; se der erro, rode `mc admin policy --help` dentro do container e ajuste.
 
-**\[Complemento didático\]** O `|| true` torna o script idempotente, mas também esconde erros reais nessas duas linhas (ex.: sintaxe errada). Por isso o laboratório verifica o resultado final em vez de confiar no código de saída do script.
+O `|| true` torna o script idempotente, mas também esconde erros reais nessas duas linhas (ex.: sintaxe errada). Por isso o laboratório verifica o resultado final em vez de confiar no código de saída do script.
 
 ### Passo 2 — Abrir um terminal com o `mc`
 
@@ -175,7 +174,7 @@ Os valores acima são o que a configuração deve produzir; vale o que sua execu
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Prefixos não são pastas.** **\[Complemento didático\]**
+**Exemplo 1 — Prefixos não são pastas.**
 
 ```sh
 echo a | mc pipe app/rais/_lab/x/y/z.txt
@@ -197,17 +196,17 @@ mc ls app/rais/_lab/            # x/ some: não existia pasta, só a chave
 | `UnknownHostException: rais.minio` | Faltou path-style (guia, Apêndice B) | `fs.s3a.path.style.access=true` (Aula 06) |
 | `Connection refused` | `localhost` em vez de `minio` (guia, Apêndice B) | `http://minio:9000` |
 | Acesso negado só em alguns caminhos | Bucket renomeado no `.env` e não no JSON | Alinhar `RAIS_BUCKET` e `policy-rais.json` |
-| MinIO não sobe | **\[Complemento didático\]** Senha de root curta demais ou imagem inválida | `docker compose logs minio` |
+| MinIO não sobe | Senha de root curta demais ou imagem inválida | `docker compose logs minio` |
 | Trocar `APP_SECRET_KEY` não tem efeito no Spark | Container `spark` criado com o valor antigo | `make up` para recriar |
 
 ## 9. Boas práticas
 
 1. Root só para administrar; aplicação com usuário e política próprios (Parte 4.1).
-2. Política restrita ao bucket do projeto; em produção, também às ações necessárias. **\[Complemento didático\]**
+2. Política restrita ao bucket do projeto; em produção, também às ações necessárias.
 3. Scripts de preparação idempotentes (Parte 4.5), validados pelo estado final.
 4. Organizar o bucket por prefixos de camada (`bronze/`, `silver/`, `gold/`) e separar áreas de teste (`_smoke/`, `_lab/`).
 5. Backup do volume do MinIO e da landing (a landing é a fonte da verdade, Aula 01).
-6. **\[Complemento didático\]** Em produção, HTTPS no MinIO (`fs.s3a.connection.ssl.enabled=true`); o curso usa HTTP porque tudo fica na rede interna e em `127.0.0.1`.
+6. Em produção, HTTPS no MinIO (`fs.s3a.connection.ssl.enabled=true`); o curso usa HTTP porque tudo fica na rede interna e em `127.0.0.1`.
 
 ## 10. Riscos
 
@@ -224,7 +223,7 @@ mc ls app/rais/_lab/            # x/ some: não existia pasta, só a chave
 
 **Contribuição ao projeto:** o bucket `rais` com usuário e política corretos é o destino de bronze, silver e gold.
 
-**\[Complemento didático\]** Checks em `labcheck/host/test_aula04.py`. Rodam no host porque usam `docker compose run`; o teste roda o `mc` como **aplicação**, nunca como root.
+Checks em `labcheck/host/test_aula04.py`. Rodam no host porque usam `docker compose run`; o teste roda o `mc` como **aplicação**, nunca como root.
 
 ```python
 """Checks da Aula 04: o usuário da aplicação acessa só o bucket rais."""

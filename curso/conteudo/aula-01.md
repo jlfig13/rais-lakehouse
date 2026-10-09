@@ -6,7 +6,6 @@ Oct 9, 2026 · @João Lucas Ribeiro Figueiredo
 
 Ao final desta aula você saberá explicar o que é um lakehouse, por que o projeto usa bronze, silver e gold, e terá registrado as seis decisões de arquitetura do RAIS Lakehouse em `docs/decisoes.md`.
 
-**Convenção usada em todo o curso.** Trechos marcados com **\[Complemento didático\]** são explicações adicionadas para ensinar e não estavam no guia original. Todo o resto vem do RAIS Lakehouse Guide (Parte 1, Arquitetura e decisões).
 
 ### Objetivos de aprendizagem
 
@@ -30,11 +29,11 @@ Esta aula é conceitual. Ela não exige nada instalado: o único artefato produz
 
 ### Duração sugerida
 
-Cerca de 2 horas: 60 minutos de leitura, 30 de tutorial e 30 de exercícios. **\[Complemento didático\]**
+Cerca de 2 horas: 60 minutos de leitura, 30 de tutorial e 30 de exercícios.
 
 ## 2. Contextualização: por que o lakehouse existe
 
-O lakehouse existe para juntar o armazenamento barato e aberto do data lake com as garantias de um data warehouse: transações, schema controlado e versões. **\[Complemento didático\]** — esta seção inteira é contexto histórico adicionado; o guia original parte direto para a arquitetura.
+O lakehouse existe para juntar o armazenamento barato e aberto do data lake com as garantias de um data warehouse: transações, schema controlado e versões.
 
 ### O problema concreto deste curso
 
@@ -91,11 +90,11 @@ Um lakehouse tem quatro peças independentes: storage, formato de arquivo, forma
 | Formato de tabela | Diz quais arquivos formam a tabela em cada versão | Delta Lake | Apache Iceberg, Apache Hudi |
 | Engine | Lê, transforma e grava | Apache Spark (PySpark) em modo local | Trino, Flink, DuckDB |
 
-**\[Complemento didático\]** A separação entre storage e engine é o que permite, por exemplo, processar com Spark hoje e consultar a mesma tabela com Trino amanhã (o guia cita Trino como próximo passo no Apêndice D).
+A separação entre storage e engine é o que permite, por exemplo, processar com Spark hoje e consultar a mesma tabela com Trino amanhã (o guia cita Trino como próximo passo no Apêndice D).
 
 ### 3.2 Parquet: formato de arquivo colunar
 
-**O que é.** Um formato que grava os dados coluna por coluna, com compressão e estatísticas (mínimo e máximo) por bloco. **\[Complemento didático\]**
+**O que é.** Um formato que grava os dados coluna por coluna, com compressão e estatísticas (mínimo e máximo) por bloco.
 
 **Por que importa.** Uma consulta que usa 3 de 50 colunas lê só essas 3 do disco. Filtros podem pular blocos inteiros cujo mínimo e máximo não atendem à condição. O guia (Partes 5.8 e 9) mostra essa vantagem ao comparar o tamanho do `.txt` com o da bronze.
 
@@ -142,7 +141,7 @@ O guia escolhe Delta (ADR nº 4). A comparação abaixo resume a justificativa d
 | silver | MinIO | Delta | Dado limpo e tipado | Uma linha = um vínculo, tipos corretos |
 | gold | MinIO | Delta | Respostas prontas para análise | Cada tabela responde uma pergunta |
 
-**Alternativas.** **\[Complemento didático\]** Há quem use só duas camadas (raw e curated) ou modelagem dimensional direta (staging → fato/dimensão). Medallion não é obrigatório; é uma convenção que funciona bem quando a origem é suja e muda com o tempo, exatamente o caso da RAIS.
+**Alternativas.** Há quem use só duas camadas (raw e curated) ou modelagem dimensional direta (staging → fato/dimensão). Medallion não é obrigatório; é uma convenção que funciona bem quando a origem é suja e muda com o tempo, exatamente o caso da RAIS.
 
 ### 3.6 Idempotência
 
@@ -189,11 +188,11 @@ O entregável desta aula é o arquivo `docs/decisoes.md`, com as seis decisões 
 
 Um **ADR** (Architecture Decision Record) é um registro curto de uma decisão técnica: contexto, decisão, alternativas e consequências. O guia recomenda registrá-los em `docs/decisoes.md` (Parte 1.3).
 
-**Por que existe.** Seis meses depois, ninguém lembra por que o projeto usa Delta e não Iceberg. Sem o registro, a decisão é rediscutida do zero ou, pior, revertida sem entender o motivo. **\[Complemento didático\]** Em entrevistas e portfólio, ADRs mostram que você sabe justificar escolhas, não só executá-las.
+**Por que existe.** Seis meses depois, ninguém lembra por que o projeto usa Delta e não Iceberg. Sem o registro, a decisão é rediscutida do zero ou, pior, revertida sem entender o motivo. Em entrevistas e portfólio, ADRs mostram que você sabe justificar escolhas, não só executá-las.
 
 ### Passo 2 — Criar o modelo
 
-**\[Complemento didático\]** O guia usa uma tabela resumida. O modelo abaixo expande cada linha em campos, o que é útil para decisões que você vai revisitar.
+O guia usa uma tabela resumida. O modelo abaixo expande cada linha em campos, o que é útil para decisões que você vai revisitar.
 
 ```markdown
 # Decisões de arquitetura — RAIS Lakehouse
@@ -247,7 +246,7 @@ Preencha os outros cinco no mesmo formato:
 
 ### Passo 4 — Escrever os contratos de camada
 
-**\[Complemento didático\]** Um **contrato de camada** diz o que quem consome a camada pode assumir. O guia define as regras de ouro; o contrato as transforma em promessas verificáveis. Adicione ao mesmo arquivo:
+Um **contrato de camada** diz o que quem consome a camada pode assumir. O guia define as regras de ouro; o contrato as transforma em promessas verificáveis. Adicione ao mesmo arquivo:
 
 ```markdown
 ## Contratos de camada
@@ -292,11 +291,11 @@ O tutorial produz um documento, não código. O teste de que ele está bom é: a
 | 4. Contratos | Regras de ouro viram promessas verificáveis | Três contratos (bronze, silver, gold) com grão definido | Grão ausente ou vago ("dados limpos") |
 | 5. Diagrama | A arquitetura cabe numa imagem | Diagrama no README | Componentes no diagrama que não estão nos ADRs |
 
-**Por que o grão é o item mais importante do contrato.** **\[Complemento didático\]** O grão diz o que uma linha representa. Na RAIS, confundir "um vínculo" com "uma pessoa" é o erro analítico mais grave possível: uma pessoa com dois empregos aparece duas vezes, e os microdados públicos são anonimizados, então não há como deduplicar pessoas (Parte 6.1 do guia). Declarar o grão no contrato impede que alguém some vínculos e chame o resultado de "número de trabalhadores".
+**Por que o grão é o item mais importante do contrato.** O grão diz o que uma linha representa. Na RAIS, confundir "um vínculo" com "uma pessoa" é o erro analítico mais grave possível: uma pessoa com dois empregos aparece duas vezes, e os microdados públicos são anonimizados, então não há como deduplicar pessoas (Parte 6.1 do guia). Declarar o grão no contrato impede que alguém some vínculos e chame o resultado de "número de trabalhadores".
 
 ## 7. Exemplo prático: um vínculo atravessando as camadas
 
-Acompanhar uma única linha de ponta a ponta mostra o papel de cada camada melhor que qualquer definição. **\[Complemento didático\]** Os valores abaixo são fictícios, montados para ilustrar; os nomes de colunas e as transformações são os do guia (Partes 6, 9, 10 e 11).
+Acompanhar uma única linha de ponta a ponta mostra o papel de cada camada melhor que qualquer definição. Os valores abaixo são fictícios, montados para ilustrar; os nomes de colunas e as transformações são os do guia (Partes 6, 9, 10 e 11).
 
 ### Na landing
 
@@ -378,7 +377,7 @@ Os erros desta aula são de desenho, não de código. Eles custam pouco agora e 
 
 ### Como diagnosticar um problema de arquitetura
 
-**\[Complemento didático\]** Quando um número da gold parece errado, percorra as camadas de trás para frente:
+Quando um número da gold parece errado, percorra as camadas de trás para frente:
 
 1. **Gold:** a agregação usa o filtro certo (ex.: só vínculos ativos)? A coluna certa (`_sm` ou `_nom`)?
 2. **Silver:** a contagem bate com a bronze? Quantos NULL surgiram na coluna usada?
@@ -395,7 +394,7 @@ A camada em que o número "desvia" pela primeira vez é onde está o erro. Essa 
 4. **Versões fixas.** Nunca `latest` em imagens ou dependências: o build de hoje precisa ser igual ao de daqui a um ano (Parte 4.2; Aulas 02 e 06).
 5. **Centralize o formato de tabela.** Toda leitura e escrita Delta passa por um único módulo (`src/delta_io.py`, Aula 10). Trocar Delta por Iceberg vira mudança de um arquivo.
 6. **Toda decisão nova vira ADR,** inclusive as que revertem uma anterior.
-7. **Grão explícito em toda tabela.** **\[Complemento didático\]** Escreva o grão no contrato e no nome ou descrição da tabela (ex.: `gold_emprego_uf_ano` já diz ano × UF).
+7. **Grão explícito em toda tabela.** Escreva o grão no contrato e no nome ou descrição da tabela (ex.: `gold_emprego_uf_ano` já diz ano × UF).
 8. **Comece pequeno.** O guia recomenda 1 ano e 1 região (ex.: 2022 + Nordeste) antes de escalar para 2019–último ano publicado.
 
 ## 10. Riscos: segurança, desempenho, custos e integridade
@@ -415,9 +414,9 @@ A camada em que o número "desvia" pela primeira vez é onde está o erro. Essa 
 | Integridade | Schema muda entre anos | Bronze string + `mergeSchema` | Aula 11 |
 | Integridade | Conclusões erradas sobre pessoas | Grão "vínculo" no contrato | Aulas 09 e 13 |
 
-**Sobre os dados em si.** **\[Complemento didático\]** Os microdados da RAIS são públicos e anonimizados, então o risco de vazamento de dados pessoais é baixo. Isso não dispensa os cuidados acima: o mesmo projeto, reaproveitado com dados internos de uma empresa, herdaria qualquer descuido de segurança.
+**Sobre os dados em si.** Os microdados da RAIS são públicos e anonimizados, então o risco de vazamento de dados pessoais é baixo. Isso não dispensa os cuidados acima: o mesmo projeto, reaproveitado com dados internos de uma empresa, herdaria qualquer descuido de segurança.
 
-**Custo no on-premises.** **\[Complemento didático\]** Sem nuvem, o custo é disco, memória e tempo de máquina. O principal consumidor de disco é o `.txt` extraído; o Parquet comprimido da bronze ocupa uma fração dele (você mede isso no exercício 4 da Aula 11).
+**Custo no on-premises.** Sem nuvem, o custo é disco, memória e tempo de máquina. O principal consumidor de disco é o `.txt` extraído; o Parquet comprimido da bronze ocupa uma fração dele (você mede isso no exercício 4 da Aula 11).
 
 ## 11. Validação e critérios de conclusão
 
@@ -431,11 +430,11 @@ A aula está concluída quando todos os itens abaixo estão marcados.
 - [ ] Sei explicar por que a contagem da silver deve ser igual à da bronze.
 - [ ] Sei explicar por que séries históricas usam colunas em salário mínimo.
 
-**Autoteste rápido.** **\[Complemento didático\]** Leia o seu `docs/decisoes.md` como se fosse outra pessoa. Para cada ADR, pergunte: "em que situação esta decisão deixaria de valer?". Se a resposta não estiver no campo Contexto, reescreva-o.
+**Autoteste rápido.** Leia o seu `docs/decisoes.md` como se fosse outra pessoa. Para cada ADR, pergunte: "em que situação esta decisão deixaria de valer?". Se a resposta não estiver no campo Contexto, reescreva-o.
 
 ### Validação na plataforma
 
-**\[Complemento didático\]** Check automático desta aula, em `labcheck/test_aula01.py`. Ele só lê o repositório; roda dentro do container ou no host.
+Check automático desta aula, em `labcheck/test_aula01.py`. Ele só lê o repositório; roda dentro do container ou no host.
 
 ```python
 """Check da Aula 01: decisões de arquitetura registradas."""

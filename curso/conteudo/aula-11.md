@@ -13,7 +13,6 @@ entrega: ["src/ingest.py", "src/bronze.py", "notebooks/02_bronze.ipynb"]
 checks: [a11_bronze_delta, a11_ano_carregado, a11_tudo_string, a11_arquivo_origem, a11_idempotente]
 ```
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -27,7 +26,7 @@ checks: [a11_bronze_delta, a11_ano_carregado, a11_tudo_string, a11_arquivo_orige
 
 ## 2. Contextualização
 
-A bronze é a **cópia fiel e eficiente** da origem (guia, Parte 9.1). Ela não interpreta nada; existe para que nunca mais seja preciso reler o `.txt` lento e pesado. Se um dia a regra da silver mudar, refaz-se a silver a partir da bronze, sem tocar na landing. **\[Complemento didático\]** Isso divide o custo: a parte mais cara (ler texto latin-1 com dezenas de milhões de linhas) acontece uma vez por ano de dado.
+A bronze é a **cópia fiel e eficiente** da origem (guia, Parte 9.1). Ela não interpreta nada; existe para que nunca mais seja preciso reler o `.txt` lento e pesado. Se um dia a regra da silver mudar, refaz-se a silver a partir da bronze, sem tocar na landing. Isso divide o custo: a parte mais cara (ler texto latin-1 com dezenas de milhões de linhas) acontece uma vez por ano de dado.
 
 ## 3. Fundamentação teórica
 
@@ -54,12 +53,12 @@ Ingerir é trazer o dado da fonte **sem alterá-lo**. Separe **baixar** de **ext
 | `header` | `True` | Primeira linha é cabeçalho |
 | `sep` | `;` | Separador da RAIS |
 | `encoding` | `ISO-8859-1` | latin-1; sem isso, acentos viram `�` |
-| `inferSchema` | `False` | Tudo string, de propósito — e evita uma passada extra pelos dados para inferir tipos **\[Complemento didático\]** |
+| `inferSchema` | `False` | Tudo string, de propósito — e evita uma passada extra pelos dados para inferir tipos |
 | caminho `raw/<ano>/*.txt` | glob | Lê todas as regiões do ano numa só leitura |
 
 ### 3.4 Coluna oculta `_metadata`
 
-**\[Complemento didático\]** Fontes de arquivo no Spark expõem uma coluna oculta `_metadata` com informações do arquivo lido; `_metadata.file_name` é o nome. O guia a captura **antes** de renomear as colunas, para garantir que ela ainda seja resolvível.
+Fontes de arquivo no Spark expõem uma coluna oculta `_metadata` com informações do arquivo lido; `_metadata.file_name` é o nome. O guia a captura **antes** de renomear as colunas, para garantir que ela ainda seja resolvível.
 
 ## 4. Arquitetura e fluxo
 
@@ -144,7 +143,7 @@ if __name__ == "__main__":
 
 - **Para começar,** o guia recomenda baixar o `.7z` manualmente (Aula 09) e usar só o `extrair`. O `baixar` depende de um endereço de FTP que deve ser confirmado no site do MTE.
 - `ftp.login()` sem argumentos faz login anônimo.
-- **\[Complemento didático\]** O container precisa de acesso à internet para `baixar`; em ambiente sem saída, só o caminho manual funciona.
+- O container precisa de acesso à internet para `baixar`; em ambiente sem saída, só o caminho manual funciona.
 
 ```bash
 docker compose exec spark python -m src.ingest 2022
@@ -230,7 +229,7 @@ Depois de validar a bronze, apague `staging/raw/2022/`: o `.7z` na landing conti
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Encoding errado, de propósito.** **\[Complemento didático\]** Leia o mesmo `.txt` com `encoding` `UTF-8` e compare o nome da coluna de município: aparece `Munic�pio` (guia, Apêndice A, item 10).
+**Exemplo 1 — Encoding errado, de propósito.** Leia o mesmo `.txt` com `encoding` `UTF-8` e compare o nome da coluna de município: aparece `Munic�pio` (guia, Apêndice A, item 10).
 
 **Exemplo 2 — Linhas por região.** `b.groupBy("arquivo_origem").count().show(truncate=False)` mostra quantos vínculos vieram de cada `.txt` — útil para notar uma região faltando.
 
@@ -256,7 +255,7 @@ Depois de validar a bronze, apague `staging/raw/2022/`: o `.7z` na landing conti
 2. Etapas separadas e idempotentes (guia).
 3. Bronze sem regra de negócio (guia).
 4. Validar a bronze antes de apagar a raw.
-5. **\[Complemento didático\]** Registrar a contagem de linhas por arquivo de origem a cada carga, para comparar entre anos.
+5. Registrar a contagem de linhas por arquivo de origem a cada carga, para comparar entre anos.
 
 ## 10. Riscos
 
@@ -272,7 +271,7 @@ Depois de validar a bronze, apague `staging/raw/2022/`: o `.7z` na landing conti
 
 **Contribuição ao projeto:** a bronze é a fonte da silver e o ponto de reprocessamento sem reler texto.
 
-**\[Complemento didático\]** `labcheck/test_aula11.py` (somente leitura):
+`labcheck/test_aula11.py` (somente leitura):
 
 ```python
 """Checks da Aula 11: bronze do ano carregada, fiel e idempotente."""

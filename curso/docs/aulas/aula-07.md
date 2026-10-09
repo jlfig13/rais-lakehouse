@@ -21,8 +21,6 @@ checks: ['a07_media_por_sexo', 'a07_admissoes_por_ano', 'a07_faixa_salarial', 'a
 
 Ao final desta aula você escreve as transformações básicas do PySpark — selecionar, filtrar, criar colunas, converter tipos, agregar e usar SQL — sobre dados pequenos em memória, antes de tocar na RAIS.
 
-**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
-
 ## 1. Objetivos e pré-requisitos
 
 1. Criar e inspecionar DataFrames (`show`, `printSchema`, `count`, `columns`).
@@ -37,7 +35,7 @@ Ao final desta aula você escreve as transformações básicas do PySpark — se
 
 A RAIS tem dezenas de milhões de linhas por ano (Aula 09); aprender PySpark direto nela torna cada erro lento e caro. O guia começa com seis linhas em memória (Parte [5](../guia/parte-05.md)) justamente para isso: os mesmos comandos funcionam com 6 ou 60 milhões de linhas, e erros aparecem em segundos.
 
-<span class="rl-complemento">Complemento didático</span> **por que Spark e não pandas?**
+**por que Spark e não pandas?**
 
 | Critério | pandas | PySpark |
 | --- | --- | --- |
@@ -59,7 +57,7 @@ O PySpark é a API Python do Apache Spark, que roda na JVM. A `SparkSession` é 
 
 Uma tabela **distribuída** (dividida em partições) e **imutável** (cada operação gera um DataFrame novo). Por isso se escreve `df = df.withColumn(...)`: sem a reatribuição, a coluna nova se perde.
 
-**Schema** é a lista de colunas com seus tipos. <span class="rl-complemento">Complemento didático</span> Tipos comuns: `string`, `int`, `bigint` (o `long` do Python), `double`, `decimal(p,s)`, `boolean`, `date`. Na RAIS, o tipo de cada coluna é uma decisão de projeto (Aula 12).
+**Schema** é a lista de colunas com seus tipos. Tipos comuns: `string`, `int`, `bigint` (o `long` do Python), `double`, `decimal(p,s)`, `boolean`, `date`. Na RAIS, o tipo de cada coluna é uma decisão de projeto (Aula 12).
 
 ### 3.3 Expressões de coluna
 
@@ -67,11 +65,11 @@ Uma tabela **distribuída** (dividida em partições) e **imutável** (cada oper
 
 ### 3.4 NULL em comparações
 
-<span class="rl-complemento">Complemento didático</span> Em Spark (como em SQL), qualquer comparação com `NULL` resulta em `NULL`, e `filter` descarta linhas cujo resultado não é verdadeiro. `F.col("x") != "a"` **não** devolve as linhas com `x` nulo. Use `isNull()`/`isNotNull()` explicitamente. Isso importa na silver, onde valores inválidos viram `NULL` (Aula 12).
+Em Spark (como em SQL), qualquer comparação com `NULL` resulta em `NULL`, e `filter` descarta linhas cujo resultado não é verdadeiro. `F.col("x") != "a"` **não** devolve as linhas com `x` nulo. Use `isNull()`/`isNotNull()` explicitamente. Isso importa na silver, onde valores inválidos viram `NULL` (Aula 12).
 
 ### 3.5 Agregações (guia, Parte [5.4](../guia/parte-05.md#parte-5-4))
 
-`groupBy(colunas).agg(funções)` agrupa e resume. Sempre dê nome com `.alias()`; sem isso o nome vira algo como `avg(salario)`, ruim de usar depois. `F.percentile_approx(col, 0.5)` dá a mediana aproximada — aproximada porque a exata exigiria ordenar todos os dados, o que é caro em volume grande. <span class="rl-complemento">Complemento didático</span>
+`groupBy(colunas).agg(funções)` agrupa e resume. Sempre dê nome com `.alias()`; sem isso o nome vira algo como `avg(salario)`, ruim de usar depois. `F.percentile_approx(col, 0.5)` dá a mediana aproximada — aproximada porque a exata exigiria ordenar todos os dados, o que é caro em volume grande.
 
 ### 3.6 SQL (guia, Parte [5.9](../guia/parte-05.md#parte-5-9))
 
@@ -176,7 +174,7 @@ spark.sql("SELECT uf, AVG(salario) AS media FROM pessoas GROUP BY uf").show()
 
 ### Passo 5 — Exercícios como funções testáveis
 
-<span class="rl-complemento">Complemento didático</span> — formato da plataforma (plano técnico, seção 2). Crie `labs/__init__.py` vazio e `labs/aula07.py` com as assinaturas abaixo; implemente o corpo de cada função.
+Crie `labs/__init__.py` vazio e `labs/aula07.py` com as assinaturas abaixo; implemente o corpo de cada função.
 
 ```python
 """Exercícios da Aula 07 (PySpark I). Cada função recebe e devolve DataFrame."""
@@ -199,17 +197,17 @@ def exemplo(spark: SparkSession) -> DataFrame:
 
 def media_por_sexo(df: DataFrame) -> DataFrame:
     """Colunas: sexo, media (média salarial arredondada a 2 casas)."""
-    ...
+    ..
 
 
 def admissoes_por_ano(df: DataFrame) -> DataFrame:
     """Colunas: ano_admissao, qtd — ordenado por ano."""
-    ...
+    ..
 
 
 def faixa_salarial(df: DataFrame) -> DataFrame:
     """Acrescenta a coluna faixa: baixa (< 3000), media (< 4500), alta (resto)."""
-    ...
+    ..
 ```
 
 Respostas na seção 12.
@@ -228,7 +226,7 @@ Valores calculados a partir dos dados do guia; confirme na sua execução.
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Da RAIS ao exercício.** <span class="rl-complemento">Complemento didático</span> O exercício "média salarial por sexo" é a semente da tabela `gold_gap_sexo_uf_ano` (Aula 13), que usa `F.avg(F.when(F.col("sexo") == 2, F.col("remun_dezembro_sm")))` — um `when` dentro de um `avg` para calcular a média só de um grupo.
+**Exemplo 1 — Da RAIS ao exercício.** O exercício "média salarial por sexo" é a semente da tabela `gold_gap_sexo_uf_ano` (Aula 13), que usa `F.avg(F.when(F.col("sexo") == 2, F.col("remun_dezembro_sm")))` — um `when` dentro de um `avg` para calcular a média só de um grupo.
 
 **Exemplo 2 — Faixas.** A faixa salarial é o mesmo padrão de `gold_faixa_etaria_ano` (exercício da Aula 13).
 
@@ -259,7 +257,7 @@ print(sorted(a.collect()) == sorted(b.collect()))   # True: mesmo resultado
 1. `functions as F` sempre (guia).
 2. Nomear toda agregação com `alias` (guia).
 3. Escolher entre DataFrame e SQL pela legibilidade; o plano é o mesmo (guia).
-4. <span class="rl-complemento">Complemento didático</span> Funções que recebem e devolvem DataFrame ("funções puras") em vez de código solto: são testáveis, e é o padrão da gold (Aula 13).
+4. Funções que recebem e devolvem DataFrame ("funções puras") em vez de código solto: são testáveis, e é o padrão da gold (Aula 13).
 5. Testar com dados pequenos antes de rodar no volume real.
 
 ## 10. Riscos
@@ -274,7 +272,7 @@ print(sorted(a.collect()) == sorted(b.collect()))   # True: mesmo resultado
 
 **Contribuição ao projeto:** as operações desta aula são as mesmas da silver e da gold; o padrão de funções testáveis é o da Aula 13.
 
-<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula07.py` (container):
+`labcheck/test_aula07.py` (container):
 
 ```python
 """Checks da Aula 07: exercícios de labs/aula07.py."""

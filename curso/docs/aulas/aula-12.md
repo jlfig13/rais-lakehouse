@@ -21,8 +21,6 @@ checks: ['a12_silver_delta', 'a12_contagem_igual_bronze', 'a12_tipos_do_contrato
 
 A silver transforma a bronze (texto fiel à origem) em dado confiável: tipos corretos, valores inválidos como NULL, campos derivados — e exatamente uma linha por vínculo, sem perder nenhuma.
 
-**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
-
 ## 1. Objetivos e pré-requisitos
 
 1. Aplicar as seis responsabilidades da silver.
@@ -35,7 +33,7 @@ A silver transforma a bronze (texto fiel à origem) em dado confiável: tipos co
 
 ## 2. Contextualização
 
-A gold faz contas: somas, médias, proporções. Contas sobre texto não funcionam, e contas sobre valores lixo (`{ñ class}`, idade 999) dão resultados errados sem aviso. A silver é o lugar único onde essas decisões são tomadas e documentadas, para que toda tabela gold herde as mesmas regras. <span class="rl-complemento">Complemento didático</span>
+A gold faz contas: somas, médias, proporções. Contas sobre texto não funcionam, e contas sobre valores lixo (`{ñ class}`, idade 999) dão resultados errados sem aviso. A silver é o lugar único onde essas decisões são tomadas e documentadas, para que toda tabela gold herde as mesmas regras.
 
 ## 3. Fundamentação teórica (guia, Parte [10.1](../guia/parte-10.md#parte-10-1))
 
@@ -60,7 +58,7 @@ A gold faz contas: somas, médias, proporções. Contas sobre texto não funcion
 
 ### 3.3 Por que não deduplicar
 
-Como o dado público é anonimizado, **não há chave única** para deduplicar. <span class="rl-complemento">Complemento didático</span> Dois vínculos com todos os campos iguais podem ser reais (duas pessoas com o mesmo perfil no mesmo estabelecimento). Deduplicar "por todas as colunas" apagaria vínculos legítimos.
+Como o dado público é anonimizado, **não há chave única** para deduplicar. Dois vínculos com todos os campos iguais podem ser reais (duas pessoas com o mesmo perfil no mesmo estabelecimento). Deduplicar "por todas as colunas" apagaria vínculos legítimos.
 
 ### 3.4 Validar e anular em vez de filtrar
 
@@ -213,7 +211,7 @@ As faixas de NULL aceitáveis são calibradas com o seu dado; os limites iniciai
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Antes e depois.** <span class="rl-complemento">Complemento didático</span>
+**Exemplo 1 — Antes e depois.**
 
 | Bronze (string) | Silver | Por quê |
 | --- | --- | --- |
@@ -259,7 +257,7 @@ As faixas de NULL aceitáveis são calibradas com o seu dado; os limites iniciai
 
 **Contribuição ao projeto:** a silver alimenta todas as tabelas gold.
 
-<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula12.py` (somente leitura):
+`labcheck/test_aula12.py` (somente leitura):
 
 ```python
 """Checks da Aula 12: contrato da silver."""

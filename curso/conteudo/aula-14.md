@@ -13,7 +13,6 @@ entrega: ["src/run_pipeline.py", "src/checks.py", "notebooks/05_delta.ipynb"]
 checks: [a14_varios_anos_na_gold, a14_checar_silver, a14_historico, a14_time_travel, a14_optimize]
 ```
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -27,7 +26,7 @@ checks: [a14_varios_anos_na_gold, a14_checar_silver, a14_historico, a14_time_tra
 
 ## 2. Contextualização
 
-Um pipeline é executar os mesmos passos para cada ano, de forma **idempotente**: rodar duas vezes produz o mesmo resultado (guia, Parte 12.1). **\[Complemento didático\]** Pipelines falham — falta disco, um arquivo vem corrompido, a máquina reinicia. Se reexecutar for seguro, a recuperação é só "rodar de novo"; se não for, cada falha vira uma investigação manual. As operações Delta são a rede de segurança quando algo dá errado mesmo assim.
+Um pipeline é executar os mesmos passos para cada ano, de forma **idempotente**: rodar duas vezes produz o mesmo resultado (guia, Parte 12.1). Pipelines falham — falta disco, um arquivo vem corrompido, a máquina reinicia. Se reexecutar for seguro, a recuperação é só "rodar de novo"; se não for, cada falha vira uma investigação manual. As operações Delta são a rede de segurança quando algo dá errado mesmo assim.
 
 ## 3. Fundamentação teórica
 
@@ -57,7 +56,7 @@ Criar a sessão custa segundos e inicia uma JVM. O pipeline cria **uma** e a pas
 | `optimize().executeCompaction()` | Juntar arquivos pequenos | Use depois de muitas gravações |
 | `vacuum(168)` | Remover arquivos sem referência há mais de 168 h | **Depois dele, versões antigas param de funcionar no time travel** |
 
-**\[Complemento didático\]** Ordem que faz sentido em manutenção: `OPTIMIZE` (gera arquivos novos e marca os antigos como removidos) e, dias depois, `VACUUM` (apaga de fato os antigos) — mantendo uma janela para *time travel*.
+Ordem que faz sentido em manutenção: `OPTIMIZE` (gera arquivos novos e marca os antigos como removidos) e, dias depois, `VACUUM` (apaga de fato os antigos) — mantendo uma janela para *time travel*.
 
 ## 4. Arquitetura e fluxo
 
@@ -169,7 +168,7 @@ if __name__ == "__main__":
 | `--etapas` | Quais etapas rodar; `choices` rejeita nomes errados | `--etapas silver gold` |
 | `--limpar-raw` | Apaga `raw/<ano>` após a bronze | — |
 
-**\[Complemento didático\]** `nargs="*"` aceita zero ou mais valores; `action="store_true"` faz do argumento uma chave liga/desliga. `args.limpar_raw` usa `_` porque o `argparse` converte hífens.
+`nargs="*"` aceita zero ou mais valores; `action="store_true"` faz do argumento uma chave liga/desliga. `args.limpar_raw` usa `_` porque o `argparse` converte hífens.
 
 ### Passo 3 — Executar (guia, Parte 12.3)
 
@@ -215,7 +214,7 @@ dt.optimize().where("ano = 2022").executeCompaction()   # só uma partição
 dt.vacuum(168)   # remove arquivos sem referência há mais de 168 h (7 dias)
 ```
 
-**\[Complemento didático\]** Troque a data do `timestampAsOf` por uma em que a tabela já existia; uma data anterior à criação gera erro. O `restoreToVersion` está comentado de propósito.
+Troque a data do `timestampAsOf` por uma em que a tabela já existia; uma data anterior à criação gera erro. O `restoreToVersion` está comentado de propósito.
 
 ### Passo 5 — Schema enforcement × evolution numa cópia (guia, Parte 13.2)
 
@@ -260,7 +259,7 @@ g.groupBy("ano").agg(F.sum("qtd_vinculos").alias("vinculos")).orderBy("ano").sho
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Recuperar de um erro.** **\[Complemento didático\]** Você mudou a regra de idade na silver, rodou 2022 e percebeu que zerou a coluna. Opções: corrigir e rodar de novo (idempotente) ou `restoreToVersion` para a versão anterior enquanto investiga. Antes do `VACUUM`, as duas funcionam.
+**Exemplo 1 — Recuperar de um erro.** Você mudou a regra de idade na silver, rodou 2022 e percebeu que zerou a coluna. Opções: corrigir e rodar de novo (idempotente) ou `restoreToVersion` para a versão anterior enquanto investiga. Antes do `VACUUM`, as duas funcionam.
 
 **Exemplo 2 — Comparar antes e depois de uma correção.**
 
@@ -293,7 +292,7 @@ print(antes.filter("idade IS NULL").count(), depois.filter("idade IS NULL").coun
 3. Rodar um ano completo antes de todos (guia).
 4. `OPTIMIZE` periódico; `VACUUM` com retenção ≥ 168 h (guia).
 5. Experimentos de schema só em cópias (guia).
-6. **\[Complemento didático\]** Guardar o log de cada execução (ex.: `make pipeline ... | tee logs/pipeline_<data>.log`, com `logs/` no `.gitignore`).
+6. Guardar o log de cada execução (ex.: `make pipeline ... | tee logs/pipeline_<data>.log`, com `logs/` no `.gitignore`).
 
 ## 10. Riscos
 
@@ -309,7 +308,7 @@ print(antes.filter("idade IS NULL").count(), depois.filter("idade IS NULL").coun
 
 **Contribuição ao projeto:** o lakehouse passa a ser atualizado por um comando, com qualidade verificada e operação documentada.
 
-**\[Complemento didático\]** `labcheck/test_aula14.py` (somente leitura):
+`labcheck/test_aula14.py` (somente leitura):
 
 ```python
 """Checks da Aula 14: pipeline com vários anos e operação Delta."""

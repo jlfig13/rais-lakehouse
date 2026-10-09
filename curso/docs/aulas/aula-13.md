@@ -21,8 +21,6 @@ checks: ['a13_cinco_tabelas', 'a13_total_bate_silver', 'a13_uf_preenchida', 'a13
 
 A gold é o que alguém de fora do time de dados consome. Ao final desta aula existem cinco tabelas, cada uma respondendo uma pergunta, calculadas por funções testáveis e prontas para gráfico, BI ou relatório.
 
-**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
-
 ## 1. Objetivos e pré-requisitos
 
 1. Desenhar tabelas a partir de perguntas, com grão explícito.
@@ -35,7 +33,7 @@ A gold é o que alguém de fora do time de dados consome. Ao final desta aula ex
 
 ## 2. Contextualização
 
-A gold nasce de **perguntas de negócio** (guia, Parte [11.1](../guia/parte-11.md#parte-11-1)). Cada tabela responde uma pergunta específica e é pequena o bastante para ir direto a um gráfico. <span class="rl-complemento">Complemento didático</span> Uma "gold de tudo" (a silver agregada por todas as dimensões) parece flexível, mas joga de volta para o consumidor as decisões difíceis — qual coluna de remuneração, só ativos ou não — e cada consumidor decide diferente.
+A gold nasce de **perguntas de negócio** (guia, Parte [11.1](../guia/parte-11.md#parte-11-1)). Cada tabela responde uma pergunta específica e é pequena o bastante para ir direto a um gráfico. Uma "gold de tudo" (a silver agregada por todas as dimensões) parece flexível, mas joga de volta para o consumidor as decisões difíceis — qual coluna de remuneração, só ativos ou não — e cada consumidor decide diferente.
 
 ## 3. Fundamentação teórica (guia, Parte [11.1](../guia/parte-11.md#parte-11-1))
 
@@ -57,7 +55,7 @@ A gold nasce de **perguntas de negócio** (guia, Parte [11.1](../guia/parte-11.m
 
 ### 3.3 Média, mediana e massa
 
-<span class="rl-complemento">Complemento didático</span> Remuneração tem distribuição assimétrica: poucos salários muito altos puxam a média para cima. Por isso `gold_emprego_uf_ano` traz média e mediana (`percentile_approx`). **Massa salarial** é a soma das remunerações — mede o tamanho econômico, não o salário típico.
+Remuneração tem distribuição assimétrica: poucos salários muito altos puxam a média para cima. Por isso `gold_emprego_uf_ano` traz média e mediana (`percentile_approx`). **Massa salarial** é a soma das remunerações — mede o tamanho econômico, não o salário típico.
 
 ### 3.4 Funções puras
 
@@ -258,7 +256,7 @@ Use `toPandas()` **só** em tabelas gold; em silver ou bronze a memória estoura
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Uma pergunta nova vira uma função nova.** <span class="rl-complemento">Complemento didático</span> "Remuneração por porte" → `def porte(ativos): return ativos.groupBy("ano", "tamanho_estab").agg(...)` + uma entrada no dicionário `tabelas` + um teste.
+**Exemplo 1 — Uma pergunta nova vira uma função nova.** "Remuneração por porte" → `def porte(ativos): return ativos.groupBy("ano", "tamanho_estab").agg(...)` + uma entrada no dicionário `tabelas` + um teste.
 
 **Exemplo 2 — Exportar para Excel ou Power BI (guia, exercício 5).**
 
@@ -288,7 +286,7 @@ O CSV fica em `staging/export/emprego/` no host (bind mount) — um arquivo `par
 3. Funções puras com testes (guia).
 4. Broadcast nas dimensões (guia).
 5. `toPandas` só na gold (guia).
-6. <span class="rl-complemento">Complemento didático</span> Documentar cada tabela gold no README: pergunta, grão, colunas, base (ativos ou todos).
+6. Documentar cada tabela gold no README: pergunta, grão, colunas, base (ativos ou todos).
 
 ## 10. Riscos
 
@@ -297,13 +295,13 @@ O CSV fica em `staging/export/emprego/` no host (bind mount) — um arquivo `par
 | Integridade analítica | Leitura de vínculos como pessoas | Rótulos e README |
 | Integridade analítica | Média distorcida por extremos | Mediana junto |
 | Integridade | Join com dimensão duplicada infla totais | Check de soma |
-| Privacidade | Recortes muito finos expondo poucos vínculos | <span class="rl-complemento">Complemento didático</span> Evitar publicar células com contagem muito pequena |
+| Privacidade | Recortes muito finos expondo poucos vínculos | Evitar publicar células com contagem muito pequena |
 
 ## 11. Laboratório e validação na plataforma
 
 **Contribuição ao projeto:** as cinco tabelas são o produto final do lakehouse.
 
-<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula13.py`:
+`labcheck/test_aula13.py`:
 
 ```python
 """Checks da Aula 13: gold completa e coerente com a silver."""

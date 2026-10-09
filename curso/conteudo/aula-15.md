@@ -13,7 +13,6 @@ entrega: ["scripts/bench.sh", "docs/benchmark.csv", "ADR de configuração padr�
 checks: [a15_memoria_cabe_no_container, a15_threads_explicitas, a15_benchmark_registrado, a15_adr_tuning]
 ```
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -31,7 +30,7 @@ Em modo `local`, **tudo roda numa única JVM** dentro do container `spark`. Cada
 
 > **Mais threads = mais paralelismo, mas menos memória por tarefa.**
 
-**\[Complemento didático\]** Por isso "usar todos os núcleos" (`local[*]`) nem sempre é mais rápido: com pouca memória por tarefa, o Spark despeja dados em disco (*spill*) e fica mais lento — ou o container morre.
+Por isso "usar todos os núcleos" (`local[*]`) nem sempre é mais rápido: com pouca memória por tarefa, o Spark despeja dados em disco (*spill*) e fica mais lento — ou o container morre.
 
 ## 3. Fundamentação teórica (guia, Parte 14)
 
@@ -90,7 +89,7 @@ Exemplo: shuffle de 6 GB e 4 threads → 6144 / 128 = 48 partições (múltiplo 
 
 - **Spill:** dados despejados em disco quando não cabem na memória.
 - **Data skew:** dados concentrados em poucas chaves, gerando tarefas desbalanceadas — uma tarefa muito mais lenta que as outras.
-- **Cache:** **\[Complemento didático\]** `df.cache()` guarda um DataFrame reutilizado várias vezes (como `ativos` na gold) para não recalculá-lo a cada ação (Aula 08, lazy evaluation). Consome memória; libere com `unpersist()`. O guia não o usa; experimente no desafio 2.
+- **Cache:** `df.cache()` guarda um DataFrame reutilizado várias vezes (como `ativos` na gold) para não recalculá-lo a cada ação (Aula 08, lazy evaluation). Consome memória; libere com `unpersist()`. O guia não o usa; experimente no desafio 2.
 
 ## 4. Arquitetura e fluxo do ajuste
 
@@ -168,7 +167,7 @@ bash scripts/bench.sh 2022 | tee docs/benchmark.csv
 
 - Cada combinação roda um processo Python novo, então `SPARK_THREADS` e `SPARK_SHUFFLE` passados na linha de comando valem (a sessão é criada do zero).
 - `set -euo pipefail` faz o script parar no primeiro erro.
-- **\[Complemento didático\]** Se seu `CONTAINER_CPUS` for menor que 6, troque `2 4 6` por valores que caibam. A silver roda com `checar_silver` junto, como no pipeline.
+- Se seu `CONTAINER_CPUS` for menor que 6, troque `2 4 6` por valores que caibam. A silver roda com `checar_silver` junto, como no pipeline.
 
 ### Passo 5 — Registrar a decisão
 
@@ -195,7 +194,7 @@ spark.conf.set("spark.sql.shuffle.partitions", "64")   # muda em execução
 
 Configurações de **SQL** mudam em execução; as de **memória** e `master` só ao criar a sessão.
 
-**Exemplo 2 — Skew na RAIS.** **\[Complemento didático\]** SP concentra muito mais vínculos que outras UFs; um `repartition("cod_uf")` deixaria uma tarefa enorme. Na Spark UI, isso aparece como uma tarefa muito mais lenta no estágio. O `groupBy` com agregação parcial (Aula 08) atenua o problema.
+**Exemplo 2 — Skew na RAIS.** SP concentra muito mais vínculos que outras UFs; um `repartition("cod_uf")` deixaria uma tarefa enorme. Na Spark UI, isso aparece como uma tarefa muito mais lenta no estágio. O `groupBy` com agregação parcial (Aula 08) atenua o problema.
 
 **Exemplo 3 — Quando virar cluster (guia, Parte 14.7).** Num Spark standalone on-premises, os equivalentes são `spark.executor.instances`, `spark.executor.cores`, `spark.executor.memory` e `spark.cores.max`. A lógica não muda: núcleos por executor × memória por núcleo.
 
@@ -217,7 +216,7 @@ Configurações de **SQL** mudam em execução; as de **memória** e `master` s�
 3. Threads explícitas; nunca `local[*]` sem pensar (guia).
 4. Partições múltiplas do número de threads (guia).
 5. Registrar a configuração escolhida como ADR, com a evidência.
-6. **\[Complemento didático\]** Refazer o benchmark quando o volume mudar muito (ex.: passar de 1 para 6 anos na gold).
+6. Refazer o benchmark quando o volume mudar muito (ex.: passar de 1 para 6 anos na gold).
 
 ## 10. Riscos
 
@@ -232,7 +231,7 @@ Configurações de **SQL** mudam em execução; as de **memória** e `master` s�
 
 **Contribuição ao projeto:** configuração padrão medida e documentada no `.env` e nos ADRs.
 
-**\[Complemento didático\]** `labcheck/test_aula15.py`. O primeiro check lê o limite de memória do container no cgroup (v2 ou v1) e o compara com `spark.driver.memory`:
+`labcheck/test_aula15.py`. O primeiro check lê o limite de memória do container no cgroup (v2 ou v1) e o compara com `spark.driver.memory`:
 
 ```python
 """Checks da Aula 15: configuração que cabe no container e decisão registrada."""

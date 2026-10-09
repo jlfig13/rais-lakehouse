@@ -21,8 +21,6 @@ checks: ['a03_compose_valido', 'a03_servicos_no_ar', 'a03_minio_init_ok', 'a03_p
 
 Ao final desta aula, um único comando (`make up`) sobe os três serviços do RAIS Lakehouse — `minio`, `minio-init` e `spark` — com rede, volumes, limites de recursos e configuração vinda do `.env`.
 
-**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original; o resto vem do RAIS Lakehouse Guide, com a parte indicada.
-
 ## 1. Objetivos e pré-requisitos
 
 ### Objetivos de aprendizagem
@@ -48,11 +46,11 @@ Ao final desta aula, um único comando (`make up`) sobe os três serviços do RA
 
 ### Duração sugerida
 
-Cerca de 3 horas. <span class="rl-complemento">Complemento didático</span>
+Cerca de 3 horas.
 
 ## 2. Contextualização: por que orquestrar vários containers
 
-O RAIS Lakehouse não é um container, são três que precisam subir numa ordem, conversar entre si e guardar dados fora deles. Fazer isso com `docker run` à mão é possível, mas frágil; o Compose descreve tudo num arquivo versionado. <span class="rl-complemento">Complemento didático</span> — contexto adicionado.
+O RAIS Lakehouse não é um container, são três que precisam subir numa ordem, conversar entre si e guardar dados fora deles. Fazer isso com `docker run` à mão é possível, mas frágil; o Compose descreve tudo num arquivo versionado.
 
 ### Sem Compose
 
@@ -82,7 +80,7 @@ Tudo isso fica no `docker-compose.yml`, que vai para o Git. O ambiente sobe com 
 
 ### 3.1 YAML em cinco regras
 
-O `docker-compose.yml` é escrito em YAML. O guia (Parte [2.3](../guia/parte-02.md#parte-2-3)) destaca a regra principal: **indentação com espaços, nunca tab**, indicando hierarquia. <span class="rl-complemento">Complemento didático</span> As outras quatro:
+O `docker-compose.yml` é escrito em YAML. O guia (Parte [2.3](../guia/parte-02.md#parte-2-3)) destaca a regra principal: **indentação com espaços, nunca tab**, indicando hierarquia. As outras quatro:
 
 | Regra | Exemplo | Erro comum |
 | --- | --- | --- |
@@ -99,7 +97,7 @@ name: meu-projeto              # nome do projeto (prefixo dos containers/volumes
 
 services:                      # cada serviço vira um container
   meu-servico:
-    image: nginx:1.27          # usa uma imagem pronta...
+    image: nginx:1.27          # usa uma imagem pronta..
     build: .                   # ...ou constrói a partir de um Dockerfile
     ports:
       - "127.0.0.1:8080:80"    # host:container (só acessível na sua máquina)
@@ -120,7 +118,7 @@ volumes:
 
 O Compose cria uma rede própria em que cada serviço é encontrado **pelo nome** (guia, Parte [2.3](../guia/parte-02.md#parte-2-3)). Dentro do container `spark`, o MinIO está em `http://minio:9000`, e não em `localhost` — "um erro clássico", nas palavras do guia.
 
-<span class="rl-complemento">Complemento didático</span> Por quê: cada container tem sua própria interface de rede. `localhost` dentro do `spark` é o próprio `spark`, onde nada escuta na porta 9000. O Compose registra cada serviço num DNS interno, então o nome `minio` resolve para o endereço do container do MinIO.
+Por quê: cada container tem sua própria interface de rede. `localhost` dentro do `spark` é o próprio `spark`, onde nada escuta na porta 9000. O Compose registra cada serviço num DNS interno, então o nome `minio` resolve para o endereço do container do MinIO.
 
 | De onde | Para onde | Endereço |
 | --- | --- | --- |
@@ -158,7 +156,7 @@ O Compose lê automaticamente o arquivo `.env` da mesma pasta (guia, Parte [2.3]
 | `${VAR:-padrao}` | Usa `padrao` se `VAR` não existir |
 | `${VAR:?mensagem}` | **Interrompe** com erro se `VAR` não existir — ótimo para senhas obrigatórias |
 
-**Atenção a dois mecanismos diferentes** <span class="rl-complemento">Complemento didático</span>:
+**Atenção a dois mecanismos diferentes**:
 
 1. **Interpolação:** o Compose substitui `${...}` no próprio YAML usando o `.env`. Isso configura o Compose.
 2. **`environment`:** define as variáveis que o processo **dentro** do container enxerga.
@@ -211,7 +209,7 @@ O guia deixa imagem e tag em aberto porque o projeto MinIO mudou a forma de dist
 2. Escolha uma **tag fixa** (nunca `latest`) para o servidor e outra para o cliente `mc`.
 3. Anote as duas; elas vão para `MINIO_IMAGE` e `MC_IMAGE` no passo 3.
 
-Como o código do curso usa só a API S3, outro armazenamento S3 compatível também serve; o guia cita essa alternativa na Parte [4](../guia/parte-04.md). <span class="rl-complemento">Complemento didático</span> Nesse caso o `init-minio.sh`, que usa o `mc`, precisaria ser adaptado.
+Como o código do curso usa só a API S3, outro armazenamento S3 compatível também serve; o guia cita essa alternativa na Parte [4](../guia/parte-04.md). Nesse caso o `init-minio.sh`, que usa o `mc`, precisaria ser adaptado.
 
 ### Passo 2 — Arquivos do `minio-init` (explicados na Aula 04)
 
@@ -310,7 +308,7 @@ id -u          # coloque este número em HOST_UID no .env
 | `CONTAINER_CPUS`, `CONTAINER_MEM` | Abaixo do que sua máquina tem | Ver a tabela de pontos de partida da Aula 15; para 16 GB de RAM, o guia sugere `11g` e `6` |
 | `SPARK_MEM` | Cerca de 65–75% de `CONTAINER_MEM` | A JVM precisa caber no container (Aula 15) |
 
-<span class="rl-complemento">Complemento didático</span> Gere senhas aleatórias, por exemplo com `openssl rand -base64 24`. O `.env` não pode ir para o Git: o `.gitignore` da Aula 05 o exclui; até lá, não rode `git add .`.
+Gere senhas aleatórias, por exemplo com `openssl rand -base64 24`. O `.env` não pode ir para o Git: o `.gitignore` da Aula 05 o exclui; até lá, não rode `git add .`.
 
 ### Passo 4 — `docker-compose.yml` (guia, Parte [4.7](../guia/parte-04.md#parte-4-7))
 
@@ -437,7 +435,7 @@ fmt:             ## formata o código
 	$(COMPOSE) exec spark ruff format .
 ```
 
-**Alvos da plataforma** <span class="rl-complemento">Complemento didático</span> — acrescente ao fim do Makefile. Eles usam os checks em `labcheck/` (plano técnico, seção 7):
+**Alvos da plataforma** — acrescente ao fim do Makefile. Eles usam os checks em `labcheck/` (plano técnico, seção 7):
 
 ```makefile
 AULA ?= 01
@@ -488,7 +486,7 @@ Acesse (guia, Parte [4.9](../guia/parte-04.md#parte-4-9)):
 
 ### `name: rais-lakehouse`
 
-Define o nome do projeto. Ele vira prefixo de tudo que o Compose cria: containers (ex.: `rais-lakehouse-spark-1`, nome usado no `docker stats` da Aula 15), volumes (`rais-lakehouse_minio-data`) e a rede (`rais-lakehouse_default`). <span class="rl-complemento">Complemento didático</span> Sem `name`, o prefixo seria o nome da pasta — e renomear a pasta "perderia" os volumes antigos.
+Define o nome do projeto. Ele vira prefixo de tudo que o Compose cria: containers (ex.: `rais-lakehouse-spark-1`, nome usado no `docker stats` da Aula 15), volumes (`rais-lakehouse_minio-data`) e a rede (`rais-lakehouse_default`). Sem `name`, o prefixo seria o nome da pasta — e renomear a pasta "perderia" os volumes antigos.
 
 ### Serviço `minio`
 
@@ -559,11 +557,11 @@ docker compose down -v            # ⚠️ remove também os VOLUMES (apaga o la
 docker compose config             # mostra o YAML final, com variáveis resolvidas
 ```
 
-<span class="rl-complemento">Complemento didático</span> `exec` roda um comando num container **já em execução**; `docker compose run` cria um container **novo** para o comando. No curso, use `exec`.
+`exec` roda um comando num container **já em execução**; `docker compose run` cria um container **novo** para o comando. No curso, use `exec`.
 
 ## 7. Exemplos práticos
 
-Cinco experimentos com o ambiente no ar, cada um provando um conceito da seção 3. <span class="rl-complemento">Complemento didático</span> — experimentos adicionados; só usam o que o guia configura.
+Cinco experimentos com o ambiente no ar, cada um provando um conceito da seção 3.
 
 ### Exemplo 1 — DNS do Compose e o erro do `localhost`
 
@@ -629,7 +627,7 @@ docker stats --no-stream
 | `spark` não sobe e `make ps` mostra `minio-init` com código ≠ 0 | O `spark` depende do init (guia, [Apêndice B](../guia/apendice-b.md)) | `make ps` | Resolver o `minio-init` primeiro |
 | `minio-init` fica preso em "aguardando o MinIO" | MinIO não subiu (imagem errada, senha curta) | `docker compose logs minio` | Corrigir a causa no log do MinIO |
 | `Connection refused` ao acessar o MinIO de dentro do `spark` | Uso de `localhost` (guia, [Apêndice B](../guia/apendice-b.md)) | Exemplo 1 | Usar `http://minio:9000` |
-| `Bind for 127.0.0.1:8888 failed: port is already allocated` | <span class="rl-complemento">Complemento didático</span> Outro programa usa a porta | `docker ps` ou outro Jupyter aberto | Parar o outro processo ou mudar a porta do host (`127.0.0.1:8889:8888`) |
+| `Bind for 127.0.0.1:8888 failed: port is already allocated` | Outro programa usa a porta | `docker ps` ou outro Jupyter aberto | Parar o outro processo ou mudar a porta do host (`127.0.0.1:8889:8888`) |
 | `Permission denied` em `/app` ou `/staging` | UID diferente entre host e container (guia, [Apêndice B](../guia/apendice-b.md)) | `id` no container × `id -u` no host | Ajustar `HOST_UID` e `make up` (reconstrói) |
 | Container `spark` reinicia ou sai com código 137 | `mem_limit` estourado (guia, [Apêndice B](../guia/apendice-b.md)) | `docker compose ps -a`; `docker stats` | Reduzir `SPARK_MEM` ou aumentar `CONTAINER_MEM` |
 | `make: *** missing separator` | Espaços no lugar de TAB no Makefile (guia, [Apêndice B](../guia/apendice-b.md)) | Editor mostrando espaços | Usar TAB |
@@ -638,7 +636,6 @@ docker stats --no-stream
 
 ### Roteiro de diagnóstico
 
-<span class="rl-complemento">Complemento didático</span>
 
 1. `docker compose config -q` — o arquivo é válido e todas as variáveis existem?
 2. `make ps` — quem está `running`, quem saiu e com que código?
@@ -656,7 +653,7 @@ docker stats --no-stream
 7. **Limites de CPU e memória definidos,** coerentes com a configuração do Spark (Aula 15).
 8. **`docker compose config` antes de subir** mudanças grandes.
 9. **Makefile como documentação executável:** os comandos importantes ficam com nome e descrição em `make help`.
-10. <span class="rl-complemento">Complemento didático</span> Em servidor compartilhado, guarde senhas num gerenciador de segredos em vez de arquivo `.env` em disco; para estudo, o `.env` com permissão restrita (`chmod 600 .env`) basta.
+10. Em servidor compartilhado, guarde senhas num gerenciador de segredos em vez de arquivo `.env` em disco; para estudo, o `.env` com permissão restrita (`chmod 600 .env`) basta.
 
 ## 10. Riscos: segurança, desempenho, custos e integridade
 
@@ -689,7 +686,7 @@ A aula está concluída quando os quatro checks passam com o ambiente no ar e o 
 
 ### Checks automáticos
 
-<span class="rl-complemento">Complemento didático</span> — código da plataforma. Arquivo `labcheck/host/test_aula03.py`, executado na raiz do projeto:
+Arquivo `labcheck/host/test_aula03.py`, executado na raiz do projeto:
 
 ```python
 """Checks da Aula 03. Rodam no host, na raiz do projeto, com o ambiente no ar."""
