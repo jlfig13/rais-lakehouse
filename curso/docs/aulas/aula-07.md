@@ -14,7 +14,7 @@ checks: ['a07_media_por_sexo', 'a07_admissoes_por_ano', 'a07_faixa_salarial', 'a
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 5.1, Guia Parte 5.2, Guia Parte 5.3, Guia Parte 5.4, Guia Parte 5.9 |
+| Origem no guia | Guia Parte [5.1](../guia/parte-05.md#parte-5-1), Guia Parte [5.2](../guia/parte-05.md#parte-5-2), Guia Parte [5.3](../guia/parte-05.md#parte-5-3), Guia Parte [5.4](../guia/parte-05.md#parte-5-4), Guia Parte [5.9](../guia/parte-05.md#parte-5-9) |
 | Depende de | [Aula 06](aula-06.md) |
 | Entregas | `labs/__init__.py`, `labs/aula07.py`, `notebooks/01_fundamentos.ipynb` |
 | Onde os checks rodam | Container spark |
@@ -22,7 +22,7 @@ checks: ['a07_media_por_sexo', 'a07_admissoes_por_ano', 'a07_faixa_salarial', 'a
 
 Ao final desta aula você escreve as transformações básicas do PySpark — selecionar, filtrar, criar colunas, converter tipos, agregar e usar SQL — sobre dados pequenos em memória, antes de tocar na RAIS.
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
+**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -36,9 +36,9 @@ Ao final desta aula você escreve as transformações básicas do PySpark — se
 
 ## 2. Contextualização
 
-A RAIS tem dezenas de milhões de linhas por ano (Aula 09); aprender PySpark direto nela torna cada erro lento e caro. O guia começa com seis linhas em memória (Parte 5) justamente para isso: os mesmos comandos funcionam com 6 ou 60 milhões de linhas, e erros aparecem em segundos.
+A RAIS tem dezenas de milhões de linhas por ano (Aula 09); aprender PySpark direto nela torna cada erro lento e caro. O guia começa com seis linhas em memória (Parte [5](../guia/parte-05.md)) justamente para isso: os mesmos comandos funcionam com 6 ou 60 milhões de linhas, e erros aparecem em segundos.
 
-**\[Complemento didático\] — por que Spark e não pandas?**
+<span class="rl-complemento">Complemento didático</span> **por que Spark e não pandas?**
 
 | Critério | pandas | PySpark |
 | --- | --- | --- |
@@ -50,31 +50,31 @@ A RAIS tem dezenas de milhões de linhas por ano (Aula 09); aprender PySpark dir
 
 ## 3. Fundamentação teórica
 
-### 3.1 SparkSession (guia, Parte 5.1)
+### 3.1 SparkSession (guia, Parte [5.1](../guia/parte-05.md#parte-5-1))
 
 O PySpark é a API Python do Apache Spark, que roda na JVM. A `SparkSession` é o ponto de entrada; só existe uma por processo. No curso, ela vem do `get_spark()` (Aula 06); nos exemplos do guia, de `SparkSession.builder.master("local[2]")...` — as duas formas funcionam para os dados pequenos desta aula.
 
 **Convenção de imports (guia):** `from pyspark.sql import functions as F`. Evite `from pyspark.sql.functions import *`, que sobrescreve funções nativas como `sum`, `max` e `round`.
 
-### 3.2 DataFrame (guia, Parte 5.2)
+### 3.2 DataFrame (guia, Parte [5.2](../guia/parte-05.md#parte-5-2))
 
 Uma tabela **distribuída** (dividida em partições) e **imutável** (cada operação gera um DataFrame novo). Por isso se escreve `df = df.withColumn(...)`: sem a reatribuição, a coluna nova se perde.
 
-**Schema** é a lista de colunas com seus tipos. **\[Complemento didático\]** Tipos comuns: `string`, `int`, `bigint` (o `long` do Python), `double`, `decimal(p,s)`, `boolean`, `date`. Na RAIS, o tipo de cada coluna é uma decisão de projeto (Aula 12).
+**Schema** é a lista de colunas com seus tipos. <span class="rl-complemento">Complemento didático</span> Tipos comuns: `string`, `int`, `bigint` (o `long` do Python), `double`, `decimal(p,s)`, `boolean`, `date`. Na RAIS, o tipo de cada coluna é uma decisão de projeto (Aula 12).
 
 ### 3.3 Expressões de coluna
 
-`F.col("salario")` representa uma coluna; operações sobre ela (`* 13`, `> 3500`, `.cast("string")`) geram novas expressões, que só são calculadas quando uma ação roda. Em condições combinadas use `&` (E), `|` (OU), `~` (NÃO) e **parênteses em cada comparação** (guia, Parte 5.3); `and`/`or` do Python não funcionam com colunas.
+`F.col("salario")` representa uma coluna; operações sobre ela (`* 13`, `> 3500`, `.cast("string")`) geram novas expressões, que só são calculadas quando uma ação roda. Em condições combinadas use `&` (E), `|` (OU), `~` (NÃO) e **parênteses em cada comparação** (guia, Parte [5.3](../guia/parte-05.md#parte-5-3)); `and`/`or` do Python não funcionam com colunas.
 
 ### 3.4 NULL em comparações
 
-**\[Complemento didático\]** Em Spark (como em SQL), qualquer comparação com `NULL` resulta em `NULL`, e `filter` descarta linhas cujo resultado não é verdadeiro. `F.col("x") != "a"` **não** devolve as linhas com `x` nulo. Use `isNull()`/`isNotNull()` explicitamente. Isso importa na silver, onde valores inválidos viram `NULL` (Aula 12).
+<span class="rl-complemento">Complemento didático</span> Em Spark (como em SQL), qualquer comparação com `NULL` resulta em `NULL`, e `filter` descarta linhas cujo resultado não é verdadeiro. `F.col("x") != "a"` **não** devolve as linhas com `x` nulo. Use `isNull()`/`isNotNull()` explicitamente. Isso importa na silver, onde valores inválidos viram `NULL` (Aula 12).
 
-### 3.5 Agregações (guia, Parte 5.4)
+### 3.5 Agregações (guia, Parte [5.4](../guia/parte-05.md#parte-5-4))
 
-`groupBy(colunas).agg(funções)` agrupa e resume. Sempre dê nome com `.alias()`; sem isso o nome vira algo como `avg(salario)`, ruim de usar depois. `F.percentile_approx(col, 0.5)` dá a mediana aproximada — aproximada porque a exata exigiria ordenar todos os dados, o que é caro em volume grande. **\[Complemento didático\]**
+`groupBy(colunas).agg(funções)` agrupa e resume. Sempre dê nome com `.alias()`; sem isso o nome vira algo como `avg(salario)`, ruim de usar depois. `F.percentile_approx(col, 0.5)` dá a mediana aproximada — aproximada porque a exata exigiria ordenar todos os dados, o que é caro em volume grande. <span class="rl-complemento">Complemento didático</span>
 
-### 3.6 SQL (guia, Parte 5.9)
+### 3.6 SQL (guia, Parte [5.9](../guia/parte-05.md#parte-5-9))
 
 `createOrReplaceTempView("nome")` registra o DataFrame como tabela temporária da sessão; `spark.sql(...)` consulta. A API de DataFrame e o SQL geram **o mesmo plano**: use o que deixar o código mais legível.
 
@@ -99,7 +99,7 @@ A diferença entre transformação e ação é o tema central da Aula 08.
 
 Abra o JupyterLab (`localhost:8888`) e crie `notebooks/01_fundamentos.ipynb`.
 
-### Passo 1 — Sessão e dados (guia, Partes 5.1–5.2)
+### Passo 1 — Sessão e dados (guia, Partes [5.1](../guia/parte-05.md#parte-5-1)–[5.2](../guia/parte-05.md#parte-5-2))
 
 ```python
 from pyspark.sql import functions as F
@@ -126,7 +126,7 @@ df.columns         # lista de colunas (não executa nada)
 
 **Esperado em `printSchema`:** `id: long`, `salario: double` e as demais `string` — o Spark infere tipos dos valores Python, e `admissao` ainda é texto.
 
-### Passo 2 — Transformações básicas (guia, Parte 5.3)
+### Passo 2 — Transformações básicas (guia, Parte [5.3](../guia/parte-05.md#parte-5-3))
 
 ```python
 df.select("nome", "salario")
@@ -154,7 +154,7 @@ df.orderBy(F.col("salario").desc())
 - `when` é avaliado em ordem: a primeira condição verdadeira vence; `otherwise` cobre o resto. Sem `otherwise`, o resto vira `NULL`.
 - `F.to_date("admissao")` sem formato espera `aaaa-mm-dd`; um texto fora do padrão vira `NULL`.
 
-### Passo 3 — Agregações (guia, Parte 5.4)
+### Passo 3 — Agregações (guia, Parte [5.4](../guia/parte-05.md#parte-5-4))
 
 ```python
 (df.groupBy("uf")
@@ -168,7 +168,7 @@ df.orderBy(F.col("salario").desc())
    .show())
 ```
 
-### Passo 4 — SQL (guia, Parte 5.9)
+### Passo 4 — SQL (guia, Parte [5.9](../guia/parte-05.md#parte-5-9))
 
 ```python
 df.createOrReplaceTempView("pessoas")
@@ -177,7 +177,7 @@ spark.sql("SELECT uf, AVG(salario) AS media FROM pessoas GROUP BY uf").show()
 
 ### Passo 5 — Exercícios como funções testáveis
 
-**\[Complemento didático\]** — formato da plataforma (plano técnico, seção 2). Crie `labs/__init__.py` vazio e `labs/aula07.py` com as assinaturas abaixo; implemente o corpo de cada função.
+<span class="rl-complemento">Complemento didático</span> — formato da plataforma (plano técnico, seção 2). Crie `labs/__init__.py` vazio e `labs/aula07.py` com as assinaturas abaixo; implemente o corpo de cada função.
 
 ```python
 """Exercícios da Aula 07 (PySpark I). Cada função recebe e devolve DataFrame."""
@@ -229,7 +229,7 @@ Valores calculados a partir dos dados do guia; confirme na sua execução.
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Da RAIS ao exercício.** **\[Complemento didático\]** O exercício "média salarial por sexo" é a semente da tabela `gold_gap_sexo_uf_ano` (Aula 13), que usa `F.avg(F.when(F.col("sexo") == 2, F.col("remun_dezembro_sm")))` — um `when` dentro de um `avg` para calcular a média só de um grupo.
+**Exemplo 1 — Da RAIS ao exercício.** <span class="rl-complemento">Complemento didático</span> O exercício "média salarial por sexo" é a semente da tabela `gold_gap_sexo_uf_ano` (Aula 13), que usa `F.avg(F.when(F.col("sexo") == 2, F.col("remun_dezembro_sm")))` — um `when` dentro de um `avg` para calcular a média só de um grupo.
 
 **Exemplo 2 — Faixas.** A faixa salarial é o mesmo padrão de `gold_faixa_etaria_ano` (exercício da Aula 13).
 
@@ -260,7 +260,7 @@ print(sorted(a.collect()) == sorted(b.collect()))   # True: mesmo resultado
 1. `functions as F` sempre (guia).
 2. Nomear toda agregação com `alias` (guia).
 3. Escolher entre DataFrame e SQL pela legibilidade; o plano é o mesmo (guia).
-4. **\[Complemento didático\]** Funções que recebem e devolvem DataFrame ("funções puras") em vez de código solto: são testáveis, e é o padrão da gold (Aula 13).
+4. <span class="rl-complemento">Complemento didático</span> Funções que recebem e devolvem DataFrame ("funções puras") em vez de código solto: são testáveis, e é o padrão da gold (Aula 13).
 5. Testar com dados pequenos antes de rodar no volume real.
 
 ## 10. Riscos
@@ -275,7 +275,7 @@ print(sorted(a.collect()) == sorted(b.collect()))   # True: mesmo resultado
 
 **Contribuição ao projeto:** as operações desta aula são as mesmas da silver e da gold; o padrão de funções testáveis é o da Aula 13.
 
-**\[Complemento didático\]** `labcheck/test_aula07.py` (container):
+<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula07.py` (container):
 
 ```python
 """Checks da Aula 07: exercícios de labs/aula07.py."""
@@ -319,7 +319,7 @@ make check AULA=07
 
 ## 12. Exercícios, revisão e desafios
 
-**Exercícios (guia, Parte 5, exercícios 1 e 3)** — implemente em `labs/aula07.py`.
+**Exercícios (guia, Parte [5](../guia/parte-05.md), exercícios 1 e 3)** — implemente em `labs/aula07.py`.
 
 **Respostas** (tente antes de ler):
 

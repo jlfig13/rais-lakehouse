@@ -113,3 +113,68 @@ html.rl-split .md-content { max-width: none; margin: 0; }
   html.rl-split .md-header { width: 100%; }
   .rl-painel-nb { width: 100%; height: 60vh; top: auto; bottom: 0; }
 }
+
+/* Etiqueta dos trechos que não estão no guia original */
+.rl-complemento {
+  display: inline-block;
+  padding: 0 0.5em;
+  border-radius: 4px;
+  font-size: 0.72em;
+  font-weight: 600;
+  vertical-align: 0.1em;
+  background: #7c3aed1f;
+  color: #6d28d9;
+  border: 1px solid #7c3aed55;
+}
+
+/* Painel da aula nas laterais: situação à esquerda (acima da navegação), ações à direita
+   (acima do índice). Sem as barras (telas estreitas ou tela dividida), volta para o conteúdo. */
+.rl-lateral, .rl-lateral.md-typeset {
+  margin: 0 0.6rem 1rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--md-default-fg-color--lightest, #ddd);
+  border-radius: 8px;
+  font-size: calc(0.68rem * var(--rl-escala, 1));
+}
+.rl-lateral .rl-bloco { display: grid; gap: 0.45rem; }
+.rl-lateral .rl-barra { width: 100%; display: block; margin-top: 0.3rem; }
+.rl-lateral--acoes .rl-acoes { flex-direction: column; align-items: stretch; gap: 0.45rem; }
+.rl-lateral--acoes .md-button { text-align: center; font-size: 0.68rem; padding: 0.5em 0.8em; }
+.rl-aula .rl-bloco { display: grid; gap: 0.5rem; }
+@media screen and (min-width: 76.25em) {
+  html:not(.rl-split) .rl-aula { display: none; }
+}
+@media screen and (max-width: 76.24em) {
+  .rl-lateral { display: none; }
+}
+
+/* Preferências de leitura no cabeçalho */
+.rl-prefs { display: flex; gap: 0.15rem; justify-content: flex-end; align-items: center; margin: 0.6rem 0.8rem -0.6rem; }
+.rl-pref {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 1.9rem;
+  padding: 0.25em 0.45em;
+}
+.rl-pref:hover { border-color: var(--md-default-fg-color--lighter, #aaa); }
+
+/* Escala da fonte (conteúdo e navegação) e conteúdo em largura total */
+.md-typeset { font-size: calc(0.8rem * var(--rl-escala, 1)); }
+.md-nav { font-size: calc(0.7rem * var(--rl-escala, 1)); }
+html.rl-largo .md-grid { max-width: none; }
+
+/* Pesquisa na ponta direita do cabeçalho: o tema reserva espaço para o link do repositório,
+   que este site não tem */
+.md-header__source:not(:has(*)) { display: none; }
+
+/* Tabela de dados da aula (logo após o painel) ocupando a largura toda do conteúdo */
+.rl-aula + .md-typeset__scrollwrap .md-typeset__table { display: block; width: 100%; }
+.rl-aula + .md-typeset__scrollwrap table:not([class]) { display: table; width: 100%; }
+.rl-aula + .md-typeset__scrollwrap table:not([class]) thead { display: none; }
+.rl-aula + .md-typeset__scrollwrap table:not([class]) td:first-child { width: 12rem; font-weight: 600; }

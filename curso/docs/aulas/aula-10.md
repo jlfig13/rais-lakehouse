@@ -14,7 +14,7 @@ checks: ['a10_testes_utils', 'a10_gravar_ano_idempotente', 'a10_replacewhere_pro
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 7.3, Guia Parte 7.4, Guia Parte 7.5, Guia Parte 13.1, Guia Parte 15.3 |
+| Origem no guia | Guia Parte [7.3](../guia/parte-07.md#parte-7-3), Guia Parte [7.4](../guia/parte-07.md#parte-7-4), Guia Parte [7.5](../guia/parte-07.md#parte-7-5), Guia Parte [13.1](../guia/parte-13.md#parte-13-1), Guia Parte [15.3](../guia/parte-15.md#parte-15-3) |
 | Depende de | [Aula 06](aula-06.md), [Aula 08](aula-08.md) |
 | Entregas | `src/utils.py (completo)`, `src/delta_io.py`, `src/dims.py`, `tests/conftest.py`, `tests/test_utils.py` |
 | Onde os checks rodam | Container spark |
@@ -22,7 +22,7 @@ checks: ['a10_testes_utils', 'a10_gravar_ano_idempotente', 'a10_replacewhere_pro
 
 Esta aula entrega as três peças de código que bronze, silver e gold reutilizam — utilitários de conversão, a camada de leitura e escrita Delta e as dimensões — e explica como o Delta garante que reprocessar um ano não corrompe nem duplica dados.
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
+**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -36,11 +36,11 @@ Esta aula entrega as três peças de código que bronze, silver e gold reutiliza
 
 ## 2. Contextualização
 
-Gravar Parquet num diretório funciona até o primeiro problema: um job que cai no meio deixa arquivos pela metade visíveis; um reprocessamento com `append` duplica um ano; um arquivo com colunas erradas entra sem aviso. O Delta resolve os três (ADR-004). E dado público sujo exige conversões que não derrubem 50 milhões de linhas por causa de uma (guia, Parte 7.3).
+Gravar Parquet num diretório funciona até o primeiro problema: um job que cai no meio deixa arquivos pela metade visíveis; um reprocessamento com `append` duplica um ano; um arquivo com colunas erradas entra sem aviso. O Delta resolve os três (ADR-004). E dado público sujo exige conversões que não derrubem 50 milhões de linhas por causa de uma (guia, Parte [7.3](../guia/parte-07.md#parte-7-3)).
 
 ## 3. Fundamentação teórica
 
-### 3.1 O que é uma tabela Delta (guia, Parte 13.1)
+### 3.1 O que é uma tabela Delta (guia, Parte [13.1](../guia/parte-13.md#parte-13-1))
 
 ```
 silver/rais_vinculos/
@@ -58,11 +58,11 @@ silver/rais_vinculos/
 - **ACID:** a gravação acontece por inteiro ou não acontece. Se o job cair no meio, os leitores continuam vendo a versão anterior.
 - **Arquivos não são apagados na hora:** ficam "órfãos" até o `VACUUM`. É isso que permite o *time travel* (Aula 14).
 
-**\[Complemento didático\]** Por isso arquivos Parquet "soltos" na pasta não fazem parte da tabela se o log não os listar — e por isso nunca se deve apagar ou copiar arquivos de uma tabela Delta à mão.
+<span class="rl-complemento">Complemento didático</span> Por isso arquivos Parquet "soltos" na pasta não fazem parte da tabela se o log não os listar — e por isso nunca se deve apagar ou copiar arquivos de uma tabela Delta à mão.
 
 ### 3.2 `replaceWhere`: sobrescrever só um ano, atomicamente
 
-Com `mode("overwrite").option("replaceWhere", "ano = 2022")`, o Delta troca só os dados que satisfazem a condição, num único commit. Se o DataFrame tiver alguma linha que **não** satisfaz `ano = X`, o Delta recusa a gravação — proteção contra gravar dado no lugar errado (guia, Parte 7.4). É a base da idempotência por ano (Aula 01).
+Com `mode("overwrite").option("replaceWhere", "ano = 2022")`, o Delta troca só os dados que satisfazem a condição, num único commit. Se o DataFrame tiver alguma linha que **não** satisfaz `ano = X`, o Delta recusa a gravação — proteção contra gravar dado no lugar errado (guia, Parte [7.4](../guia/parte-07.md#parte-7-4)). É a base da idempotência por ano (Aula 01).
 
 ### 3.3 Schema enforcement × evolution
 
@@ -74,15 +74,15 @@ Com `mode("overwrite").option("replaceWhere", "ano = 2022")`, o Delta troca só 
 
 ### 3.4 Conversão tolerante: `try_cast`
 
-`try_cast` devolve `NULL` em vez de erro quando a conversão falha. Em dado público "sujo", evita que uma linha estragada derrube milhões de linhas boas; a Aula 16 mede quantos `NULL` surgiram (guia, Parte 7.3). **\[Complemento didático\]** O preço: erros viram NULL em silêncio. Por isso todo `try_cast` precisa de uma checagem de quantidade de NULL depois.
+`try_cast` devolve `NULL` em vez de erro quando a conversão falha. Em dado público "sujo", evita que uma linha estragada derrube milhões de linhas boas; a Aula 16 mede quantos `NULL` surgiram (guia, Parte [7.3](../guia/parte-07.md#parte-7-3)). <span class="rl-complemento">Complemento didático</span> O preço: erros viram NULL em silêncio. Por isso todo `try_cast` precisa de uma checagem de quantidade de NULL depois.
 
 ### 3.5 `decimal` para dinheiro
 
-`double` tem erro de arredondamento binário (`0.1 + 0.2 != 0.3`); `decimal` é exato (guia, Parte 7.3). Somar milhões de remunerações em `double` acumula erro.
+`double` tem erro de arredondamento binário (`0.1 + 0.2 != 0.3`); `decimal` é exato (guia, Parte [7.3](../guia/parte-07.md#parte-7-3)). Somar milhões de remunerações em `double` acumula erro.
 
 ### 3.6 DRY: um módulo para o formato de tabela
 
-Se um dia o projeto migrar para Iceberg, muda **um arquivo** (`delta_io.py`) — princípio *Don't Repeat Yourself* (guia, Parte 7.4).
+Se um dia o projeto migrar para Iceberg, muda **um arquivo** (`delta_io.py`) — princípio *Don't Repeat Yourself* (guia, Parte [7.4](../guia/parte-07.md#parte-7-4)).
 
 ## 4. Arquitetura e fluxo
 
@@ -96,7 +96,7 @@ Se um dia o projeto migrar para Iceberg, muda **um arquivo** (`delta_io.py`) —
 
 ## 5. Tutorial
 
-### Passo 1 — Completar `src/utils.py` (guia, Parte 7.3)
+### Passo 1 — Completar `src/utils.py` (guia, Parte [7.3](../guia/parte-07.md#parte-7-3))
 
 Mantenha o `get_spark` da Aula 06 e acrescente os imports e funções abaixo:
 
@@ -159,10 +159,10 @@ def to_decimal(df: DataFrame, name: str, precision: int = 18, scale: int = 2) ->
 
 - `NFKD` + `encode("ascii", "ignore")` separa o acento da letra e descarta o acento.
 - As **crases** (`` `nome` ``) protegem nomes de coluna dentro de expressões SQL.
-- **O escape do ponto em `to_decimal`:** no código Python há quatro barras (`'\\\\.'`); o Python entrega duas ao SQL, que entrega `\.` à expressão regular — um ponto literal. **\[Complemento didático\]** Com menos barras, o ponto viraria "qualquer caractere" e apagaria todos os dígitos.
+- **O escape do ponto em `to_decimal`:** no código Python há quatro barras (`'\\\\.'`); o Python entrega duas ao SQL, que entrega `\.` à expressão regular — um ponto literal. <span class="rl-complemento">Complemento didático</span> Com menos barras, o ponto viraria "qualquer caractere" e apagaria todos os dígitos.
 - `to_decimal` remove o ponto de milhar e troca a vírgula por ponto, nessa ordem.
 
-### Passo 2 — `src/delta_io.py` (guia, Parte 7.4)
+### Passo 2 — `src/delta_io.py` (guia, Parte [7.4](../guia/parte-07.md#parte-7-4))
 
 ```python
 """Leitura e escrita Delta centralizadas (um só lugar para mudar o formato)."""
@@ -202,7 +202,7 @@ def gravar_tabela(df: DataFrame, caminho: str) -> None:
 
 **Por que o `if isDeltaTable`:** na primeira gravação não há tabela, então o overwrite simples a cria; nas seguintes, `replaceWhere` garante que só o ano informado muda.
 
-### Passo 3 — `src/dims.py` (guia, Parte 7.5)
+### Passo 3 — `src/dims.py` (guia, Parte [7.5](../guia/parte-07.md#parte-7-5))
 
 ```python
 """Dimensões pequenas que traduzem códigos em rótulos. CONFIRME os códigos no dicionário."""
@@ -240,7 +240,7 @@ def dim_escolaridade(spark: SparkSession) -> DataFrame:
 
 O schema em texto (`"cod_uf string, uf string"`) evita que o Spark "adivinhe" os tipos. `cod_uf` é string (vem do texto do município); `sexo` e `escolaridade` são int (a silver converte esses códigos com `to_int`, Aula 12).
 
-### Passo 4 — Testes de unidade (guia, Parte 15.3)
+### Passo 4 — Testes de unidade (guia, Parte [15.3](../guia/parte-15.md#parte-15-3))
 
 `tests/conftest.py`:
 
@@ -286,7 +286,7 @@ def test_to_int_coluna_ausente(spark):
 make test
 ```
 
-**\[Complemento didático\]** Esta SparkSession de teste **não** usa `get_spark`: testes de unidade não precisam de MinIO nem Delta, e assim rodam no CI do GitHub (Aula 16).
+<span class="rl-complemento">Complemento didático</span> Esta SparkSession de teste **não** usa `get_spark`: testes de unidade não precisam de MinIO nem Delta, e assim rodam no CI do GitHub (Aula 16).
 
 ## 6. Funcionamento e resultados esperados
 
@@ -299,7 +299,7 @@ make test
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Idempotência na prática.** **\[Complemento didático\]** Num notebook:
+**Exemplo 1 — Idempotência na prática.** <span class="rl-complemento">Complemento didático</span> Num notebook:
 
 ```python
 from pyspark.sql import functions as F
@@ -338,7 +338,7 @@ print(ler(spark, lab).count())              # 100, não 200
 3. `decimal` para valores monetários (guia).
 4. Schema explícito em dimensões (guia).
 5. `mergeSchema` só na bronze; silver protegida por enforcement.
-6. Type hints e docstrings documentam o contrato de cada função (guia, Parte 7.3).
+6. Type hints e docstrings documentam o contrato de cada função (guia, Parte [7.3](../guia/parte-07.md#parte-7-3)).
 
 ## 10. Riscos
 
@@ -354,7 +354,7 @@ print(ler(spark, lab).count())              # 100, não 200
 
 **Contribuição ao projeto:** os três módulos são importados por todas as camadas.
 
-**\[Complemento didático\]** `labcheck/test_aula10.py`. Ele grava apenas na área de teste `_lab/aula10`, nunca nas camadas do projeto.
+<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula10.py`. Ele grava apenas na área de teste `_lab/aula10`, nunca nas camadas do projeto.
 
 ```python
 """Checks da Aula 10."""

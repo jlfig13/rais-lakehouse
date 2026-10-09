@@ -33,3 +33,5 @@ logs/
 
 # Seu espaço de estudo (cadernos das aulas). Tire esta linha se quiser versioná-lo.
 estudos/
+# Lixeira do JupyterLab (arquivos excluídos pela árvore de arquivos)
+.Trash-*/

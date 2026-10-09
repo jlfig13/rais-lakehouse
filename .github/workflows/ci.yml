@@ -34,7 +34,7 @@ jobs:
       - name: Páginas do curso em dia com curso/aulas.yml e labcheck/
         run: |
           python -m scripts.gerar_curso
-          git diff --exit-code -- curso/docs/aulas curso/docs/index.md curso/docs/apendices.md
+          git diff --exit-code -- curso/docs/aulas curso/docs/index.md curso/docs/apendices.md curso/docs/guia
 
       - name: Build do site do curso
         run: zensical build -f curso/mkdocs.yml

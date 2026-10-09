@@ -14,7 +14,7 @@ checks: ['a06_versao_spark', 'a06_config_s3a', 'a06_smoke_1000', 'a06_smoke_e_de
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 4.2, Guia Parte 4.9, Guia Parte 4.10, Guia Parte 7.3 (get_spark) |
+| Origem no guia | Guia Parte [4.2](../guia/parte-04.md#parte-4-2), Guia Parte [4.9](../guia/parte-04.md#parte-4-9), Guia Parte [4.10](../guia/parte-04.md#parte-4-10), Guia Parte [7.3](../guia/parte-07.md#parte-7-3) (get_spark) |
 | Depende de | [Aula 03](aula-03.md), [Aula 04](aula-04.md), [Aula 05](aula-05.md) |
 | Entregas | `src/utils.py (get_spark)`, `scripts/smoke_test.py`, `labcheck/conftest.py`, `scripts/gerar_progresso.py` |
 | Onde os checks rodam | Container spark |
@@ -22,7 +22,7 @@ checks: ['a06_versao_spark', 'a06_config_s3a', 'a06_smoke_1000', 'a06_smoke_e_de
 
 Ao final desta aula a função `get_spark` cria uma sessão Spark já ligada ao Delta e ao MinIO, e o teste de fumaça grava e lê 1000 linhas no lake. A partir daqui, todo código do curso começa com `get_spark()`. A aula também instala o mecanismo de progresso da plataforma.
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
+**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -36,13 +36,13 @@ Ao final desta aula a função `get_spark` cria uma sessão Spark já ligada ao 
 
 ## 2. Contextualização
 
-Até aqui cada peça foi testada isolada: a imagem (Aula 02), os serviços (Aula 03), o MinIO (Aula 04). Falta o elo: o Spark, dentro do container, gravando tabelas Delta no MinIO com as credenciais da aplicação. Um **teste de fumaça** (*smoke test*) é o teste mínimo de ponta a ponta: não verifica regras de negócio, só se a infraestrutura "liga sem soltar fumaça". **\[Complemento didático\]** Ele vem antes de qualquer pipeline porque um erro de infraestrutura no meio de um processamento de horas é muito mais caro de diagnosticar.
+Até aqui cada peça foi testada isolada: a imagem (Aula 02), os serviços (Aula 03), o MinIO (Aula 04). Falta o elo: o Spark, dentro do container, gravando tabelas Delta no MinIO com as credenciais da aplicação. Um **teste de fumaça** (*smoke test*) é o teste mínimo de ponta a ponta: não verifica regras de negócio, só se a infraestrutura "liga sem soltar fumaça". <span class="rl-complemento">Complemento didático</span> Ele vem antes de qualquer pipeline porque um erro de infraestrutura no meio de um processamento de horas é muito mais caro de diagnosticar.
 
 ## 3. Fundamentação teórica
 
 ### 3.1 SparkSession
 
-A `SparkSession` é o ponto de entrada do Spark; só existe uma por processo (guia, Parte 5.1). `getOrCreate()` devolve a existente se já houver uma. **Consequência:** configurações de **memória e `master`** só valem quando a sessão é criada — num notebook, mudá-las exige reiniciar o kernel (guia, Parte 7.3). Configurações de SQL podem mudar depois com `spark.conf.set` (Aula 15).
+A `SparkSession` é o ponto de entrada do Spark; só existe uma por processo (guia, Parte [5.1](../guia/parte-05.md#parte-5-1)). `getOrCreate()` devolve a existente se já houver uma. **Consequência:** configurações de **memória e `master`** só valem quando a sessão é criada — num notebook, mudá-las exige reiniciar o kernel (guia, Parte [7.3](../guia/parte-07.md#parte-7-3)). Configurações de SQL podem mudar depois com `spark.conf.set` (Aula 15).
 
 ### 3.2 Modo local
 
@@ -71,7 +71,7 @@ Sem elas, `format("delta")` falha ou operações como `DeltaTable.forPath` não 
 
 O prefixo `spark.hadoop.` passa a configuração do Spark para a camada Hadoop, onde o S3A vive.
 
-### 3.5 Versões (guia, Parte 4.2)
+### 3.5 Versões (guia, Parte [4.2](../guia/parte-04.md#parte-4-2))
 
 Python 3.11 · Java 17 · PySpark 3.5.3 · delta-spark 3.2.0 · hadoop-aws 3.3.4 · aws-java-sdk-bundle 1.12.262. O teste de fumaça é a prova de que essa combinação funciona na sua máquina.
 
@@ -91,7 +91,7 @@ make smoke
 
 ## 5. Tutorial
 
-### Passo 1 — `src/utils.py` com `get_spark` (guia, Parte 7.3)
+### Passo 1 — `src/utils.py` com `get_spark` (guia, Parte [7.3](../guia/parte-07.md#parte-7-3))
 
 Nesta aula o arquivo contém só o `get_spark` e os imports; as funções auxiliares entram na Aula 10.
 
@@ -146,7 +146,7 @@ def get_spark(app_name: str = "rais") -> SparkSession:
 | `spark.local.dir` | Onde vai o *spill*; aponta para o volume `spark-tmp` | 03, 15 |
 | `spark.sql.session.timeZone` | Fuso usado em datas e horas | — |
 
-### Passo 2 — `scripts/smoke_test.py` (guia, Parte 4.10)
+### Passo 2 — `scripts/smoke_test.py` (guia, Parte [4.10](../guia/parte-04.md#parte-4-10))
 
 ```python
 """Valida a infraestrutura: Spark sobe, Delta funciona e o MinIO aceita escrita/leitura."""
@@ -184,11 +184,11 @@ make smoke
 
 ### Passo 4 — Ver a Spark UI
 
-Num notebook do JupyterLab (`localhost:8888`), rode `from src.utils import get_spark; spark = get_spark()` e abra `http://localhost:4040`. A UI só existe enquanto a sessão existir; um segundo processo simultâneo usa a 4041 (guia, Apêndice B).
+Num notebook do JupyterLab (`localhost:8888`), rode `from src.utils import get_spark; spark = get_spark()` e abra `http://localhost:4040`. A UI só existe enquanto a sessão existir; um segundo processo simultâneo usa a 4041 (guia, [Apêndice B](../guia/apendice-b.md)).
 
 ### Passo 5 — Instalar o mecanismo de progresso da plataforma
 
-**\[Complemento didático\]** — código da plataforma (plano técnico, seção 7). `labcheck/conftest.py` serve aos checks do container e do host:
+<span class="rl-complemento">Complemento didático</span> — código da plataforma (plano técnico, seção 7). `labcheck/conftest.py` serve aos checks do container e do host:
 
 ```python
 """Configuração comum dos checks: opção --ano, fixture spark e registro do progresso."""
@@ -299,7 +299,7 @@ if __name__ == "__main__":
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Conferir a configuração efetiva.** **\[Complemento didático\]** Num notebook:
+**Exemplo 1 — Conferir a configuração efetiva.** <span class="rl-complemento">Complemento didático</span> Num notebook:
 
 ```python
 from src.utils import get_spark
@@ -328,13 +328,13 @@ Aparecem duas linhas `WRITE`, versões 0 e 1. Prévia da Aula 14.
 
 | Sintoma | Causa provável | Solução |
 | --- | --- | --- |
-| `ClassNotFoundException: S3AFileSystem` | JAR não baixou no build (guia, Apêndice B) | `docker compose build --no-cache spark` |
+| `ClassNotFoundException: S3AFileSystem` | JAR não baixou no build (guia, [Apêndice B](../guia/apendice-b.md)) | `docker compose build --no-cache spark` |
 | `ClassNotFoundException` com `delta` | JARs do Delta ausentes | Idem; check `a02_jars_s3a_delta` |
 | `403` / `InvalidAccessKeyId` | Usuário da aplicação ausente ou sem política | Aula 04, checks `a04_*` |
 | `UnknownHostException: rais.minio` | Path-style desligado | `fs.s3a.path.style.access=true` |
 | `Connection refused` | Endpoint com `localhost` | `MINIO_ENDPOINT=http://minio:9000` |
-| Mudou `SPARK_MEM` e nada mudou | Sessão já existia (guia, Parte 7.3) | Reiniciar o kernel / processo |
-| Spark UI não abre | Sem sessão ativa ou porta 4041 (guia, Apêndice B) | Criar sessão; tentar 4041 |
+| Mudou `SPARK_MEM` e nada mudou | Sessão já existia (guia, Parte [7.3](../guia/parte-07.md#parte-7-3)) | Reiniciar o kernel / processo |
+| Spark UI não abre | Sem sessão ativa ou porta 4041 (guia, [Apêndice B](../guia/apendice-b.md)) | Criar sessão; tentar 4041 |
 | `ModuleNotFoundError: scripts` | Falta `scripts/__init__.py` | Aula 05, passo 1 |
 | Container cai com código 137 | `SPARK_MEM` maior que cabe no container | Aula 15 |
 
@@ -344,7 +344,7 @@ Aparecem duas linhas `WRITE`, versões 0 e 1. Prévia da Aula 14.
 2. Recursos por variável de ambiente, com padrões conservadores.
 3. Teste de fumaça após qualquer mudança de imagem, versão ou credencial.
 4. Áreas de teste separadas no lake (`_smoke/`, `_lab/`).
-5. **\[Complemento didático\]** Nunca imprimir chaves de configuração de credenciais em notebooks ou logs.
+5. <span class="rl-complemento">Complemento didático</span> Nunca imprimir chaves de configuração de credenciais em notebooks ou logs.
 
 ## 10. Riscos
 
@@ -359,7 +359,7 @@ Aparecem duas linhas `WRITE`, versões 0 e 1. Prévia da Aula 14.
 
 **Contribuição ao projeto:** `get_spark` é usado por todas as camadas e checks; o mecanismo de progresso passa a valer para todas as aulas.
 
-**\[Complemento didático\]** `labcheck/test_aula06.py` (roda no container):
+<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula06.py` (roda no container):
 
 ```python
 """Checks da Aula 06: Spark, Delta e MinIO integrados."""

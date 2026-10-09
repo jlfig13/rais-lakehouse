@@ -14,7 +14,7 @@ checks: ['a01_adrs_registrados']
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 1 |
+| Origem no guia | Guia Parte [1](../guia/parte-01.md) |
 | Depende de | — |
 | Entregas | `docs/decisoes.md` |
 | Onde os checks rodam | Host (WSL/Linux) |
@@ -24,7 +24,7 @@ checks: ['a01_adrs_registrados']
 
 Ao final desta aula você saberá explicar o que é um lakehouse, por que o projeto usa bronze, silver e gold, e terá registrado as seis decisões de arquitetura do RAIS Lakehouse em `docs/decisoes.md`.
 
-**Convenção usada em todo o curso.** Trechos marcados com **\[Complemento didático\]** são explicações adicionadas para ensinar e não estavam no guia original. Todo o resto vem do RAIS Lakehouse Guide (Parte 1, Arquitetura e decisões).
+**Convenção usada em todo o curso.** Trechos marcados com <span class="rl-complemento">Complemento didático</span> são explicações adicionadas para ensinar e não estavam no guia original. Todo o resto vem do RAIS Lakehouse Guide (Parte [1](../guia/parte-01.md), Arquitetura e decisões).
 
 ### Objetivos de aprendizagem
 
@@ -48,15 +48,15 @@ Esta aula é conceitual. Ela não exige nada instalado: o único artefato produz
 
 ### Duração sugerida
 
-Cerca de 2 horas: 60 minutos de leitura, 30 de tutorial e 30 de exercícios. **\[Complemento didático\]**
+Cerca de 2 horas: 60 minutos de leitura, 30 de tutorial e 30 de exercícios. <span class="rl-complemento">Complemento didático</span>
 
 ## 2. Contextualização: por que o lakehouse existe
 
-O lakehouse existe para juntar o armazenamento barato e aberto do data lake com as garantias de um data warehouse: transações, schema controlado e versões. **\[Complemento didático\]** — esta seção inteira é contexto histórico adicionado; o guia original parte direto para a arquitetura.
+O lakehouse existe para juntar o armazenamento barato e aberto do data lake com as garantias de um data warehouse: transações, schema controlado e versões. <span class="rl-complemento">Complemento didático</span> — esta seção inteira é contexto histórico adicionado; o guia original parte direto para a arquitetura.
 
 ### O problema concreto deste curso
 
-Os microdados da RAIS chegam como arquivos `.7z` com texto separado por `;`, encoding `latin-1`, decimal com vírgula e dezenas de milhões de linhas por ano (Parte 6 do guia). Você precisa transformar isso em respostas como "qual a remuneração média por UF de 2019 a 2024". Três abordagens são possíveis.
+Os microdados da RAIS chegam como arquivos `.7z` com texto separado por `;`, encoding `latin-1`, decimal com vírgula e dezenas de milhões de linhas por ano (Parte [6](../guia/parte-06.md) do guia). Você precisa transformar isso em respostas como "qual a remuneração média por UF de 2019 a 2024". Três abordagens são possíveis.
 
 ### Abordagem 1 — Data warehouse
 
@@ -109,19 +109,19 @@ Um lakehouse tem quatro peças independentes: storage, formato de arquivo, forma
 | Formato de tabela | Diz quais arquivos formam a tabela em cada versão | Delta Lake | Apache Iceberg, Apache Hudi |
 | Engine | Lê, transforma e grava | Apache Spark (PySpark) em modo local | Trino, Flink, DuckDB |
 
-**\[Complemento didático\]** A separação entre storage e engine é o que permite, por exemplo, processar com Spark hoje e consultar a mesma tabela com Trino amanhã (o guia cita Trino como próximo passo no Apêndice D).
+<span class="rl-complemento">Complemento didático</span> A separação entre storage e engine é o que permite, por exemplo, processar com Spark hoje e consultar a mesma tabela com Trino amanhã (o guia cita Trino como próximo passo no Apêndice D).
 
 ### 3.2 Parquet: formato de arquivo colunar
 
-**O que é.** Um formato que grava os dados coluna por coluna, com compressão e estatísticas (mínimo e máximo) por bloco. **\[Complemento didático\]**
+**O que é.** Um formato que grava os dados coluna por coluna, com compressão e estatísticas (mínimo e máximo) por bloco. <span class="rl-complemento">Complemento didático</span>
 
-**Por que importa.** Uma consulta que usa 3 de 50 colunas lê só essas 3 do disco. Filtros podem pular blocos inteiros cujo mínimo e máximo não atendem à condição. O guia (Partes 5.8 e 9) mostra essa vantagem ao comparar o tamanho do `.txt` com o da bronze.
+**Por que importa.** Uma consulta que usa 3 de 50 colunas lê só essas 3 do disco. Filtros podem pular blocos inteiros cujo mínimo e máximo não atendem à condição. O guia (Partes [5.8](../guia/parte-05.md#parte-5-8) e [9](../guia/parte-09.md)) mostra essa vantagem ao comparar o tamanho do `.txt` com o da bronze.
 
 **O limite.** Parquet descreve um arquivo, não uma tabela. Uma pasta com 200 arquivos Parquet não sabe quais deles são válidos, quais estão pela metade ou qual era o conteúdo de ontem.
 
 ### 3.3 Formato de tabela: o que o Delta Lake acrescenta
 
-O Delta grava, ao lado dos Parquet, uma pasta `_delta_log/` com um arquivo JSON por versão. Cada versão registra quais arquivos entraram e quais saíram (Parte 13.1 do guia). Ler a tabela é: ler o log, descobrir a lista de arquivos válidos e só então ler esses Parquet. Disso derivam as garantias:
+O Delta grava, ao lado dos Parquet, uma pasta `_delta_log/` com um arquivo JSON por versão. Cada versão registra quais arquivos entraram e quais saíram (Parte [13.1](../guia/parte-13.md#parte-13-1) do guia). Ler a tabela é: ler o log, descobrir a lista de arquivos válidos e só então ler esses Parquet. Disso derivam as garantias:
 
 | Garantia | Significado | Sem formato de tabela |
 | --- | --- | --- |
@@ -160,11 +160,11 @@ O guia escolhe Delta (ADR nº 4). A comparação abaixo resume a justificativa d
 | silver | MinIO | Delta | Dado limpo e tipado | Uma linha = um vínculo, tipos corretos |
 | gold | MinIO | Delta | Respostas prontas para análise | Cada tabela responde uma pergunta |
 
-**Alternativas.** **\[Complemento didático\]** Há quem use só duas camadas (raw e curated) ou modelagem dimensional direta (staging → fato/dimensão). Medallion não é obrigatório; é uma convenção que funciona bem quando a origem é suja e muda com o tempo, exatamente o caso da RAIS.
+**Alternativas.** <span class="rl-complemento">Complemento didático</span> Há quem use só duas camadas (raw e curated) ou modelagem dimensional direta (staging → fato/dimensão). Medallion não é obrigatório; é uma convenção que funciona bem quando a origem é suja e muda com o tempo, exatamente o caso da RAIS.
 
 ### 3.6 Idempotência
 
-**O que é.** Executar o mesmo passo duas vezes produz o mesmo resultado que executar uma vez. **Por que importa:** pipelines falham e são reexecutados; sem idempotência, cada reexecução duplica dados. No guia ela vem de três escolhas: pular arquivos já baixados, gravar bronze e silver com `replaceWhere` por ano e recriar a gold inteira (Parte 12.1). É um conceito que atravessa todo o curso.
+**O que é.** Executar o mesmo passo duas vezes produz o mesmo resultado que executar uma vez. **Por que importa:** pipelines falham e são reexecutados; sem idempotência, cada reexecução duplica dados. No guia ela vem de três escolhas: pular arquivos já baixados, gravar bronze e silver com `replaceWhere` por ano e recriar a gold inteira (Parte [12.1](../guia/parte-12.md#parte-12-1)). É um conceito que atravessa todo o curso.
 
 ## 4. Arquitetura do RAIS Lakehouse
 
@@ -198,7 +198,7 @@ O `.7z` entra na landing e é extraído para a raw; o Spark lê esse texto e gra
 6. **Checagem:** `checar_silver` confirma contagem silver = bronze e limites de NULL.
 7. **Gold:** lê a silver inteira e recria as cinco tabelas em `s3a://rais/gold/<tabela>`.
 
-Os passos 2 a 6 repetem por ano; o passo 7 roda uma vez no fim (Parte 12 do guia, detalhada na Aula 14).
+Os passos 2 a 6 repetem por ano; o passo 7 roda uma vez no fim (Parte [12](../guia/parte-12.md) do guia, detalhada na Aula 14).
 
 ## 5. Tutorial: decisões de arquitetura e contratos de camada
 
@@ -206,13 +206,13 @@ O entregável desta aula é o arquivo `docs/decisoes.md`, com as seis decisões 
 
 ### Passo 1 — Entender o formato ADR
 
-Um **ADR** (Architecture Decision Record) é um registro curto de uma decisão técnica: contexto, decisão, alternativas e consequências. O guia recomenda registrá-los em `docs/decisoes.md` (Parte 1.3).
+Um **ADR** (Architecture Decision Record) é um registro curto de uma decisão técnica: contexto, decisão, alternativas e consequências. O guia recomenda registrá-los em `docs/decisoes.md` (Parte [1.3](../guia/parte-01.md#parte-1-3)).
 
-**Por que existe.** Seis meses depois, ninguém lembra por que o projeto usa Delta e não Iceberg. Sem o registro, a decisão é rediscutida do zero ou, pior, revertida sem entender o motivo. **\[Complemento didático\]** Em entrevistas e portfólio, ADRs mostram que você sabe justificar escolhas, não só executá-las.
+**Por que existe.** Seis meses depois, ninguém lembra por que o projeto usa Delta e não Iceberg. Sem o registro, a decisão é rediscutida do zero ou, pior, revertida sem entender o motivo. <span class="rl-complemento">Complemento didático</span> Em entrevistas e portfólio, ADRs mostram que você sabe justificar escolhas, não só executá-las.
 
 ### Passo 2 — Criar o modelo
 
-**\[Complemento didático\]** O guia usa uma tabela resumida. O modelo abaixo expande cada linha em campos, o que é útil para decisões que você vai revisitar.
+<span class="rl-complemento">Complemento didático</span> O guia usa uma tabela resumida. O modelo abaixo expande cada linha em campos, o que é útil para decisões que você vai revisitar.
 
 ```markdown
 # Decisões de arquitetura — RAIS Lakehouse
@@ -235,7 +235,7 @@ Um **ADR** (Architecture Decision Record) é um registro curto de uma decisão t
 
 ### Passo 3 — Preencher os seis ADRs do guia
 
-As seis decisões abaixo vêm da Parte 1.3 do guia. Exemplo completo do ADR-004:
+As seis decisões abaixo vêm da Parte [1.3](../guia/parte-01.md#parte-1-3) do guia. Exemplo completo do ADR-004:
 
 ```markdown
 ## ADR-004 — Delta Lake como formato de tabela
@@ -266,7 +266,7 @@ Preencha os outros cinco no mesmo formato:
 
 ### Passo 4 — Escrever os contratos de camada
 
-**\[Complemento didático\]** Um **contrato de camada** diz o que quem consome a camada pode assumir. O guia define as regras de ouro; o contrato as transforma em promessas verificáveis. Adicione ao mesmo arquivo:
+<span class="rl-complemento">Complemento didático</span> Um **contrato de camada** diz o que quem consome a camada pode assumir. O guia define as regras de ouro; o contrato as transforma em promessas verificáveis. Adicione ao mesmo arquivo:
 
 ```markdown
 ## Contratos de camada
@@ -297,7 +297,7 @@ Cada item do contrato vira uma verificação automática nas Aulas 12 e 16 (ex.:
 
 ### Passo 5 — Desenhar o diagrama
 
-Reproduza o diagrama da seção 4 desta aula no seu README (ASCII, Mermaid ou imagem). O guia traz uma versão em ASCII na Parte 1.1 que pode ser copiada como ponto de partida.
+Reproduza o diagrama da seção 4 desta aula no seu README (ASCII, Mermaid ou imagem). O guia traz uma versão em ASCII na Parte [1.1](../guia/parte-01.md#parte-1-1) que pode ser copiada como ponto de partida.
 
 ## 6. Como cada etapa funciona e o que esperar
 
@@ -311,11 +311,11 @@ O tutorial produz um documento, não código. O teste de que ele está bom é: a
 | 4. Contratos | Regras de ouro viram promessas verificáveis | Três contratos (bronze, silver, gold) com grão definido | Grão ausente ou vago ("dados limpos") |
 | 5. Diagrama | A arquitetura cabe numa imagem | Diagrama no README | Componentes no diagrama que não estão nos ADRs |
 
-**Por que o grão é o item mais importante do contrato.** **\[Complemento didático\]** O grão diz o que uma linha representa. Na RAIS, confundir "um vínculo" com "uma pessoa" é o erro analítico mais grave possível: uma pessoa com dois empregos aparece duas vezes, e os microdados públicos são anonimizados, então não há como deduplicar pessoas (Parte 6.1 do guia). Declarar o grão no contrato impede que alguém some vínculos e chame o resultado de "número de trabalhadores".
+**Por que o grão é o item mais importante do contrato.** <span class="rl-complemento">Complemento didático</span> O grão diz o que uma linha representa. Na RAIS, confundir "um vínculo" com "uma pessoa" é o erro analítico mais grave possível: uma pessoa com dois empregos aparece duas vezes, e os microdados públicos são anonimizados, então não há como deduplicar pessoas (Parte [6.1](../guia/parte-06.md#parte-6-1) do guia). Declarar o grão no contrato impede que alguém some vínculos e chame o resultado de "número de trabalhadores".
 
 ## 7. Exemplo prático: um vínculo atravessando as camadas
 
-Acompanhar uma única linha de ponta a ponta mostra o papel de cada camada melhor que qualquer definição. **\[Complemento didático\]** Os valores abaixo são fictícios, montados para ilustrar; os nomes de colunas e as transformações são os do guia (Partes 6, 9, 10 e 11).
+Acompanhar uma única linha de ponta a ponta mostra o papel de cada camada melhor que qualquer definição. <span class="rl-complemento">Complemento didático</span> Os valores abaixo são fictícios, montados para ilustrar; os nomes de colunas e as transformações são os do guia (Partes [6](../guia/parte-06.md), [9](../guia/parte-09.md), [10](../guia/parte-10.md) e [11](../guia/parte-11.md)).
 
 ### Na landing
 
@@ -397,7 +397,7 @@ Os erros desta aula são de desenho, não de código. Eles custam pouco agora e 
 
 ### Como diagnosticar um problema de arquitetura
 
-**\[Complemento didático\]** Quando um número da gold parece errado, percorra as camadas de trás para frente:
+<span class="rl-complemento">Complemento didático</span> Quando um número da gold parece errado, percorra as camadas de trás para frente:
 
 1. **Gold:** a agregação usa o filtro certo (ex.: só vínculos ativos)? A coluna certa (`_sm` ou `_nom`)?
 2. **Silver:** a contagem bate com a bronze? Quantos NULL surgiram na coluna usada?
@@ -408,13 +408,13 @@ A camada em que o número "desvia" pela primeira vez é onde está o erro. Essa 
 
 ## 9. Boas práticas para produção
 
-1. **A landing é a única fonte imutável.** Bronze, silver e gold são reconstruíveis; faça backup da landing e do código, não necessariamente das camadas derivadas (guia, Parte 1.2: a landing é a fonte da verdade).
+1. **A landing é a única fonte imutável.** Bronze, silver e gold são reconstruíveis; faça backup da landing e do código, não necessariamente das camadas derivadas (guia, Parte [1.2](../guia/parte-01.md#parte-1-2): a landing é a fonte da verdade).
 2. **Uma regra de ouro por camada,** escrita no contrato. Se uma transformação não cabe na regra da camada, ela está no lugar errado.
-3. **Configuração fora do código.** Caminhos, credenciais e recursos vêm de variáveis de ambiente (metodologia 12-Factor, Parte 7.1 do guia; detalhado na Aula 05).
-4. **Versões fixas.** Nunca `latest` em imagens ou dependências: o build de hoje precisa ser igual ao de daqui a um ano (Parte 4.2; Aulas 02 e 06).
+3. **Configuração fora do código.** Caminhos, credenciais e recursos vêm de variáveis de ambiente (metodologia 12-Factor, Parte [7.1](../guia/parte-07.md#parte-7-1) do guia; detalhado na Aula 05).
+4. **Versões fixas.** Nunca `latest` em imagens ou dependências: o build de hoje precisa ser igual ao de daqui a um ano (Parte [4.2](../guia/parte-04.md#parte-4-2); Aulas 02 e 06).
 5. **Centralize o formato de tabela.** Toda leitura e escrita Delta passa por um único módulo (`src/delta_io.py`, Aula 10). Trocar Delta por Iceberg vira mudança de um arquivo.
 6. **Toda decisão nova vira ADR,** inclusive as que revertem uma anterior.
-7. **Grão explícito em toda tabela.** **\[Complemento didático\]** Escreva o grão no contrato e no nome ou descrição da tabela (ex.: `gold_emprego_uf_ano` já diz ano × UF).
+7. **Grão explícito em toda tabela.** <span class="rl-complemento">Complemento didático</span> Escreva o grão no contrato e no nome ou descrição da tabela (ex.: `gold_emprego_uf_ano` já diz ano × UF).
 8. **Comece pequeno.** O guia recomenda 1 ano e 1 região (ex.: 2022 + Nordeste) antes de escalar para 2019–último ano publicado.
 
 ## 10. Riscos: segurança, desempenho, custos e integridade
@@ -434,9 +434,9 @@ A camada em que o número "desvia" pela primeira vez é onde está o erro. Essa 
 | Integridade | Schema muda entre anos | Bronze string + `mergeSchema` | Aula 11 |
 | Integridade | Conclusões erradas sobre pessoas | Grão "vínculo" no contrato | Aulas 09 e 13 |
 
-**Sobre os dados em si.** **\[Complemento didático\]** Os microdados da RAIS são públicos e anonimizados, então o risco de vazamento de dados pessoais é baixo. Isso não dispensa os cuidados acima: o mesmo projeto, reaproveitado com dados internos de uma empresa, herdaria qualquer descuido de segurança.
+**Sobre os dados em si.** <span class="rl-complemento">Complemento didático</span> Os microdados da RAIS são públicos e anonimizados, então o risco de vazamento de dados pessoais é baixo. Isso não dispensa os cuidados acima: o mesmo projeto, reaproveitado com dados internos de uma empresa, herdaria qualquer descuido de segurança.
 
-**Custo no on-premises.** **\[Complemento didático\]** Sem nuvem, o custo é disco, memória e tempo de máquina. O principal consumidor de disco é o `.txt` extraído; o Parquet comprimido da bronze ocupa uma fração dele (você mede isso no exercício 4 da Aula 11).
+**Custo no on-premises.** <span class="rl-complemento">Complemento didático</span> Sem nuvem, o custo é disco, memória e tempo de máquina. O principal consumidor de disco é o `.txt` extraído; o Parquet comprimido da bronze ocupa uma fração dele (você mede isso no exercício 4 da Aula 11).
 
 ## 11. Validação e critérios de conclusão
 
@@ -450,11 +450,11 @@ A aula está concluída quando todos os itens abaixo estão marcados.
 - [ ] Sei explicar por que a contagem da silver deve ser igual à da bronze.
 - [ ] Sei explicar por que séries históricas usam colunas em salário mínimo.
 
-**Autoteste rápido.** **\[Complemento didático\]** Leia o seu `docs/decisoes.md` como se fosse outra pessoa. Para cada ADR, pergunte: "em que situação esta decisão deixaria de valer?". Se a resposta não estiver no campo Contexto, reescreva-o.
+**Autoteste rápido.** <span class="rl-complemento">Complemento didático</span> Leia o seu `docs/decisoes.md` como se fosse outra pessoa. Para cada ADR, pergunte: "em que situação esta decisão deixaria de valer?". Se a resposta não estiver no campo Contexto, reescreva-o.
 
 ### Validação na plataforma
 
-**\[Complemento didático\]** Check automático desta aula, em `labcheck/test_aula01.py`. Ele só lê o repositório; roda dentro do container ou no host.
+<span class="rl-complemento">Complemento didático</span> Check automático desta aula, em `labcheck/test_aula01.py`. Ele só lê o repositório; roda dentro do container ou no host.
 
 ```python
 """Check da Aula 01: decisões de arquitetura registradas."""
@@ -481,7 +481,7 @@ def test_a01_adrs_registrados():
 
 1. Escreva um sétimo ADR para uma decisão que o guia toma implicitamente: "a gold é recalculada inteira a cada execução, em vez de incremental". Liste uma vantagem e uma desvantagem.
 2. Para cada linha da tabela de armadilhas (seção 8), aponte em qual contrato de camada (seção 5, passo 4) existe uma cláusula que a previne. Se alguma armadilha não tiver cláusula, escreva-a.
-3. Refaça o exemplo da seção 7 para um vínculo com `idade = 150` e `cnae = "4711"` (4 dígitos). O que acontece com cada valor na silver? (Dica: Parte 10.2 do guia.)
+3. Refaça o exemplo da seção 7 para um vínculo com `idade = 150` e `cnae = "4711"` (4 dígitos). O que acontece com cada valor na silver? (Dica: Parte [10.2](../guia/parte-10.md#parte-10-2) do guia.)
 
 ### Perguntas de revisão
 
@@ -513,19 +513,19 @@ Se errou alguma, releia a seção correspondente desta aula antes de seguir.
 
 | Tema desta aula | Aprofundado em | Fonte no guia |
 | --- | --- | --- |
-| Docker, containers e imagem | Aula 02 | Parte 2, 4.4 |
-| Docker Compose e a infraestrutura de três serviços | Aula 03 | Parte 2.3, 4.6–4.8 |
-| MinIO, S3A e menor privilégio | Aula 04 | Parte 4.1, 4.5 |
-| `docs/decisoes.md` no repositório e configuração 12-Factor | Aula 05 | Parte 3, 7.1–7.2 |
-| Parquet, partições e lazy evaluation | Aulas 07 e 08 | Parte 5 |
-| Grão "vínculo" e colunas da RAIS | Aula 09 | Parte 6 |
-| Formato de tabela e `_delta_log` | Aula 10 | Parte 7.4, 13.1 |
-| Bronze | Aula 11 | Parte 9 |
-| Silver | Aula 12 | Parte 10 |
-| Gold e perguntas de negócio | Aula 13 | Parte 11 |
-| Idempotência e operações Delta | Aula 14 | Parte 12, 13.2 |
-| Desempenho | Aula 15 | Parte 14 |
-| Contratos como testes | Aula 16 | Parte 15 |
+| Docker, containers e imagem | Aula 02 | Parte [2](../guia/parte-02.md), [4.4](../guia/parte-04.md#parte-4-4) |
+| Docker Compose e a infraestrutura de três serviços | Aula 03 | Parte [2.3](../guia/parte-02.md#parte-2-3), [4.6](../guia/parte-04.md#parte-4-6)–[4.8](../guia/parte-04.md#parte-4-8) |
+| MinIO, S3A e menor privilégio | Aula 04 | Parte [4.1](../guia/parte-04.md#parte-4-1), [4.5](../guia/parte-04.md#parte-4-5) |
+| `docs/decisoes.md` no repositório e configuração 12-Factor | Aula 05 | Parte [3](../guia/parte-03.md), [7.1](../guia/parte-07.md#parte-7-1)–[7.2](../guia/parte-07.md#parte-7-2) |
+| Parquet, partições e lazy evaluation | Aulas 07 e 08 | Parte [5](../guia/parte-05.md) |
+| Grão "vínculo" e colunas da RAIS | Aula 09 | Parte [6](../guia/parte-06.md) |
+| Formato de tabela e `_delta_log` | Aula 10 | Parte [7.4](../guia/parte-07.md#parte-7-4), [13.1](../guia/parte-13.md#parte-13-1) |
+| Bronze | Aula 11 | Parte [9](../guia/parte-09.md) |
+| Silver | Aula 12 | Parte [10](../guia/parte-10.md) |
+| Gold e perguntas de negócio | Aula 13 | Parte [11](../guia/parte-11.md) |
+| Idempotência e operações Delta | Aula 14 | Parte [12](../guia/parte-12.md), [13.2](../guia/parte-13.md#parte-13-2) |
+| Desempenho | Aula 15 | Parte [14](../guia/parte-14.md) |
+| Contratos como testes | Aula 16 | Parte [15](../guia/parte-15.md) |
 | Termos (ACID, idempotência, medallion, grão) | Apêndice C — Glossário | Apêndice C |
 | Armadilhas da RAIS | Apêndice A | Apêndice A |
 

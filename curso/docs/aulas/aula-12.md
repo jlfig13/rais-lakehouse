@@ -14,7 +14,7 @@ checks: ['a12_silver_delta', 'a12_contagem_igual_bronze', 'a12_tipos_do_contrato
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 10 |
+| Origem no guia | Guia Parte [10](../guia/parte-10.md) |
 | Depende de | [Aula 11](aula-11.md) |
 | Entregas | `src/silver.py`, `notebooks/03_silver.ipynb`, `docs/dicionario.md (decisões)` |
 | Onde os checks rodam | Container spark |
@@ -22,7 +22,7 @@ checks: ['a12_silver_delta', 'a12_contagem_igual_bronze', 'a12_tipos_do_contrato
 
 A silver transforma a bronze (texto fiel à origem) em dado confiável: tipos corretos, valores inválidos como NULL, campos derivados — e exatamente uma linha por vínculo, sem perder nenhuma.
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
+**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -36,9 +36,9 @@ A silver transforma a bronze (texto fiel à origem) em dado confiável: tipos co
 
 ## 2. Contextualização
 
-A gold faz contas: somas, médias, proporções. Contas sobre texto não funcionam, e contas sobre valores lixo (`{ñ class}`, idade 999) dão resultados errados sem aviso. A silver é o lugar único onde essas decisões são tomadas e documentadas, para que toda tabela gold herde as mesmas regras. **\[Complemento didático\]**
+A gold faz contas: somas, médias, proporções. Contas sobre texto não funcionam, e contas sobre valores lixo (`{ñ class}`, idade 999) dão resultados errados sem aviso. A silver é o lugar único onde essas decisões são tomadas e documentadas, para que toda tabela gold herde as mesmas regras. <span class="rl-complemento">Complemento didático</span>
 
-## 3. Fundamentação teórica (guia, Parte 10.1)
+## 3. Fundamentação teórica (guia, Parte [10.1](../guia/parte-10.md#parte-10-1))
 
 ### 3.1 As seis responsabilidades
 
@@ -61,7 +61,7 @@ A gold faz contas: somas, médias, proporções. Contas sobre texto não funcion
 
 ### 3.3 Por que não deduplicar
 
-Como o dado público é anonimizado, **não há chave única** para deduplicar. **\[Complemento didático\]** Dois vínculos com todos os campos iguais podem ser reais (duas pessoas com o mesmo perfil no mesmo estabelecimento). Deduplicar "por todas as colunas" apagaria vínculos legítimos.
+Como o dado público é anonimizado, **não há chave única** para deduplicar. <span class="rl-complemento">Complemento didático</span> Dois vínculos com todos os campos iguais podem ser reais (duas pessoas com o mesmo perfil no mesmo estabelecimento). Deduplicar "por todas as colunas" apagaria vínculos legítimos.
 
 ### 3.4 Validar e anular em vez de filtrar
 
@@ -83,7 +83,7 @@ Como o dado público é anonimizado, **não há chave única** para deduplicar. 
 
 ## 5. Tutorial
 
-### Passo 1 — `src/silver.py` (guia, Parte 10.2)
+### Passo 1 — `src/silver.py` (guia, Parte [10.2](../guia/parte-10.md#parte-10-2))
 
 ```python
 """Silver: tipagem, validação e padronização da RAIS."""
@@ -178,7 +178,7 @@ if __name__ == "__main__":
 docker compose exec spark python -m src.silver 2022
 ```
 
-### Passo 3 — Explorar (guia, Parte 10), notebook `03_silver.ipynb`
+### Passo 3 — Explorar (guia, Parte [10](../guia/parte-10.md)), notebook `03_silver.ipynb`
 
 ```python
 from pyspark.sql import functions as F
@@ -198,7 +198,7 @@ s.describe("idade", "remun_dezembro_sm").show()
 
 ### Passo 4 — Registrar decisões em `docs/dicionario.md`
 
-Para cada coluna em que você decidiu algo (ex.: o significado de `remun_dezembro_nom = 0`), escreva a decisão e o motivo (guia, Parte 10, exercício 5).
+Para cada coluna em que você decidiu algo (ex.: o significado de `remun_dezembro_nom = 0`), escreva a decisão e o motivo (guia, Parte [10](../guia/parte-10.md), exercício 5).
 
 ## 6. Funcionamento e resultados esperados
 
@@ -214,7 +214,7 @@ As faixas de NULL aceitáveis são calibradas com o seu dado; os limites iniciai
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Antes e depois.** **\[Complemento didático\]**
+**Exemplo 1 — Antes e depois.** <span class="rl-complemento">Complemento didático</span>
 
 | Bronze (string) | Silver | Por quê |
 | --- | --- | --- |
@@ -260,7 +260,7 @@ As faixas de NULL aceitáveis são calibradas com o seu dado; os limites iniciai
 
 **Contribuição ao projeto:** a silver alimenta todas as tabelas gold.
 
-**\[Complemento didático\]** `labcheck/test_aula12.py` (somente leitura):
+<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula12.py` (somente leitura):
 
 ```python
 """Checks da Aula 12: contrato da silver."""
@@ -313,7 +313,7 @@ def test_a12_idade_plausivel(spark, ano):
     assert fora == 0, "Há idades fora de 14..100 que deviam ter virado NULL."
 ```
 
-- O limite de 1% de UF nula é o do guia (Parte 15.4) e deve ser calibrado com o seu dado.
+- O limite de 1% de UF nula é o do guia (Parte [15.4](../guia/parte-15.md#parte-15-4)) e deve ser calibrado com o seu dado.
 - `~F.col("idade").between(...)` com idade NULL dá NULL e a linha não entra no filtro — o check conta só idades não nulas fora da faixa (Aula 07, seção 3.4).
 - Rode com `make check AULA=12 ANO=2022`.
 
@@ -325,7 +325,7 @@ def test_a12_idade_plausivel(spark, ano):
 
 ## 12. Exercícios, revisão e desafios
 
-**Exercícios (guia, Parte 10)**
+**Exercícios (guia, Parte [10](../guia/parte-10.md))**
 
 1. `printSchema()`: os tipos estão como planejado?
 2. Conte os NULL por coluna.

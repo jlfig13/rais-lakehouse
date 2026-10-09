@@ -17,7 +17,97 @@ RAIZ = Path(__file__).resolve().parent.parent
 META = RAIZ / "curso" / "aulas.yml"
 DOCS = RAIZ / "curso" / "docs"
 CONTEUDO = RAIZ / "curso" / "conteudo"
+GUIA = RAIZ / "docs" / "guia" / "rais-lakehouse-guia.md"
 ONDE = {"host": "Host (WSL/Linux)", "container": "Container spark"}
+COMPLEMENTO = '<span class="rl-complemento">Complemento didático</span>'
+
+
+# ---------------------------------------------------------------------- guia original
+def fora_de_codigo(texto: str, funcao) -> str:
+    """Aplica `funcao` só ao texto corrido: blocos ``` e `código inline` ficam intactos."""
+    partes = re.split(r"(^```.*?^```[^\n]*$)", texto, flags=re.M | re.S)
+    for i in range(0, len(partes), 2):
+        trechos = re.split(r"(`[^`\n]+`)", partes[i])
+        trechos[::2] = [funcao(t) for t in trechos[::2]]
+        partes[i] = "".join(trechos)
+    return "".join(partes)
+
+
+def url_guia(base: str, parte: str) -> str:
+    """'4.5' -> base + 'parte-04.md#parte-4-5'; 'B' -> base + 'apendice-b.md'."""
+    if parte.isalpha():
+        return f"{base}apendice-{parte.lower()}.md"
+    numero, _, secao = parte.partition(".")
+    ancora = f"#parte-{numero}-{secao}" if secao else ""
+    return f"{base}parte-{int(numero):02d}.md{ancora}"
+
+
+def linkar_guia(texto: str, base: str, todo_apendice: bool = False) -> str:
+    """Transforma citações ('guia, Parte 4.5', 'Partes 5.1–5.2', 'Apêndice B do guia') em links.
+
+    Nas aulas, "Apêndice X" sem menção ao guia é dos apêndices do curso (A–G) e não vira link.
+    """
+    def partes(m: re.Match) -> str:
+        nums = re.sub(r"\d+(?:\.\d+)?", lambda n: f"[{n.group(0)}]({url_guia(base, n.group(0))})",
+                      m.group(2))
+        return f"{m.group(1)} {nums}"
+
+    def apendice(m: re.Match) -> str:
+        return f"[Apêndice {m.group(1)}]({url_guia(base, m.group(1))})"
+
+    def aplicar(t: str) -> str:
+        t = re.sub(r"\b(Partes?) (\d+(?:\.\d+)?(?:(?:\s*[,–-]\s*|\s+e\s+|\s+a\s+)\d+(?:\.\d+)?)*)",
+                   partes, t)
+        if todo_apendice:
+            return re.sub(r"\bApêndice ([A-D])\b", apendice, t)
+        t = re.sub(r"(?:(?<=guia, )|(?<=Guia ))Apêndice ([A-D])\b", apendice, t)
+        return re.sub(r"\bApêndice ([A-D])(?= do guia)", apendice, t)
+
+    return fora_de_codigo(texto, aplicar)
+
+
+def marcar_complemento(texto: str) -> str:
+    """'**\\[Complemento didático\\]**' vira uma etiqueta visível (ver assets/portal.css)."""
+    def trocar(m: re.Match) -> str:  # "**\[Complemento didático\] — título**" mantém o título
+        return COMPLEMENTO + (f" **{m.group(1)}**" if m.group(1) else "")
+
+    return fora_de_codigo(texto, lambda t: re.sub(
+        r"\*\*\\\[Complemento(?: didático)?\\\](?:\s*—\s*)?([^*]*)\*\*", trocar, t))
+
+
+def paginas_guia() -> dict[str, str]:
+    """Divide o guia em uma página por Parte/Apêndice, com âncoras estáveis (#parte-4-5)."""
+    if not GUIA.exists():
+        return {}
+    paginas: dict[str, list[str]] = {"index": []}
+    titulos: list[tuple[str, str]] = []
+    atual, em_codigo = "index", False
+    for linha in GUIA.read_text(encoding="utf-8").splitlines():
+        if linha.startswith("```"):
+            em_codigo = not em_codigo
+        m = None if em_codigo else re.match(r"^# (?:Parte (\d+)|Apêndice ([A-D])) — ", linha)
+        if m:
+            atual = (f"parte-{int(m.group(1)):02d}" if m.group(1)
+                     else f"apendice-{m.group(2).lower()}")
+            titulos.append((atual, linha[2:]))
+            paginas[atual] = []
+        elif not em_codigo:
+            secao = re.match(r"^## (\d+)\.(\d+) ", linha)
+            if secao:
+                linha += f" {{ #parte-{secao.group(1)}-{secao.group(2)} }}"
+        paginas[atual].append(linha)
+
+    # Capa: introdução do guia + sumário com links (no lugar do sumário em texto)
+    capa = "\n".join(paginas["index"])
+    capa = re.sub(r"## Sumário\n.*?\n---\n", "", capa, flags=re.S)
+    capa = capa.replace("# RAIS Lakehouse —", "# Guia original — RAIS Lakehouse —", 1)
+    capa += "\n## Sumário\n\n" + "\n".join(f"- [{t}]({nome}.md)" for nome, t in titulos) + "\n"
+    saida = {"index": capa}
+    for nome, linhas in paginas.items():
+        if nome != "index":
+            saida[nome] = "\n".join(linhas).strip() + "\n"
+    return {nome: "<!-- Página GERADA de docs/guia/rais-lakehouse-guia.md -->\n\n"
+            + linkar_guia(md, "", todo_apendice=True) for nome, md in saida.items()}
 
 
 def arquivo_de_checks(aula: int) -> Path | None:
@@ -122,7 +212,7 @@ def pagina_aula(a: dict, base: str) -> str:
         "",
         "| | |",
         "| --- | --- |",
-        f"| Origem no guia | {', '.join(a['origem'])} |",
+        f"| Origem no guia | {linkar_guia(', '.join(a['origem']), '../guia/')} |",
         f"| Depende de | {dep} |",
         f"| Entregas | {', '.join(f'`{e}`' for e in a['entrega'])} |",
         f"| Onde os checks rodam | {ONDE[a['onde']]} |",
@@ -130,7 +220,8 @@ def pagina_aula(a: dict, base: str) -> str:
         "",
     ]
     if fonte.exists():
-        linhas += [limpar_conteudo(fonte.read_text(encoding="utf-8"), url_doc), ""]
+        texto = limpar_conteudo(fonte.read_text(encoding="utf-8"), url_doc)
+        linhas += [marcar_complemento(linkar_guia(texto, "../guia/")), ""]
     else:
         linhas += [
             '!!! warning "Conteúdo ainda não importado"',
@@ -204,7 +295,8 @@ def pagina_apendices(meta: dict, base: str) -> str:
     url_doc = f"{base}/{meta['apendices_doc']}"
     fonte = CONTEUDO / "apendices.md"
     if fonte.exists():
-        return "# Apêndices\n\n" + limpar_conteudo(fonte.read_text(encoding="utf-8"), url_doc)
+        texto = limpar_conteudo(fonte.read_text(encoding="utf-8"), url_doc)
+        return "# Apêndices\n\n" + marcar_complemento(linkar_guia(texto, "guia/"))
     linhas = ["# Apêndices", "", f"Todos os apêndices estão num único documento: "
               f"[abrir os apêndices]({url_doc}).", ""]
     linhas += [f"- Apêndice {t}" for t in meta["apendices"]]
@@ -240,6 +332,9 @@ def main() -> None:
     (DOCS / "index.md").write_text(pagina_indice(meta, base), encoding="utf-8")
     (DOCS / "apendices.md").write_text(pagina_apendices(meta, base), encoding="utf-8")
     (DOCS / "ambiente.md").write_text(pagina_ambiente(), encoding="utf-8")
+    (DOCS / "guia").mkdir(exist_ok=True)
+    for nome, md in paginas_guia().items():
+        (DOCS / "guia" / f"{nome}.md").write_text(md, encoding="utf-8")
     print(f"[curso] {len(meta['aulas'])} aulas geradas em {DOCS}")
 
 

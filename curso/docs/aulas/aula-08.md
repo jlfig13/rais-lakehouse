@@ -14,7 +14,7 @@ checks: ['a08_maior_salario_por_uf', 'a08_join_broadcast', 'a08_detecta_shuffle'
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 5.5, Guia Parte 5.6, Guia Parte 5.7, Guia Parte 5.8 |
+| Origem no guia | Guia Parte [5.5](../guia/parte-05.md#parte-5-5), Guia Parte [5.6](../guia/parte-05.md#parte-5-6), Guia Parte [5.7](../guia/parte-05.md#parte-5-7), Guia Parte [5.8](../guia/parte-05.md#parte-5-8) |
 | Depende de | [Aula 07](aula-07.md) |
 | Entregas | `labs/aula08.py` |
 | Onde os checks rodam | Container spark |
@@ -22,7 +22,7 @@ checks: ['a08_maior_salario_por_uf', 'a08_join_broadcast', 'a08_detecta_shuffle'
 
 Esta aula cobre o que separa "saber a sintaxe" de "saber usar o Spark": como ele decide executar (lazy evaluation e plano), o que custa caro (shuffle) e como os dados ficam no disco (partições e Parquet).
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
+**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -36,11 +36,11 @@ Esta aula cobre o que separa "saber a sintaxe" de "saber usar o Spark": como ele
 
 ## 2. Contextualização
 
-Na RAIS, a silver de um ano tem dezenas de milhões de linhas, e a gold faz `groupBy` e `join` sobre ela. A diferença entre um job de minutos e um de horas quase sempre está em: quantos shuffles ele faz, se a dimensão foi "broadcastada" e quantas partições existem. Esta aula dá as ferramentas para enxergar isso antes de rodar no volume real. **\[Complemento didático\]**
+Na RAIS, a silver de um ano tem dezenas de milhões de linhas, e a gold faz `groupBy` e `join` sobre ela. A diferença entre um job de minutos e um de horas quase sempre está em: quantos shuffles ele faz, se a dimensão foi "broadcastada" e quantas partições existem. Esta aula dá as ferramentas para enxergar isso antes de rodar no volume real. <span class="rl-complemento">Complemento didático</span>
 
 ## 3. Fundamentação teórica
 
-### 3.1 Joins (guia, Parte 5.5)
+### 3.1 Joins (guia, Parte [5.5](../guia/parte-05.md#parte-5-5))
 
 | Tipo | Mantém |
 | --- | --- |
@@ -51,11 +51,11 @@ Na RAIS, a silver de um ano tem dezenas de milhões de linhas, e a gold faz `gro
 
 **Custo.** Um join normal faz *shuffle*: redistribui as duas tabelas pela chave, para que linhas com a mesma chave fiquem na mesma tarefa. Com `F.broadcast(tabela_pequena)`, o Spark copia a tabela pequena inteira para todas as tarefas e evita o shuffle. Use em **dimensões** (códigos e rótulos) — como `dim_uf` na gold (Aula 13).
 
-**\[Complemento didático\]** O Spark também faz broadcast automático quando estima que uma tabela é pequena (limite configurável). O `F.broadcast` explícito torna a intenção clara e não depende da estimativa.
+<span class="rl-complemento">Complemento didático</span> O Spark também faz broadcast automático quando estima que uma tabela é pequena (limite configurável). O `F.broadcast` explícito torna a intenção clara e não depende da estimativa.
 
 **Risco:** broadcast de uma tabela que não é pequena estoura a memória.
 
-### 3.2 Window functions (guia, Parte 5.6)
+### 3.2 Window functions (guia, Parte [5.6](../guia/parte-05.md#parte-5-6))
 
 Diferente do `groupBy`, uma window **não reduz** as linhas: calcula um valor por linha olhando um grupo.
 
@@ -66,20 +66,20 @@ Diferente do `groupBy`, uma window **não reduz** as linhas: calcula um valor po
 | `F.row_number().over(w)` | 1, 2, 3... por grupo, sem empates |
 | `F.avg(...).over(Window.partitionBy("uf"))` | Média do grupo repetida em cada linha |
 
-**\[Complemento didático\]** `row_number` desempata arbitrariamente; `rank` dá a mesma posição a empates e pula a seguinte; `dense_rank` não pula. Na gold, `top_cnae` usa `row_number` para garantir no máximo 10 linhas por UF.
+<span class="rl-complemento">Complemento didático</span> `row_number` desempata arbitrariamente; `rank` dá a mesma posição a empates e pula a seguinte; `dense_rank` não pula. Na gold, `top_cnae` usa `row_number` para garantir no máximo 10 linhas por UF.
 
-### 3.3 Lazy evaluation — o conceito mais importante (guia, Parte 5.7)
+### 3.3 Lazy evaluation — o conceito mais importante (guia, Parte [5.7](../guia/parte-05.md#parte-5-7))
 
 - **Transformações** (`select`, `filter`, `withColumn`, `groupBy`, `join`) **não executam nada**; só montam um plano.
 - **Ações** (`show`, `count`, `collect`, `toPandas`, `write`) **disparam a execução**.
 
 O otimizador (Catalyst) enxerga o plano inteiro antes de executar — por exemplo, aplica o filtro antes de ler colunas desnecessárias (*predicate pushdown*). Por isso, evite `collect()` e `toPandas()` em dados grandes: eles trazem tudo para a memória do driver.
 
-**\[Complemento didático\]** Consequência prática: um erro numa transformação (ex.: divisão que gera problema em certos dados) só aparece quando a ação roda, às vezes linhas depois no notebook. E cada ação reexecuta o plano desde o início, a menos que haja cache (Aula 15).
+<span class="rl-complemento">Complemento didático</span> Consequência prática: um erro numa transformação (ex.: divisão que gera problema em certos dados) só aparece quando a ação roda, às vezes linhas depois no notebook. E cada ação reexecuta o plano desde o início, a menos que haja cache (Aula 15).
 
 ### 3.4 Shuffle e o `explain()`
 
-**Shuffle** é a redistribuição de dados entre partições; é a operação mais cara do Spark (guia, Apêndice C). Ocorre em `groupBy`, `join` (sem broadcast), `orderBy`, `repartition`. No `explain()`, aparece como nó `Exchange`.
+**Shuffle** é a redistribuição de dados entre partições; é a operação mais cara do Spark (guia, [Apêndice C](../guia/apendice-c.md)). Ocorre em `groupBy`, `join` (sem broadcast), `orderBy`, `repartition`. No `explain()`, aparece como nó `Exchange`.
 
 | No plano | Significado |
 | --- | --- |
@@ -88,7 +88,7 @@ O otimizador (Catalyst) enxerga o plano inteiro antes de executar — por exempl
 | `BroadcastExchange` | Cópia da tabela pequena — **não** é shuffle |
 | `AdaptiveSparkPlan` | AQE ligado (Aula 15); o plano final pode mudar em execução |
 
-### 3.5 Partições e escrita (guia, Parte 5.8)
+### 3.5 Partições e escrita (guia, Parte [5.8](../guia/parte-05.md#parte-5-8))
 
 | Operação | Efeito | Custo |
 | --- | --- | --- |
@@ -99,9 +99,9 @@ O otimizador (Catalyst) enxerga o plano inteiro antes de executar — por exempl
 
 `partitionBy` habilita **partition pruning**: uma consulta com filtro por `uf` lê só a pasta necessária. No curso, bronze, silver e gold são particionadas por `ano`.
 
-**Partição de memória × partição de disco.** **\[Complemento didático\]** `repartition` muda como o DataFrame está dividido para processamento; `partitionBy` na escrita muda como os arquivos são organizados em pastas. São conceitos diferentes com o mesmo nome.
+**Partição de memória × partição de disco.** <span class="rl-complemento">Complemento didático</span> `repartition` muda como o DataFrame está dividido para processamento; `partitionBy` na escrita muda como os arquivos são organizados em pastas. São conceitos diferentes com o mesmo nome.
 
-**Modos de escrita (guia, Parte 5.8):** `error` (padrão, falha se existir), `overwrite`, `append`, `ignore`.
+**Modos de escrita (guia, Parte [5.8](../guia/parte-05.md#parte-5-8)):** `error` (padrão, falha se existir), `overwrite`, `append`, `ignore`.
 
 ## 4. Arquitetura e fluxo
 
@@ -116,13 +116,13 @@ O otimizador (Catalyst) enxerga o plano inteiro antes de executar — por exempl
  └─ 4. show() executa: tarefas por partição, em paralelo nas threads
 ```
 
-**\[Complemento didático\]** O `HashAggregate` aparece duas vezes porque o Spark agrega parcialmente em cada partição antes do shuffle, para mandar menos dados pela rede.
+<span class="rl-complemento">Complemento didático</span> O `HashAggregate` aparece duas vezes porque o Spark agrega parcialmente em cada partição antes do shuffle, para mandar menos dados pela rede.
 
 ## 5. Tutorial
 
 Continue no notebook da Aula 07 (o DataFrame `df` original, com `nome` — recrie com `aula07.exemplo(spark)` se tiver renomeado).
 
-### Passo 1 — Joins (guia, Parte 5.5)
+### Passo 1 — Joins (guia, Parte [5.5](../guia/parte-05.md#parte-5-5))
 
 ```python
 from pyspark.sql import Window, functions as F
@@ -137,7 +137,7 @@ df.join(ufs, on="uf", how="left").show()
 df.join(F.broadcast(ufs), on="uf", how="left").explain()   # procure BroadcastExchange
 ```
 
-### Passo 2 — Window functions (guia, Parte 5.6)
+### Passo 2 — Window functions (guia, Parte [5.6](../guia/parte-05.md#parte-5-6))
 
 ```python
 w = Window.partitionBy("uf").orderBy(F.col("salario").desc())
@@ -146,7 +146,7 @@ df.withColumn("rank_na_uf", F.row_number().over(w)).show()
 df.withColumn("media_da_uf", F.avg("salario").over(Window.partitionBy("uf"))).show()
 ```
 
-### Passo 3 — Lazy evaluation (guia, Parte 5.7)
+### Passo 3 — Lazy evaluation (guia, Parte [5.7](../guia/parte-05.md#parte-5-7))
 
 ```python
 plano = df.filter(F.col("uf") == "PE").select("nome")   # nada rodou ainda
@@ -156,7 +156,7 @@ plano.show()                                            # agora executou
 
 Compare com um plano que tem shuffle: `df.groupBy("uf").count().explain()`.
 
-### Passo 4 — Partições e escrita (guia, Parte 5.8)
+### Passo 4 — Partições e escrita (guia, Parte [5.8](../guia/parte-05.md#parte-5-8))
 
 ```python
 df.rdd.getNumPartitions()
@@ -171,7 +171,7 @@ No terminal do container (`make shell`): `ls /tmp/estudo_parquet` mostra `uf=BA`
 
 ### Passo 5 — `labs/aula08.py`
 
-**\[Complemento didático\]** Assinaturas para implementar (respostas na seção 12):
+<span class="rl-complemento">Complemento didático</span> Assinaturas para implementar (respostas na seção 12):
 
 ```python
 """Exercícios da Aula 08 (PySpark II)."""
@@ -217,7 +217,7 @@ def com_nome_uf(df: DataFrame, ufs: DataFrame) -> DataFrame:
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Códigos órfãos com `left_anti`.** **\[Complemento didático\]** Na RAIS, para achar municípios cuja UF não está em `dim_uf` (o problema de "UF nula" da Aula 13): `silver.select("cod_uf").distinct().join(dim_uf(spark), "cod_uf", "left_anti").show()`.
+**Exemplo 1 — Códigos órfãos com `left_anti`.** <span class="rl-complemento">Complemento didático</span> Na RAIS, para achar municípios cuja UF não está em `dim_uf` (o problema de "UF nula" da Aula 13): `silver.select("cod_uf").distinct().join(dim_uf(spark), "cod_uf", "left_anti").show()`.
 
 **Exemplo 2 — Top N por grupo.** `gold_top_cnae_uf_ano` (Aula 13) é exatamente o padrão do passo 2: window por `ano, cod_uf` ordenada por massa salarial, `row_number`, filtro `<= 10`.
 
@@ -239,7 +239,7 @@ def com_nome_uf(df: DataFrame, ufs: DataFrame) -> DataFrame:
 
 1. `broadcast` em dimensões pequenas (guia).
 2. Ler `explain()` antes de rodar algo caro no volume real.
-3. Particionar por coluna de filtro frequente e baixa cardinalidade (`ano`, não `cod_municipio`). **\[Complemento didático\]**
+3. Particionar por coluna de filtro frequente e baixa cardinalidade (`ano`, não `cod_municipio`). <span class="rl-complemento">Complemento didático</span>
 4. `coalesce` para reduzir arquivos de saída; `repartition` só quando precisar redistribuir por chave.
 5. Evitar `collect()` fora de resultados pequenos (guia).
 
@@ -256,7 +256,7 @@ def com_nome_uf(df: DataFrame, ufs: DataFrame) -> DataFrame:
 
 **Contribuição ao projeto:** broadcast, window e partitionBy são usados na gold e em todas as camadas; ler planos é a base do tuning (Aula 15).
 
-**\[Complemento didático\]** `labcheck/test_aula08.py`:
+<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula08.py`:
 
 ```python
 """Checks da Aula 08."""
@@ -306,7 +306,7 @@ def test_a08_particionado_pruning(spark, tmp_path):
 
 ## 12. Exercícios, revisão e desafios
 
-**Respostas dos exercícios do guia (Parte 5, exercícios 2, 4 e 5)** — tente antes de ler:
+**Respostas dos exercícios do guia (Parte [5](../guia/parte-05.md), exercícios 2, 4 e 5)** — tente antes de ler:
 
 ```python
 def tem_shuffle(df):

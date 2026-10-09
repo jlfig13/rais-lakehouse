@@ -14,7 +14,7 @@ checks: ['a02_imagem_existe', 'a02_java_17', 'a02_pyspark_delta', 'a02_jars_s3a_
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 2.1, Guia Parte 2.2, Guia Parte 4.2, Guia Parte 4.3, Guia Parte 4.4 |
+| Origem no guia | Guia Parte [2.1](../guia/parte-02.md#parte-2-1), Guia Parte [2.2](../guia/parte-02.md#parte-2-2), Guia Parte [4.2](../guia/parte-04.md#parte-4-2), Guia Parte [4.3](../guia/parte-04.md#parte-4-3), Guia Parte [4.4](../guia/parte-04.md#parte-4-4) |
 | Depende de | [Aula 01](aula-01.md) |
 | Entregas | `docker/spark/Dockerfile`, `requirements.txt`, `requirements-dev.txt`, `.dockerignore` |
 | Onde os checks rodam | Host (WSL/Linux) |
@@ -22,7 +22,7 @@ checks: ['a02_imagem_existe', 'a02_java_17', 'a02_pyspark_delta', 'a02_jars_s3a_
 
 Ao final desta aula a imagem `rais-spark:local` existe na sua máquina, com Python 3.11, Java 17, PySpark 3.5.3, Delta 3.2.0 e os JARs do S3A, rodando como usuário não-root. Ela é a base de todo o resto do curso.
 
-**Convenção:** **\[Complemento didático\]** marca explicações que não estão no guia original. O resto vem do RAIS Lakehouse Guide, com a parte indicada.
+**Convenção:** <span class="rl-complemento">Complemento didático</span> marca explicações que não estão no guia original. O resto vem do RAIS Lakehouse Guide, com a parte indicada.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -46,18 +46,18 @@ Ao final desta aula a imagem `rais-spark:local` existe na sua máquina, com Pyth
 
 ### Duração sugerida
 
-Cerca de 3 horas: 1 h de teoria, 1 h de tutorial (o primeiro build demora), 1 h de exemplos e exercícios. **\[Complemento didático\]**
+Cerca de 3 horas: 1 h de teoria, 1 h de tutorial (o primeiro build demora), 1 h de exemplos e exercícios. <span class="rl-complemento">Complemento didático</span>
 
 ## 2. Contextualização: por que containers
 
-O Spark precisa de Java numa versão compatível, de uma versão específica do Python, de bibliotecas Python e de JARs com versões casadas entre si. Instalar tudo isso à mão em cada máquina é lento e frágil; um container empacota o ambiente inteiro e o reproduz igual em qualquer lugar. **\[Complemento didático\]** — contexto adicionado.
+O Spark precisa de Java numa versão compatível, de uma versão específica do Python, de bibliotecas Python e de JARs com versões casadas entre si. Instalar tudo isso à mão em cada máquina é lento e frágil; um container empacota o ambiente inteiro e o reproduz igual em qualquer lugar. <span class="rl-complemento">Complemento didático</span> — contexto adicionado.
 
 ### O problema "funciona na minha máquina"
 
 Imagine três pessoas rodando o projeto:
 
 - Uma tem Java 11, a outra Java 21, a terceira não tem Java.
-- Uma instalou `pyspark` 4.x, que ativa o modo ANSI por padrão e transforma conversões inválidas em erro (o guia escolhe 3.5 justamente por isso, Parte 4.2).
+- Uma instalou `pyspark` 4.x, que ativa o modo ANSI por padrão e transforma conversões inválidas em erro (o guia escolhe 3.5 justamente por isso, Parte [4.2](../guia/parte-04.md#parte-4-2)).
 - Uma baixou `hadoop-aws` 3.3.6, diferente do Hadoop 3.3.4 embutido no PySpark 3.5; versões desencontradas costumam falhar com erros de classe ausente.
 
 O mesmo código dá três resultados diferentes. O Docker resolve isso: o ambiente é descrito num arquivo (o **Dockerfile**), construído uma vez numa **imagem**, e executado como **container** idêntico em qualquer máquina com Docker.
@@ -80,7 +80,7 @@ O mesmo código dá três resultados diferentes. O Docker resolve isso: o ambien
 
 ## 3. Fundamentação teórica
 
-### 3.1 Os blocos fundamentais (guia, Parte 2.1)
+### 3.1 Os blocos fundamentais (guia, Parte [2.1](../guia/parte-02.md#parte-2-1))
 
 | Conceito | O que é | Analogia do guia |
 | --- | --- | --- |
@@ -94,7 +94,7 @@ O mesmo código dá três resultados diferentes. O Docker resolve isso: o ambien
 
 ### 3.2 Containers são descartáveis
 
-Tudo que é escrito dentro do container e não está num volume ou bind mount **some** quando o container é removido. Por isso o guia define (Parte 2.1):
+Tudo que é escrito dentro do container e não está num volume ou bind mount **some** quando o container é removido. Por isso o guia define (Parte [2.1](../guia/parte-02.md#parte-2-1)):
 
 - dados do MinIO → **volume** (`minio-data`);
 - seu código → **bind mount** (`./:/app`), para editar no host e o container ver na hora;
@@ -104,13 +104,13 @@ Nesta aula você só constrói a imagem; volumes e bind mounts entram em uso na 
 
 ### 3.3 O que é, por dentro, um container
 
-**\[Complemento didático\]** No Linux, um container é um processo comum isolado por recursos do kernel: **namespaces** (o processo vê só os seus próprios processos, rede e sistema de arquivos) e **cgroups** (limites de CPU e memória — os mesmos que o Compose usa em `cpus` e `mem_limit` na Aula 03). Não há um sistema operacional inteiro rodando: o container compartilha o kernel do host.
+<span class="rl-complemento">Complemento didático</span> No Linux, um container é um processo comum isolado por recursos do kernel: **namespaces** (o processo vê só os seus próprios processos, rede e sistema de arquivos) e **cgroups** (limites de CPU e memória — os mesmos que o Compose usa em `cpus` e `mem_limit` na Aula 03). Não há um sistema operacional inteiro rodando: o container compartilha o kernel do host.
 
 No Windows e no macOS não existe kernel Linux nativo, então o Docker Desktop roda uma máquina virtual Linux leve (no Windows, via WSL2) e os containers rodam dentro dela.
 
 ### 3.4 Camadas e cache de build
 
-Uma imagem é uma pilha de **camadas** somente leitura. Cada instrução `RUN` ou `COPY` gera uma camada com os arquivos que ela criou ou alterou (guia, Parte 2.2). **\[Complemento didático\]** Instruções como `ENV`, `WORKDIR`, `USER`, `EXPOSE` e `CMD` só alteram metadados da imagem, sem arquivos novos.
+Uma imagem é uma pilha de **camadas** somente leitura. Cada instrução `RUN` ou `COPY` gera uma camada com os arquivos que ela criou ou alterou (guia, Parte [2.2](../guia/parte-02.md#parte-2-2)). <span class="rl-complemento">Complemento didático</span> Instruções como `ENV`, `WORKDIR`, `USER`, `EXPOSE` e `CMD` só alteram metadados da imagem, sem arquivos novos.
 
 Quando um container roda, o Docker põe uma camada **gravável** fina por cima da pilha. É nela que vão as escritas do processo — e é ela que some quando o container é removido (seção 3.2).
 
@@ -122,13 +122,13 @@ Quando um container roda, o Docker põe uma camada **gravável** fina por cima d
 
 ### 3.5 Tags, registry e versões fixas
 
-**\[Complemento didático\]** Uma imagem é identificada por `repositório:tag`, por exemplo `python:3.11-slim-bookworm`. Imagens públicas vêm de um **registry** (o padrão é o Docker Hub). Uma tag é um rótulo móvel: o mantenedor pode apontá-la para uma imagem nova. Por isso o guia proíbe `latest` (Parte 4.2): ele muda sem aviso, e o build de hoje deixaria de ser igual ao de amanhã.
+<span class="rl-complemento">Complemento didático</span> Uma imagem é identificada por `repositório:tag`, por exemplo `python:3.11-slim-bookworm`. Imagens públicas vêm de um **registry** (o padrão é o Docker Hub). Uma tag é um rótulo móvel: o mantenedor pode apontá-la para uma imagem nova. Por isso o guia proíbe `latest` (Parte [4.2](../guia/parte-04.md#parte-4-2)): ele muda sem aviso, e o build de hoje deixaria de ser igual ao de amanhã.
 
 A imagem que você constrói recebe a tag `rais-spark:local`. `local` indica que ela não vem de nenhum registry: existe só na sua máquina.
 
 ### 3.6 Container × máquina virtual
 
-**\[Complemento didático\]**
+<span class="rl-complemento">Complemento didático</span>
 
 | Critério | Container | Máquina virtual |
 | --- | --- | --- |
@@ -138,7 +138,7 @@ A imagem que você constrói recebe a tag `rais-spark:local`. `local` indica que
 | Isolamento de segurança | Bom, mas o kernel é compartilhado | Mais forte |
 | Uso no curso | Spark, MinIO, site | Só a VM interna do Docker Desktop no Windows/macOS |
 
-### 3.7 As versões da imagem do curso (guia, Parte 4.2)
+### 3.7 As versões da imagem do curso (guia, Parte [4.2](../guia/parte-04.md#parte-4-2))
 
 | Componente | Versão | Observação do guia |
 | --- | --- | --- |
@@ -174,7 +174,7 @@ São sete passos: instalar o Docker, criar a pasta, escrever três arquivos de a
 
 ### Passo 1 — Instalar e testar o Docker
 
-**\[Complemento didático\]** O guia pressupõe Docker instalado. Siga a documentação oficial do Docker para o seu sistema; os comandos de instalação mudam com o tempo e não são reproduzidos aqui.
+<span class="rl-complemento">Complemento didático</span> O guia pressupõe Docker instalado. Siga a documentação oficial do Docker para o seu sistema; os comandos de instalação mudam com o tempo e não são reproduzidos aqui.
 
 | Sistema | O que instalar | Observação |
 | --- | --- | --- |
@@ -202,7 +202,7 @@ mkdir -p ~/rais-lakehouse/docker/spark   # -p cria as pastas intermediárias e n
 cd ~/rais-lakehouse
 ```
 
-### Passo 3 — Dependências Python (guia, Parte 4.3)
+### Passo 3 — Dependências Python (guia, Parte [4.3](../guia/parte-04.md#parte-4-3))
 
 `requirements.txt` — o que o projeto precisa para **executar**:
 
@@ -226,7 +226,7 @@ matplotlib==3.9.2
 - `delta-spark` aqui é o pacote Python (para `from delta.tables import DeltaTable`); os JARs do Delta, usados pela JVM, entram no passo 5.
 - O guia avisa: se alguma versão não instalar, use a mais recente da mesma linha (ex.: `4.2.x`).
 
-### Passo 4 — `.dockerignore` (guia, Parte 3.2)
+### Passo 4 — `.dockerignore` (guia, Parte [3.2](../guia/parte-03.md#parte-3-2))
 
 ```gitignore
 .git
@@ -239,7 +239,7 @@ staging
 
 **O que faz.** O comando de build envia a pasta do projeto (o **contexto de build**) ao Docker. O `.dockerignore` exclui o que não deve ir: o histórico Git (pesado), o `.env` (segredos) e `staging` (os `.7z` da RAIS, vários GB). Sem ele, o build ficaria lento e um segredo poderia acabar dentro de uma camada da imagem.
 
-### Passo 5 — O Dockerfile (guia, Parte 4.4)
+### Passo 5 — O Dockerfile (guia, Parte [4.4](../guia/parte-04.md#parte-4-4))
 
 Salve em `docker/spark/Dockerfile`, exatamente como no guia:
 
@@ -312,7 +312,7 @@ docker build \
 | `--build-arg HOST_UID="$(id -u)"` | Passa o seu UID para o `ARG HOST_UID`; `id -u` imprime o UID do usuário atual |
 | `.` (ponto final) | O contexto de build: a pasta atual, filtrada pelo `.dockerignore` |
 
-**\[Complemento didático\]** Na Aula 03 o Compose faz este mesmo build (`docker compose up --build`), lendo `HOST_UID` do `.env`. Construir à mão aqui serve para ver cada etapa isolada.
+<span class="rl-complemento">Complemento didático</span> Na Aula 03 o Compose faz este mesmo build (`docker compose up --build`), lendo `HOST_UID` do `.env`. Construir à mão aqui serve para ver cada etapa isolada.
 
 - **Duração:** o primeiro build baixa a imagem base, o Java, as bibliotecas Python e quatro JARs; leva vários minutos, dependendo da sua conexão.
 - **Resultado esperado:** o build termina sem erro, e `docker image ls rais-spark` lista a imagem com a tag `local`.
@@ -342,7 +342,7 @@ O resultado exato da sua máquina é o que vale; os valores acima são o que o D
 
 Cada bloco resolve um problema específico; entender o problema é o que permite adaptar o arquivo sem quebrá-lo.
 
-### Referência de instruções (guia, Parte 2.2)
+### Referência de instruções (guia, Parte [2.2](../guia/parte-02.md#parte-2-2))
 
 | Instrução | Para que serve | Exemplo |
 | --- | --- | --- |
@@ -359,7 +359,7 @@ Cada bloco resolve um problema específico; entender o problema é o que permite
 ### Bloco 1 — `FROM python:3.11-slim-bookworm`
 
 - **O que faz:** começa de uma imagem oficial do Python 3.11 sobre Debian 12 (bookworm), na variante `slim` (sem pacotes extras).
-- **Por que bookworm explícito:** o guia escolhe a base porque o repositório do Debian 12 tem o pacote `openjdk-17-jre-headless`. **\[Complemento didático\]** Uma tag sem a versão do Debian (ex.: `python:3.11-slim`) pode passar a apontar para uma versão mais nova do Debian, cujo repositório pode não ter mais o Java 17 — e o `apt-get install` do bloco 3 quebraria.
+- **Por que bookworm explícito:** o guia escolhe a base porque o repositório do Debian 12 tem o pacote `openjdk-17-jre-headless`. <span class="rl-complemento">Complemento didático</span> Uma tag sem a versão do Debian (ex.: `python:3.11-slim`) pode passar a apontar para uma versão mais nova do Debian, cujo repositório pode não ter mais o Java 17 — e o `apt-get install` do bloco 3 quebraria.
 
 ### Bloco 2 — `ARG` com versões
 
@@ -377,9 +377,9 @@ RUN apt-get update \
 
 - **`openjdk-17-jre-headless`:** o Java 17 sem componentes gráficos — o Spark é um programa da JVM.
 - **`curl`:** usado no bloco 5 para baixar os JARs.
-- **`procps`:** **\[Complemento didático\]** fornece comandos como `ps` e `top`, úteis para inspecionar processos dentro do container.
-- **`--no-install-recommends` e `rm -rf /var/lib/apt/lists/*`:** deixam a imagem menor (guia, Parte 4.4).
-- **Por que tudo num único `RUN` com `&&`:** **\[Complemento didático\]** se o `update` ficasse num `RUN` separado, a camada dele poderia ser reaproveitada do cache numa build futura com uma lista de pacotes desatualizada. Juntos, eles sempre rodam em conjunto. E a limpeza só reduz a imagem se acontecer na mesma camada que criou os arquivos.
+- **`procps`:** <span class="rl-complemento">Complemento didático</span> fornece comandos como `ps` e `top`, úteis para inspecionar processos dentro do container.
+- **`--no-install-recommends` e `rm -rf /var/lib/apt/lists/*`:** deixam a imagem menor (guia, Parte [4.4](../guia/parte-04.md#parte-4-4)).
+- **Por que tudo num único `RUN` com `&&`:** <span class="rl-complemento">Complemento didático</span> se o `update` ficasse num `RUN` separado, a camada dele poderia ser reaproveitada do cache numa build futura com uma lista de pacotes desatualizada. Juntos, eles sempre rodam em conjunto. E a limpeza só reduz a imagem se acontecer na mesma camada que criou os arquivos.
 
 ### Bloco 4 — Dependências Python antes do código
 
@@ -397,7 +397,7 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt -r /tmp/requirements-dev
 - **Primeira linha:** pergunta ao próprio Python onde o PySpark está instalado e monta o caminho da pasta `jars` dele. Assim o Dockerfile não depende de um caminho fixo.
 - **Por que nessa pasta:** o Spark carrega automaticamente todos os JARs dali. Com isso, a configuração da Aula 06 não precisa baixar pacotes do Maven quando a sessão inicia — o ADR-006 da Aula 01 (funciona sem internet, reprodutível).
 - **Os quatro JARs:** `hadoop-aws` e `aws-java-sdk-bundle` permitem ao Spark falar S3 (MinIO, Aula 04); `delta-spark` e `delta-storage` implementam o Delta Lake (Aula 10).
-- **`curl -fsSL`:** `-f` faz o comando falhar se o servidor responder com erro, em vez de gravar a página de erro como se fosse o JAR (guia, Parte 4.4). `-sS` silencia o progresso mas mostra erros; `-L` segue redirecionamentos.
+- **`curl -fsSL`:** `-f` faz o comando falhar se o servidor responder com erro, em vez de gravar a página de erro como se fosse o JAR (guia, Parte [4.4](../guia/parte-04.md#parte-4-4)). `-sS` silencia o progresso mas mostra erros; `-L` segue redirecionamentos.
 
 ### Bloco 6 — Usuário não-root
 
@@ -408,8 +408,8 @@ RUN useradd -m -u "${HOST_UID}" app \
 ```
 
 - **Por que não-root:** se um processo dentro do container for comprometido, ele não tem privilégios de administrador no container.
-- **Por que o mesmo UID do host:** arquivos criados pelo container num bind mount ficam com o UID de quem os criou. Com o UID igual ao seu, você consegue editar e apagar esses arquivos no host sem `sudo`. Com UIDs diferentes, aparece `Permission denied` (Apêndice B do guia).
-- **Por que criar e dar dono a `/tmp/spark`:** **\[Complemento didático\]** na Aula 03 essa pasta vira um volume nomeado. Na primeira vez, o Docker copia o dono da pasta existente na imagem para o volume; sem esse `chown`, o volume nasceria pertencendo a root e o Spark não conseguiria gravar nele.
+- **Por que o mesmo UID do host:** arquivos criados pelo container num bind mount ficam com o UID de quem os criou. Com o UID igual ao seu, você consegue editar e apagar esses arquivos no host sem `sudo`. Com UIDs diferentes, aparece `Permission denied` ([Apêndice B](../guia/apendice-b.md) do guia).
+- **Por que criar e dar dono a `/tmp/spark`:** <span class="rl-complemento">Complemento didático</span> na Aula 03 essa pasta vira um volume nomeado. Na primeira vez, o Docker copia o dono da pasta existente na imagem para o volume; sem esse `chown`, o volume nasceria pertencendo a root e o Spark não conseguiria gravar nele.
 
 ### Bloco 7 — Ambiente e comando padrão
 
@@ -417,11 +417,11 @@ RUN useradd -m -u "${HOST_UID}" app \
 - **`ENV PYTHONUNBUFFERED=1`:** os `print` aparecem nos logs na hora, sem ficar presos num buffer.
 - **`WORKDIR /app` e `USER app`:** daqui em diante os comandos rodam em `/app`, como `app`.
 - **`EXPOSE 8888 4040`:** documenta as portas do Jupyter e da Spark UI. Não publica nada: quem publica é o Compose (Aula 03).
-- **`CMD ["bash"]`:** o comando padrão é um terminal. O Compose o substitui pelo JupyterLab (Aula 03). **\[Complemento didático\]** A forma em lista (`["bash"]`) executa o programa diretamente, sem passar por um shell intermediário.
+- **`CMD ["bash"]`:** o comando padrão é um terminal. O Compose o substitui pelo JupyterLab (Aula 03). <span class="rl-complemento">Complemento didático</span> A forma em lista (`["bash"]`) executa o programa diretamente, sem passar por um shell intermediário.
 
 ## 7. Exemplos práticos
 
-Quatro experimentos curtos mostram, na sua máquina, os conceitos da seção 3: camadas, cache, UID e os JARs funcionando. **\[Complemento didático\]** — os experimentos são adicionados; os comandos usam só a imagem do guia.
+Quatro experimentos curtos mostram, na sua máquina, os conceitos da seção 3: camadas, cache, UID e os JARs funcionando. <span class="rl-complemento">Complemento didático</span> — os experimentos são adicionados; os comandos usam só a imagem do guia.
 
 ### Exemplo 1 — Ver as camadas da imagem
 
@@ -505,7 +505,7 @@ Quase todo erro desta aula aparece no build ou no primeiro `docker run`, e a men
 | `ERROR: Could not find a version that satisfies the requirement ...` | Versão fixada inexistente ou indisponível | Mensagem cita o pacote | Usar a mais recente da mesma linha, como o guia orienta |
 | `curl: (22) The requested URL returned error: 404` | Versão em `ARG` sem JAR correspondente no Maven | Abrir a URL da mensagem no navegador | Corrigir a versão no `ARG` |
 | `COPY failed: ... requirements-dev.txt: not found` | Arquivo ausente ou fora do contexto | `ls` na pasta onde rodou o build | Criar o arquivo; rodar o build a partir da raiz do projeto |
-| `useradd: UID 1000 is not unique` | **\[Complemento didático\]** já existe um usuário com esse UID na imagem base | Erro no bloco 6 | Usar outro `HOST_UID` ou checar a imagem base |
+| `useradd: UID 1000 is not unique` | <span class="rl-complemento">Complemento didático</span> já existe um usuário com esse UID na imagem base | Erro no bloco 6 | Usar outro `HOST_UID` ou checar a imagem base |
 | Build lento e envio de vários GB ("transferring context") | `.dockerignore` ausente ou incompleto | Tamanho do contexto no início do build | Criar o `.dockerignore` do passo 4 |
 | `ClassNotFoundException` com `S3AFileSystem` ou `delta` | JAR não baixou ou foi para a pasta errada | Exemplo 4 falha; listar a pasta `jars` | `docker build --no-cache ...` e conferir o bloco 5 |
 | `Permission denied` ao gravar em `/app` ou `/tmp/spark` | UID diferente entre host e container | `id` no container × `id -u` no host | Rebuild com `--build-arg HOST_UID="$(id -u)"` |
@@ -513,7 +513,7 @@ Quase todo erro desta aula aparece no build ou no primeiro `docker run`, e a men
 
 ### Diagnóstico de um build que falha
 
-**\[Complemento didático\]**
+<span class="rl-complemento">Complemento didático</span>
 
 1. Leia de baixo para cima: a última etapa listada antes do erro é a instrução que falhou.
 2. Para ver toda a saída de um `RUN`, rode o build com `--progress=plain`.
@@ -522,14 +522,14 @@ Quase todo erro desta aula aparece no build ou no primeiro `docker run`, e a men
 
 ## 9. Boas práticas para produção
 
-1. **Versões fixas em tudo:** imagem base com versão do sistema, pacotes Python com `==`, JARs por `ARG` (guia, Parte 4.2).
-2. **Ordene por frequência de mudança:** sistema → dependências → código (guia, Parte 2.2).
+1. **Versões fixas em tudo:** imagem base com versão do sistema, pacotes Python com `==`, JARs por `ARG` (guia, Parte [4.2](../guia/parte-04.md#parte-4-2)).
+2. **Ordene por frequência de mudança:** sistema → dependências → código (guia, Parte [2.2](../guia/parte-02.md#parte-2-2)).
 3. **Instale e limpe na mesma camada** (`apt-get update && install && rm -rf ...`).
-4. **Usuário não-root** com UID controlado (guia, Parte 4.4).
-5. **`.dockerignore` sempre,** e nunca segredos dentro da imagem: tudo que entra numa camada continua na imagem, mesmo se apagado numa camada posterior. **\[Complemento didático\]**
+4. **Usuário não-root** com UID controlado (guia, Parte [4.4](../guia/parte-04.md#parte-4-4)).
+5. **`.dockerignore` sempre,** e nunca segredos dentro da imagem: tudo que entra numa camada continua na imagem, mesmo se apagado numa camada posterior. <span class="rl-complemento">Complemento didático</span>
 6. **Dependências embutidas, não baixadas em execução** (ADR-006).
-7. **Separe execução de desenvolvimento.** **\[Complemento didático\]** O guia instala `jupyterlab`, `pytest` e `ruff` na mesma imagem, o que é prático para estudo. Em produção, a imagem que roda o pipeline levaria só o `requirements.txt` (técnica comum: *multi-stage build* ou duas imagens).
-8. **Em produção, copie o código para a imagem** (`COPY . /app`) em vez de usar bind mount, para que a imagem seja um artefato completo e imutável (guia, Parte 4.4).
+7. **Separe execução de desenvolvimento.** <span class="rl-complemento">Complemento didático</span> O guia instala `jupyterlab`, `pytest` e `ruff` na mesma imagem, o que é prático para estudo. Em produção, a imagem que roda o pipeline levaria só o `requirements.txt` (técnica comum: *multi-stage build* ou duas imagens).
+8. **Em produção, copie o código para a imagem** (`COPY . /app`) em vez de usar bind mount, para que a imagem seja um artefato completo e imutável (guia, Parte [4.4](../guia/parte-04.md#parte-4-4)).
 
 ## 10. Riscos: segurança, desempenho, custos e integridade
 
@@ -537,12 +537,12 @@ Quase todo erro desta aula aparece no build ou no primeiro `docker run`, e a men
 | --- | --- | --- |
 | Segurança | Processo do container rodando como root | `USER app` (bloco 6) |
 | Segurança | Segredo copiado para a imagem | `.dockerignore` com `.env`; nunca `COPY . .` sem ele |
-| Segurança | Grupo `docker` no Linux equivale a acesso de administrador à máquina | **\[Complemento didático\]** Adicione só o seu usuário, em máquina pessoal; em servidor compartilhado, avalie o modo *rootless* do Docker |
-| Segurança | Imagem base com vulnerabilidades conhecidas | **\[Complemento didático\]** Reconstrua periodicamente para pegar atualizações de segurança da base, mantendo a mesma tag de versão |
+| Segurança | Grupo `docker` no Linux equivale a acesso de administrador à máquina | <span class="rl-complemento">Complemento didático</span> Adicione só o seu usuário, em máquina pessoal; em servidor compartilhado, avalie o modo *rootless* do Docker |
+| Segurança | Imagem base com vulnerabilidades conhecidas | <span class="rl-complemento">Complemento didático</span> Reconstrua periodicamente para pegar atualizações de segurança da base, mantendo a mesma tag de versão |
 | Desempenho | Build lento a cada alteração | Ordem das camadas e `.dockerignore` |
 | Desempenho | Projeto em `/mnt/c` no Windows | Manter o projeto no sistema de arquivos do WSL |
-| Custo | Imagens e camadas antigas ocupando disco | **\[Complemento didático\]** `docker image prune` remove imagens sem tag; confira antes o que será removido |
-| Integridade | Versões incompatíveis entre PySpark, Delta e hadoop-aws | Versões fixas e conferidas pela tabela da Parte 4.2 |
+| Custo | Imagens e camadas antigas ocupando disco | <span class="rl-complemento">Complemento didático</span> `docker image prune` remove imagens sem tag; confira antes o que será removido |
+| Integridade | Versões incompatíveis entre PySpark, Delta e hadoop-aws | Versões fixas e conferidas pela tabela da Parte [4.2](../guia/parte-04.md#parte-4-2) |
 | Integridade | JAR corrompido gravado como se fosse válido | `curl -f` falha o build em erro HTTP |
 | Integridade | Ambiente diferente entre pessoas | Uma única imagem para todos |
 
@@ -560,7 +560,7 @@ A aula está concluída quando os cinco checks automáticos passam na sua máqui
 
 ### Checks automáticos
 
-**\[Complemento didático\]** — código novo da plataforma, que verifica exatamente os resultados esperados do tutorial. Arquivo `labcheck/host/test_aula02.py`:
+<span class="rl-complemento">Complemento didático</span> — código novo da plataforma, que verifica exatamente os resultados esperados do tutorial. Arquivo `labcheck/host/test_aula02.py`:
 
 ```python
 """Checks da Aula 02. Rodam no host (WSL/Linux), pois usam o CLI do Docker."""
@@ -688,16 +688,16 @@ make check-host AULA=02
 
 | Tema | Onde | Fonte no guia |
 | --- | --- | --- |
-| Papel do container `spark` na arquitetura; ADR-002 e ADR-006 | Aula 01 | Parte 1 |
-| Compose, volumes, bind mount, `ports`, `cpus`, `mem_limit`, `HOST_UID` no `.env` | Aula 03 | Partes 2.3–2.4, 4.6–4.7 |
-| Uso dos JARs S3A com o MinIO | Aula 04 | Parte 4.1 |
-| `.gitignore`, estrutura completa do repositório | Aula 05 | Parte 3 |
-| `get_spark` com as configurações do Delta e do S3A; teste de fumaça | Aula 06 | Partes 4.10, 7.3 |
-| `_delta_log` e o que os JARs do Delta implementam | Aula 10 | Parte 13.1 |
-| Limites de memória e CPU do container | Aula 15 | Parte 14.1 |
-| `requirements*.txt` no CI | Aula 16 | Parte 15.5 |
+| Papel do container `spark` na arquitetura; ADR-002 e ADR-006 | Aula 01 | Parte [1](../guia/parte-01.md) |
+| Compose, volumes, bind mount, `ports`, `cpus`, `mem_limit`, `HOST_UID` no `.env` | Aula 03 | Partes [2.3](../guia/parte-02.md#parte-2-3)–[2.4](../guia/parte-02.md#parte-2-4), [4.6](../guia/parte-04.md#parte-4-6)–[4.7](../guia/parte-04.md#parte-4-7) |
+| Uso dos JARs S3A com o MinIO | Aula 04 | Parte [4.1](../guia/parte-04.md#parte-4-1) |
+| `.gitignore`, estrutura completa do repositório | Aula 05 | Parte [3](../guia/parte-03.md) |
+| `get_spark` com as configurações do Delta e do S3A; teste de fumaça | Aula 06 | Partes [4.10](../guia/parte-04.md#parte-4-10), [7.3](../guia/parte-07.md#parte-7-3) |
+| `_delta_log` e o que os JARs do Delta implementam | Aula 10 | Parte [13.1](../guia/parte-13.md#parte-13-1) |
+| Limites de memória e CPU do container | Aula 15 | Parte [14.1](../guia/parte-14.md#parte-14-1) |
+| `requirements*.txt` no CI | Aula 16 | Parte [15.5](../guia/parte-15.md#parte-15-5) |
 | Erros de build e permissão | Apêndice B | Apêndice B |
-| Comandos `docker` | Apêndice D | Parte 2.4 |
+| Comandos `docker` | Apêndice D | Parte [2.4](../guia/parte-02.md#parte-2-4) |
 | Termos: imagem, camada, bind mount, volume | Apêndice C | Apêndice C |
 | Plano técnico da plataforma (checks no host) | [Diagnóstico e plano técnico](https://claude.ai/code/artifact/68629f60-3f2f-40f2-a390-85d81360ea9e), seção 7 | — |
 

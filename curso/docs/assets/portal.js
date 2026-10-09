@@ -76,39 +76,61 @@
     const caixas = [...document.querySelectorAll(".task-list-item input[type=checkbox]")];
     const atual = { ...a };
 
-    const render = () => {
+    // Situação da aula: topo da barra da esquerda (acima da navegação).
+    // Ações: topo da coluna da direita (acima do índice). Em telas estreitas e na tela
+    // dividida as barras somem, então o mesmo painel aparece dentro do conteúdo (CSS decide).
+    const lateral = (seletor, classe) => {
+      const alvo = document.querySelector(seletor);
+      if (!alvo) return null;
+      const caixa = el("div", { class: `rl-lateral md-typeset ${classe}` }); // md-typeset: estilo dos botões do tema
+      alvo.parentElement.insertBefore(caixa, alvo);
+      return caixa;
+    };
+    // Fora da área que rola: a barra rola sozinha até a aula atual e esconderia o bloco
+    const ladoStatus = lateral(".md-sidebar--primary .md-sidebar__scrollwrap", "rl-lateral--status");
+    const ladoAcoes = lateral(".md-sidebar--secondary .md-sidebar__scrollwrap", "rl-lateral--acoes");
+
+    const blocoStatus = () => {
       const marcados = caixas.filter((c) => c.checked).length;
       const s = situacao(atual, caixas.length);
       const itens = Object.entries(atual.checks.itens).map(([id, st]) =>
         el("code", { class: `rl-chip rl-${st}`, title: st }, `${st === "passou" ? "✓" : st === "falhou" ? "✗" : "–"} ${id}`));
-      const botao = el("button", { class: "md-button rl-concluir" },
-        atual.concluida_em ? "Desmarcar conclusão" : "Marcar aula como concluída");
-      botao.onclick = async () => {
-        botao.disabled = true;
-        try { Object.assign(atual, await gravar({ aula: +n, concluida: !atual.concluida_em })); }
-        catch { alert("Não consegui gravar: a API de progresso está no ar?"); }
-        render();
-      };
-      const dividir = el("button", { class: "md-button md-button--primary" },
-        document.documentElement.classList.contains("rl-split") ? "Fechar notebook" : "Estudar com notebook (tela dividida)");
-      dividir.onclick = () => { telaDividida(n, dados); render(); };
-      const acoes = [dividir, botao];
-      if (painel.dataset.onde === "container") {
-        const alvo = painel.dataset.lab ? `#jupyter=${encodeURIComponent(painel.dataset.lab)}` : "#jupyter";
-        acoes.push(el("a", { class: "md-button", href: `${raiz}ambiente.html${alvo}` }, "Abrir arquivo da aula"));
-      } else {
-        acoes.push(el("span", { class: "rl-dica" }, `Checks no host: make check-host AULA=${pad(n)}`));
-      }
-      painel.replaceChildren(...[
+      return el("div", { class: "rl-bloco" }, ...[
         el("div", { class: "rl-cab" },
           el("span", { class: `rl-status rl-${s.cls}` }, s.txt),
           atual.concluida_em ? el("span", { class: "rl-dica" }, `em ${quando(atual.concluida_em)}`) : null),
         el("div", { class: "rl-linha" }, el("strong", {}, "Checks: "), textoChecks(atual.checks)),
         itens.length ? el("div", { class: "rl-chips" }, ...itens) : null,
         caixas.length ? el("div", { class: "rl-linha" }, el("strong", {}, "Critérios: "),
-          `${marcados}/${caixas.length} marcados `, barra(marcados, caixas.length)) : null,
-        el("div", { class: "rl-acoes" }, ...acoes),
+          `${marcados}/${caixas.length} `, barra(marcados, caixas.length)) : null,
       ].filter(Boolean));
+    };
+
+    const blocoAcoes = () => {
+      const dividido = document.documentElement.classList.contains("rl-split");
+      const dividir = el("button", { class: "md-button md-button--primary" },
+        dividido ? "Fechar notebook" : "Estudar com notebook");
+      dividir.onclick = () => { telaDividida(n, dados); render(); };
+      const concluir = el("button", { class: "md-button" },
+        atual.concluida_em ? "Desmarcar conclusão" : "Marcar aula como concluída");
+      concluir.onclick = async () => {
+        concluir.disabled = true;
+        try { Object.assign(atual, await gravar({ aula: +n, concluida: !atual.concluida_em })); }
+        catch { alert("Não consegui gravar: a API de progresso está no ar?"); }
+        render();
+      };
+      const acoes = [dividir, concluir];
+      if (painel.dataset.onde === "container") {
+        const alvo = painel.dataset.lab ? `#jupyter=${encodeURIComponent(painel.dataset.lab)}` : "#jupyter";
+        acoes.push(el("a", { class: "md-button", href: `${raiz}ambiente.html${alvo}` }, "Abrir arquivo da aula"));
+      }
+      return el("div", { class: "rl-acoes" }, ...acoes);
+    };
+
+    const render = () => {
+      ladoStatus?.replaceChildren(blocoStatus());
+      ladoAcoes?.replaceChildren(blocoAcoes());
+      painel.replaceChildren(blocoStatus(), blocoAcoes());
     };
 
     for (const caixa of caixas) {
@@ -148,7 +170,10 @@
     const quadro = el("iframe", { src: url, title: "JupyterLab", allow: "clipboard-read; clipboard-write" });
     const arrasto = el("div", { class: "rl-arrasto", title: "Arraste para redimensionar" });
     const fechar = el("button", { class: "rl-aba" }, "Fechar ✕");
-    fechar.onclick = () => { telaDividida(n, dados); document.querySelector(".rl-aula .md-button--primary").textContent = "Estudar com notebook (tela dividida)"; };
+    fechar.onclick = () => {
+      telaDividida(n, dados);
+      document.querySelectorAll(".rl-acoes .md-button--primary").forEach((b) => { b.textContent = "Estudar com notebook"; });
+    };
     const painel = el("aside", { class: "rl-painel-nb" }, arrasto,
       el("div", { class: "rl-nb-barra" },
         el("strong", { class: "rl-nb-titulo", title: "Pastas, notebooks, .py, .md, .sql e Git ficam na barra lateral do JupyterLab" }, `estudos/aula-${pad(n)}/`),
@@ -241,8 +266,39 @@
     abrir(FERRAMENTAS.find((f) => f.id === idHash) ?? FERRAMENTAS[0], arq ? decodeURIComponent(arq) : "");
   }
 
+  // ------------------------------------------------------------------ preferências de leitura
+  // Ao lado da pesquisa: tamanho da fonte e largura do conteúdo (o tema claro/escuro é o
+  // botão nativo do Zensical, configurado em theme.palette no mkdocs.yml).
+  function preferencias() {
+    const html = document.documentElement;
+    const aplicar = () => {
+      html.style.setProperty("--rl-escala", lembrar("rl-escala") || "1");
+      html.classList.toggle("rl-largo", lembrar("rl-largo") === "1");
+    };
+    aplicar();
+    // Faixa logo abaixo do cabeçalho, acima do título, alinhada à direita
+    const conteudo = document.querySelector(".md-content");
+    if (!conteudo || document.querySelector(".rl-prefs")) return;
+    const botao = (rotulo, titulo, acao) => {
+      const b = el("button", { class: "rl-pref", title: titulo, "aria-label": titulo }, rotulo);
+      b.onclick = () => { acao(); aplicar(); };
+      return b;
+    };
+    const escala = (passo) => () => {
+      const atual = parseFloat(lembrar("rl-escala") || "1");
+      guardar("rl-escala", String(Math.min(1.6, Math.max(0.8, Math.round((atual + passo) * 10) / 10))));
+    };
+    conteudo.prepend(el("div", { class: "rl-prefs" },
+      botao("A−", "Diminuir a fonte", escala(-0.1)),
+      botao("A", "Fonte padrão", () => guardar("rl-escala", "1")),
+      botao("A+", "Aumentar a fonte", escala(0.1)),
+      botao("↔", "Alternar largura do conteúdo", () => guardar("rl-largo", lembrar("rl-largo") === "1" ? "0" : "1")),
+    ));
+  }
+
   // ------------------------------------------------------------------ início
   document.addEventListener("DOMContentLoaded", async () => {
+    preferencias();
     const painel = document.querySelector(".rl-aula");
     const amb = document.getElementById("rl-ambiente");
     if (!painel && !amb && !document.querySelector(".rl-trilha")) return;

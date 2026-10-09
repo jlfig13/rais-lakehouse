@@ -14,7 +14,7 @@ checks: ['a13_cinco_tabelas', 'a13_total_bate_silver', 'a13_uf_preenchida', 'a13
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 11, Guia Parte 15.3 (test_gap_sexo) |
+| Origem no guia | Guia Parte [11](../guia/parte-11.md), Guia Parte [15.3](../guia/parte-15.md#parte-15-3) (test_gap_sexo) |
 | Depende de | [Aula 12](aula-12.md) |
 | Entregas | `src/gold.py`, `tests/test_utils.py (test_gap_sexo)`, `notebooks/04_gold.ipynb` |
 | Onde os checks rodam | Container spark |
@@ -22,7 +22,7 @@ checks: ['a13_cinco_tabelas', 'a13_total_bate_silver', 'a13_uf_preenchida', 'a13
 
 A gold é o que alguém de fora do time de dados consome. Ao final desta aula existem cinco tabelas, cada uma respondendo uma pergunta, calculadas por funções testáveis e prontas para gráfico, BI ou relatório.
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
+**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -36,9 +36,9 @@ A gold é o que alguém de fora do time de dados consome. Ao final desta aula ex
 
 ## 2. Contextualização
 
-A gold nasce de **perguntas de negócio** (guia, Parte 11.1). Cada tabela responde uma pergunta específica e é pequena o bastante para ir direto a um gráfico. **\[Complemento didático\]** Uma "gold de tudo" (a silver agregada por todas as dimensões) parece flexível, mas joga de volta para o consumidor as decisões difíceis — qual coluna de remuneração, só ativos ou não — e cada consumidor decide diferente.
+A gold nasce de **perguntas de negócio** (guia, Parte [11.1](../guia/parte-11.md#parte-11-1)). Cada tabela responde uma pergunta específica e é pequena o bastante para ir direto a um gráfico. <span class="rl-complemento">Complemento didático</span> Uma "gold de tudo" (a silver agregada por todas as dimensões) parece flexível, mas joga de volta para o consumidor as decisões difíceis — qual coluna de remuneração, só ativos ou não — e cada consumidor decide diferente.
 
-## 3. Fundamentação teórica (guia, Parte 11.1)
+## 3. Fundamentação teórica (guia, Parte [11.1](../guia/parte-11.md#parte-11-1))
 
 ### 3.1 Regras de ouro
 
@@ -58,11 +58,11 @@ A gold nasce de **perguntas de negócio** (guia, Parte 11.1). Cada tabela respon
 
 ### 3.3 Média, mediana e massa
 
-**\[Complemento didático\]** Remuneração tem distribuição assimétrica: poucos salários muito altos puxam a média para cima. Por isso `gold_emprego_uf_ano` traz média e mediana (`percentile_approx`). **Massa salarial** é a soma das remunerações — mede o tamanho econômico, não o salário típico.
+<span class="rl-complemento">Complemento didático</span> Remuneração tem distribuição assimétrica: poucos salários muito altos puxam a média para cima. Por isso `gold_emprego_uf_ano` traz média e mediana (`percentile_approx`). **Massa salarial** é a soma das remunerações — mede o tamanho econômico, não o salário típico.
 
 ### 3.4 Funções puras
 
-Cada tabela é uma **função pura**: recebe DataFrames e devolve DataFrame, sem ler nem gravar nada. Isso torna o código testável: você chama `gap_sexo(df_de_teste, dim)` num teste, sem MinIO (guia, Parte 11.2).
+Cada tabela é uma **função pura**: recebe DataFrames e devolve DataFrame, sem ler nem gravar nada. Isso torna o código testável: você chama `gap_sexo(df_de_teste, dim)` num teste, sem MinIO (guia, Parte [11.2](../guia/parte-11.md#parte-11-2)).
 
 ### 3.5 Recalcular inteira
 
@@ -82,7 +82,7 @@ A gold é recriada por completo a cada execução (`gravar_tabela` com `overwrit
 
 ## 5. Tutorial
 
-### Passo 1 — `src/gold.py` (guia, Parte 11.2)
+### Passo 1 — `src/gold.py` (guia, Parte [11.2](../guia/parte-11.md#parte-11-2))
 
 ```python
 """Gold: tabelas analíticas prontas para consumo."""
@@ -201,7 +201,7 @@ if __name__ == "__main__":
 | `coalesce(4)` | Poucos arquivos por tabela pequena (Aula 08) |
 | `_ = dim_sexo` | O guia deixa a dimensão pronta para exercícios |
 
-### Passo 2 — Teste de unidade da gold (guia, Parte 15.3)
+### Passo 2 — Teste de unidade da gold (guia, Parte [15.3](../guia/parte-15.md#parte-15-3))
 
 Acrescente a `tests/test_utils.py`:
 
@@ -222,7 +222,7 @@ def test_gap_sexo(spark):
 
 Este teste roda sem MinIO e sem RAIS — é o ganho das funções puras.
 
-### Passo 3 — Rodar e consultar (guia, Parte 11.3)
+### Passo 3 — Rodar e consultar (guia, Parte [11.3](../guia/parte-11.md#parte-11-3))
 
 ```bash
 docker compose exec spark python -m src.gold
@@ -259,7 +259,7 @@ Use `toPandas()` **só** em tabelas gold; em silver ou bronze a memória estoura
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Uma pergunta nova vira uma função nova.** **\[Complemento didático\]** "Remuneração por porte" → `def porte(ativos): return ativos.groupBy("ano", "tamanho_estab").agg(...)` + uma entrada no dicionário `tabelas` + um teste.
+**Exemplo 1 — Uma pergunta nova vira uma função nova.** <span class="rl-complemento">Complemento didático</span> "Remuneração por porte" → `def porte(ativos): return ativos.groupBy("ano", "tamanho_estab").agg(...)` + uma entrada no dicionário `tabelas` + um teste.
 
 **Exemplo 2 — Exportar para Excel ou Power BI (guia, exercício 5).**
 
@@ -289,7 +289,7 @@ O CSV fica em `staging/export/emprego/` no host (bind mount) — um arquivo `par
 3. Funções puras com testes (guia).
 4. Broadcast nas dimensões (guia).
 5. `toPandas` só na gold (guia).
-6. **\[Complemento didático\]** Documentar cada tabela gold no README: pergunta, grão, colunas, base (ativos ou todos).
+6. <span class="rl-complemento">Complemento didático</span> Documentar cada tabela gold no README: pergunta, grão, colunas, base (ativos ou todos).
 
 ## 10. Riscos
 
@@ -298,13 +298,13 @@ O CSV fica em `staging/export/emprego/` no host (bind mount) — um arquivo `par
 | Integridade analítica | Leitura de vínculos como pessoas | Rótulos e README |
 | Integridade analítica | Média distorcida por extremos | Mediana junto |
 | Integridade | Join com dimensão duplicada infla totais | Check de soma |
-| Privacidade | Recortes muito finos expondo poucos vínculos | **\[Complemento didático\]** Evitar publicar células com contagem muito pequena |
+| Privacidade | Recortes muito finos expondo poucos vínculos | <span class="rl-complemento">Complemento didático</span> Evitar publicar células com contagem muito pequena |
 
 ## 11. Laboratório e validação na plataforma
 
 **Contribuição ao projeto:** as cinco tabelas são o produto final do lakehouse.
 
-**\[Complemento didático\]** `labcheck/test_aula13.py`:
+<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula13.py`:
 
 ```python
 """Checks da Aula 13: gold completa e coerente com a silver."""
@@ -359,7 +359,7 @@ def test_a13_teste_gap_sexo():
 
 ## 12. Exercícios, revisão e desafios
 
-**Exercícios (guia, Parte 11)**
+**Exercícios (guia, Parte [11](../guia/parte-11.md))**
 
 1. Quais as 5 UFs com mais vínculos ativos?
 2. Onde a `razao_mulher_homem` é menor?

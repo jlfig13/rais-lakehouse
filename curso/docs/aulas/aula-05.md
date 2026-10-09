@@ -14,7 +14,7 @@ checks: ['a05_repositorio_git', 'a05_env_ignorado', 'a05_env_nao_versionado', 'a
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 3, Guia Parte 7.1, Guia Parte 7.2 |
+| Origem no guia | Guia Parte [3](../guia/parte-03.md), Guia Parte [7.1](../guia/parte-07.md#parte-7-1), Guia Parte [7.2](../guia/parte-07.md#parte-7-2) |
 | Depende de | [Aula 01](aula-01.md), [Aula 03](aula-03.md) |
 | Entregas | `.gitignore`, `config/settings.py`, `estrutura de pastas`, `primeiro commit` |
 | Onde os checks rodam | Host (WSL/Linux) |
@@ -22,7 +22,7 @@ checks: ['a05_repositorio_git', 'a05_env_ignorado', 'a05_env_nao_versionado', 'a
 
 Ao final desta aula o RAIS Lakehouse é um repositório Git organizado, sem dados nem segredos versionados, com a configuração lida de variáveis de ambiente em `config/settings.py`.
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
+**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -33,11 +33,11 @@ Ao final desta aula o RAIS Lakehouse é um repositório Git organizado, sem dado
 
 **Pré-requisitos:** Aulas 01 a 03 (arquivos `docs/decisoes.md`, Dockerfile, compose, `.env`). Git instalado (`git --version`) e configurado com `git config --global user.name` e `user.email`.
 
-**Nota de ordem.** O guia monta a estrutura antes da infraestrutura (Parte 3). O curso inverteu a ordem para você ver o Docker funcionando antes; esta aula organiza o que já existe e completa o que falta.
+**Nota de ordem.** O guia monta a estrutura antes da infraestrutura (Parte [3](../guia/parte-03.md)). O curso inverteu a ordem para você ver o Docker funcionando antes; esta aula organiza o que já existe e completa o que falta.
 
 ## 2. Contextualização
 
-Um projeto de dados acumula três coisas que não podem ser tratadas igual: **código** (versão controlada, revisada), **configuração** (muda por máquina, inclui senhas) e **dados** (grandes, reconstruíveis). Misturar os três gera os problemas clássicos: senha no GitHub, repositório de vários GB, código que só roda na máquina de quem escreveu. Esta aula separa os três. **\[Complemento didático\]**
+Um projeto de dados acumula três coisas que não podem ser tratadas igual: **código** (versão controlada, revisada), **configuração** (muda por máquina, inclui senhas) e **dados** (grandes, reconstruíveis). Misturar os três gera os problemas clássicos: senha no GitHub, repositório de vários GB, código que só roda na máquina de quem escreveu. Esta aula separa os três. <span class="rl-complemento">Complemento didático</span>
 
 | Tipo | Onde vive | Vai para o Git? |
 | --- | --- | --- |
@@ -49,15 +49,15 @@ Um projeto de dados acumula três coisas que não podem ser tratadas igual: **c�
 
 ## 3. Fundamentação teórica
 
-### 3.1 Por que esta estrutura (guia, Parte 3.1)
+### 3.1 Por que esta estrutura (guia, Parte [3.1](../guia/parte-03.md#parte-3-1))
 
 - `src/` guarda o código de produção, importável e testável. `notebooks/` é só para explorar.
 - `config/` separa **configuração** de **lógica**: trocar de ambiente não exige mudar código.
 - `docker/` concentra a infraestrutura; `docs/` concentra as decisões e o conhecimento do domínio.
 
-**\[Complemento didático\]** Notebook não é código de produção porque mistura execução e estado (células rodadas fora de ordem), é difícil de testar e gera diffs ilegíveis no Git. Explore no notebook; quando algo funciona, mova para `src/` como função.
+<span class="rl-complemento">Complemento didático</span> Notebook não é código de produção porque mistura execução e estado (células rodadas fora de ordem), é difícil de testar e gera diffs ilegíveis no Git. Explore no notebook; quando algo funciona, mova para `src/` como função.
 
-### 3.2 Configuração por ambiente (guia, Parte 7.1)
+### 3.2 Configuração por ambiente (guia, Parte [7.1](../guia/parte-07.md#parte-7-1))
 
 Os princípios da metodologia **12-Factor App** orientam o projeto: a configuração vem de **variáveis de ambiente**, não fica fixa no código. O mesmo código roda no seu notebook, no container e num servidor, mudando só o ambiente.
 
@@ -71,7 +71,7 @@ A cadeia completa no curso:
                                                          config/settings.py
 ```
 
-### 3.3 Regras de ouro do repositório (guia, Parte 3.3)
+### 3.3 Regras de ouro do repositório (guia, Parte [3.3](../guia/parte-03.md#parte-3-3))
 
 1. **Nunca** versione dados nem segredos (`.env`, senhas, chaves).
 2. Versione um `.env.example` com valores fictícios para documentar o que é necessário.
@@ -86,7 +86,7 @@ A cadeia completa no curso:
 
 Um não substitui o outro.
 
-## 4. Arquitetura: a estrutura final (guia, Parte 3.1)
+## 4. Arquitetura: a estrutura final (guia, Parte [3.1](../guia/parte-03.md#parte-3-1))
 
 ```
 rais-lakehouse/
@@ -105,11 +105,11 @@ rais-lakehouse/
 └── requirements.txt  requirements-dev.txt
 ```
 
-**\[Complemento didático\] — pastas da plataforma** (plano técnico, seção 6): `curso/` (site), `labs/` (exercícios verificáveis), `labcheck/` (checks; `labcheck/host/` para os do host) e `progress/` (não versionado).
+<span class="rl-complemento">Complemento didático</span> **pastas da plataforma** (plano técnico, seção 6): `curso/` (site), `labs/` (exercícios verificáveis), `labcheck/` (checks; `labcheck/host/` para os do host) e `progress/` (não versionado).
 
 ## 5. Tutorial
 
-### Passo 1 — Iniciar o repositório e criar as pastas (guia, Parte 3.2)
+### Passo 1 — Iniciar o repositório e criar as pastas (guia, Parte [3.2](../guia/parte-03.md#parte-3-2))
 
 ```bash
 cd ~/rais-lakehouse
@@ -126,7 +126,7 @@ mkdir -p labs labcheck/host progress curso/docs
 - `staging/.gitkeep`: o Git não versiona pastas vazias; o arquivo vazio mantém a pasta no repositório (o conteúdo dela fica ignorado).
 - Se `docs/decisoes.md` (Aula 01) estiver em outro lugar, mova-o para `docs/`.
 
-### Passo 2 — `.gitignore` (guia, Parte 3.2)
+### Passo 2 — `.gitignore` (guia, Parte [3.2](../guia/parte-03.md#parte-3-2))
 
 ```gitignore
 # Segredos
@@ -154,7 +154,7 @@ metastore_db/
 derby.log
 ```
 
-Acrescente as entradas da plataforma **\[Complemento didático\]**:
+Acrescente as entradas da plataforma <span class="rl-complemento">Complemento didático</span>:
 
 ```gitignore
 # Plataforma
@@ -170,7 +170,7 @@ progress/
 
 O `.dockerignore` já foi criado na Aula 02.
 
-### Passo 3 — `config/settings.py` (guia, Parte 7.2)
+### Passo 3 — `config/settings.py` (guia, Parte [7.2](../guia/parte-07.md#parte-7-2))
 
 ```python
 """Configurações do projeto, lidas de variáveis de ambiente (com padrões seguros)."""
@@ -199,7 +199,7 @@ ANOS = list(range(2019, 2025))
 | `BRONZE`, `SILVER`, `GOLD` | `str` | Derivados de `LAKE` | Aulas 11 a 14 |
 | `ANOS` | `list[int]` | Fixo no código | Aula 14 |
 
-**Por que `Path` para staging e `str` para o lake:** o staging é disco local, manipulado com `pathlib`; o lake é uma URI (`s3a://`) que só o Spark entende. **\[Complemento didático\]** `range(2019, 2025)` gera 2019 a 2024 (o fim não entra); atualize quando o MTE publicar um ano novo.
+**Por que `Path` para staging e `str` para o lake:** o staging é disco local, manipulado com `pathlib`; o lake é uma URI (`s3a://`) que só o Spark entende. <span class="rl-complemento">Complemento didático</span> `range(2019, 2025)` gera 2019 a 2024 (o fim não entra); atualize quando o MTE publicar um ano novo.
 
 ### Passo 4 — `docs/` e `.env.example`
 
@@ -230,7 +230,7 @@ git commit -m "chore: estrutura inicial do projeto"
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — A mesma configuração, dois ambientes.** **\[Complemento didático\]**
+**Exemplo 1 — A mesma configuração, dois ambientes.** <span class="rl-complemento">Complemento didático</span>
 
 ```bash
 # No host (sem as variáveis do compose): valores padrão
@@ -252,18 +252,18 @@ O código não mudou; só o ambiente. É o 12-Factor na prática.
 | Sintoma | Causa | Solução |
 | --- | --- | --- |
 | `.env` aparece no `git status` | `.gitignore` ausente, com nome errado ou fora da raiz | Corrigir o `.gitignore`; `git check-ignore -v .env` |
-| `.env` já foi commitado | Commit feito antes do `.gitignore` | `git rm --cached .env` + commit, **e troque todas as senhas**: o histórico guarda o conteúdo (guia, Parte 16.4) |
+| `.env` já foi commitado | Commit feito antes do `.gitignore` | `git rm --cached .env` + commit, **e troque todas as senhas**: o histórico guarda o conteúdo (guia, Parte [16.4](../guia/parte-16.md#parte-16-4)) |
 | `ModuleNotFoundError: No module named 'config'` | Executado fora da raiz ou sem `__init__.py` | Rodar da raiz; no container, `PYTHONPATH=/app` (Aula 02) resolve |
 | Pasta `staging` sumiu do repositório clonado | Faltou `!staging/.gitkeep` | Ver passo 2 |
-| Repositório enorme | Dados commitados | Remover do índice; dados grandes no histórico exigem reescrever o histórico **\[Complemento didático\]** |
+| Repositório enorme | Dados commitados | Remover do índice; dados grandes no histórico exigem reescrever o histórico <span class="rl-complemento">Complemento didático</span> |
 
 ## 9. Boas práticas
 
-1. Estrutura previsível: produção em `src/`, exploração em `notebooks/`, decisões em `docs/` (Parte 3.1).
-2. Configuração só por variável de ambiente, com padrões seguros (Parte 7.1).
+1. Estrutura previsível: produção em `src/`, exploração em `notebooks/`, decisões em `docs/` (Parte [3.1](../guia/parte-03.md#parte-3-1)).
+2. Configuração só por variável de ambiente, com padrões seguros (Parte [7.1](../guia/parte-07.md#parte-7-1)).
 3. `.env.example` sempre atualizado quando surgir variável nova.
-4. Commits pequenos, um por passo concluído (Parte 3.3).
-5. **\[Complemento didático\]** Revise `git status` antes de todo `git add .`; prefira `git add <arquivo>` quando estiver em dúvida.
+4. Commits pequenos, um por passo concluído (Parte [3.3](../guia/parte-03.md#parte-3-3)).
+5. <span class="rl-complemento">Complemento didático</span> Revise `git status` antes de todo `git add .`; prefira `git add <arquivo>` quando estiver em dúvida.
 
 ## 10. Riscos
 
@@ -278,7 +278,7 @@ O código não mudou; só o ambiente. É o 12-Factor na prática.
 
 **Contribuição ao projeto:** o repositório passa a ser a fonte única do projeto; `settings.py` é importado por todas as camadas.
 
-**\[Complemento didático\]** `labcheck/host/test_aula05.py` (roda no host, na raiz):
+<span class="rl-complemento">Complemento didático</span> `labcheck/host/test_aula05.py` (roda no host, na raiz):
 
 ```python
 """Checks da Aula 05: repositório organizado e sem segredos versionados."""
@@ -344,7 +344,7 @@ def test_a05_settings_padrao():
 
 **Respostas sugeridas:** (1) para poder reincluir o `.gitkeep` com `!`; com `staging/` a pasta inteira é ignorada e a exceção não funciona; (2) um protege o repositório, o outro o contexto de build e a imagem; (3) o lake é uma URI do Spark, o staging é disco local; (4) remover do índice e trocar todas as senhas — apagar o commit não basta.
 
-**Desafio:** escreva um *pre-commit hook* (`.git/hooks/pre-commit`) que impeça commits contendo `.env` ou arquivos `.7z`. **\[Complemento didático\]**
+**Desafio:** escreva um *pre-commit hook* (`.git/hooks/pre-commit`) que impeça commits contendo `.env` ou arquivos `.7z`. <span class="rl-complemento">Complemento didático</span>
 
 ## 13. Referências cruzadas
 

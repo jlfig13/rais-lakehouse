@@ -14,7 +14,7 @@ checks: ['a11_bronze_delta', 'a11_ano_carregado', 'a11_tudo_string', 'a11_arquiv
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 8, Guia Parte 9 |
+| Origem no guia | Guia Parte [8](../guia/parte-08.md), Guia Parte [9](../guia/parte-09.md) |
 | Depende de | [Aula 09](aula-09.md), [Aula 10](aula-10.md) |
 | Entregas | `src/ingest.py`, `src/bronze.py`, `notebooks/02_bronze.ipynb` |
 | Onde os checks rodam | Container spark |
@@ -22,7 +22,7 @@ checks: ['a11_bronze_delta', 'a11_ano_carregado', 'a11_tudo_string', 'a11_arquiv
 
 Ao final desta aula o primeiro ano da RAIS está no lake: extraído da landing, lido com o separador e o encoding certos e gravado como tabela Delta na bronze, fiel à origem e reprocessável sem duplicar.
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
+**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -36,17 +36,17 @@ Ao final desta aula o primeiro ano da RAIS está no lake: extraído da landing, 
 
 ## 2. Contextualização
 
-A bronze é a **cópia fiel e eficiente** da origem (guia, Parte 9.1). Ela não interpreta nada; existe para que nunca mais seja preciso reler o `.txt` lento e pesado. Se um dia a regra da silver mudar, refaz-se a silver a partir da bronze, sem tocar na landing. **\[Complemento didático\]** Isso divide o custo: a parte mais cara (ler texto latin-1 com dezenas de milhões de linhas) acontece uma vez por ano de dado.
+A bronze é a **cópia fiel e eficiente** da origem (guia, Parte [9.1](../guia/parte-09.md#parte-9-1)). Ela não interpreta nada; existe para que nunca mais seja preciso reler o `.txt` lento e pesado. Se um dia a regra da silver mudar, refaz-se a silver a partir da bronze, sem tocar na landing. <span class="rl-complemento">Complemento didático</span> Isso divide o custo: a parte mais cara (ler texto latin-1 com dezenas de milhões de linhas) acontece uma vez por ano de dado.
 
 ## 3. Fundamentação teórica
 
-### 3.1 Ingestão (guia, Parte 8.1)
+### 3.1 Ingestão (guia, Parte [8.1](../guia/parte-08.md#parte-8-1))
 
 Ingerir é trazer o dado da fonte **sem alterá-lo**. Separe **baixar** de **extrair**: se um passo falhar, você refaz só ele. Torne cada passo **idempotente**: se o arquivo já existe, ele é pulado.
 
-**Download atômico.** O download grava primeiro em `.part` e só renomeia no fim: um download interrompido nunca é confundido com um arquivo completo (guia, Parte 8.2).
+**Download atômico.** O download grava primeiro em `.part` e só renomeia no fim: um download interrompido nunca é confundido com um arquivo completo (guia, Parte [8.2](../guia/parte-08.md#parte-8-2)).
 
-### 3.2 As cinco regras da bronze (guia, Parte 9.1)
+### 3.2 As cinco regras da bronze (guia, Parte [9.1](../guia/parte-09.md#parte-9-1))
 
 | Regra | Por quê |
 | --- | --- |
@@ -63,12 +63,12 @@ Ingerir é trazer o dado da fonte **sem alterá-lo**. Separe **baixar** de **ext
 | `header` | `True` | Primeira linha é cabeçalho |
 | `sep` | `;` | Separador da RAIS |
 | `encoding` | `ISO-8859-1` | latin-1; sem isso, acentos viram `�` |
-| `inferSchema` | `False` | Tudo string, de propósito — e evita uma passada extra pelos dados para inferir tipos **\[Complemento didático\]** |
+| `inferSchema` | `False` | Tudo string, de propósito — e evita uma passada extra pelos dados para inferir tipos <span class="rl-complemento">Complemento didático</span> |
 | caminho `raw/<ano>/*.txt` | glob | Lê todas as regiões do ano numa só leitura |
 
 ### 3.4 Coluna oculta `_metadata`
 
-**\[Complemento didático\]** Fontes de arquivo no Spark expõem uma coluna oculta `_metadata` com informações do arquivo lido; `_metadata.file_name` é o nome. O guia a captura **antes** de renomear as colunas, para garantir que ela ainda seja resolvível.
+<span class="rl-complemento">Complemento didático</span> Fontes de arquivo no Spark expõem uma coluna oculta `_metadata` com informações do arquivo lido; `_metadata.file_name` é o nome. O guia a captura **antes** de renomear as colunas, para garantir que ela ainda seja resolvível.
 
 ## 4. Arquitetura e fluxo
 
@@ -88,7 +88,7 @@ Ingerir é trazer o dado da fonte **sem alterá-lo**. Separe **baixar** de **ext
 
 ## 5. Tutorial
 
-### Passo 1 — `src/ingest.py` (guia, Parte 8.2)
+### Passo 1 — `src/ingest.py` (guia, Parte [8.2](../guia/parte-08.md#parte-8-2))
 
 ```python
 """Download e extração dos microdados da RAIS."""
@@ -153,16 +153,16 @@ if __name__ == "__main__":
 
 - **Para começar,** o guia recomenda baixar o `.7z` manualmente (Aula 09) e usar só o `extrair`. O `baixar` depende de um endereço de FTP que deve ser confirmado no site do MTE.
 - `ftp.login()` sem argumentos faz login anônimo.
-- **\[Complemento didático\]** O container precisa de acesso à internet para `baixar`; em ambiente sem saída, só o caminho manual funciona.
+- <span class="rl-complemento">Complemento didático</span> O container precisa de acesso à internet para `baixar`; em ambiente sem saída, só o caminho manual funciona.
 
 ```bash
 docker compose exec spark python -m src.ingest 2022
 docker compose exec spark bash -c "ls -lh /staging/raw/2022/ && head -c 500 /staging/raw/2022/*.txt"
 ```
 
-O `head` deve mostrar o cabeçalho separado por `;`. Acentos estranhos aqui são esperados: o encoding é tratado na leitura (guia, Parte 8).
+O `head` deve mostrar o cabeçalho separado por `;`. Acentos estranhos aqui são esperados: o encoding é tratado na leitura (guia, Parte [8](../guia/parte-08.md)).
 
-### Passo 2 — `src/bronze.py` (guia, Parte 9.2)
+### Passo 2 — `src/bronze.py` (guia, Parte [9.2](../guia/parte-09.md#parte-9-2))
 
 ```python
 """Bronze: CSV/TXT da RAIS -> Delta, fiel à origem."""
@@ -207,7 +207,7 @@ if __name__ == "__main__":
 docker compose exec spark python -m src.bronze 2022
 ```
 
-### Passo 3 — Explorar (guia, Parte 9.3), notebook `02_bronze.ipynb`
+### Passo 3 — Explorar (guia, Parte [9.3](../guia/parte-09.md#parte-9-3)), notebook `02_bronze.ipynb`
 
 ```python
 from config.settings import BRONZE
@@ -224,7 +224,7 @@ b.select("municipio", "sexo_trabalhador", "vl_remun_media_nom").show(10)
 
 ### Passo 4 — Limpar a raw
 
-Depois de validar a bronze, apague `staging/raw/2022/`: o `.7z` na landing continua como fonte (guia, Parte 9). O pipeline da Aula 14 faz isso com `--limpar-raw`.
+Depois de validar a bronze, apague `staging/raw/2022/`: o `.7z` na landing continua como fonte (guia, Parte [9](../guia/parte-09.md)). O pipeline da Aula 14 faz isso com `--limpar-raw`.
 
 ## 6. Funcionamento e resultados esperados
 
@@ -239,7 +239,7 @@ Depois de validar a bronze, apague `staging/raw/2022/`: o `.7z` na landing conti
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Encoding errado, de propósito.** **\[Complemento didático\]** Leia o mesmo `.txt` com `encoding` `UTF-8` e compare o nome da coluna de município: aparece `Munic�pio` (guia, Apêndice A, item 10).
+**Exemplo 1 — Encoding errado, de propósito.** <span class="rl-complemento">Complemento didático</span> Leia o mesmo `.txt` com `encoding` `UTF-8` e compare o nome da coluna de município: aparece `Munic�pio` (guia, [Apêndice A](../guia/apendice-a.md), item 10).
 
 **Exemplo 2 — Linhas por região.** `b.groupBy("arquivo_origem").count().show(truncate=False)` mostra quantos vínculos vieram de cada `.txt` — útil para notar uma região faltando.
 
@@ -265,7 +265,7 @@ Depois de validar a bronze, apague `staging/raw/2022/`: o `.7z` na landing conti
 2. Etapas separadas e idempotentes (guia).
 3. Bronze sem regra de negócio (guia).
 4. Validar a bronze antes de apagar a raw.
-5. **\[Complemento didático\]** Registrar a contagem de linhas por arquivo de origem a cada carga, para comparar entre anos.
+5. <span class="rl-complemento">Complemento didático</span> Registrar a contagem de linhas por arquivo de origem a cada carga, para comparar entre anos.
 
 ## 10. Riscos
 
@@ -281,7 +281,7 @@ Depois de validar a bronze, apague `staging/raw/2022/`: o `.7z` na landing conti
 
 **Contribuição ao projeto:** a bronze é a fonte da silver e o ponto de reprocessamento sem reler texto.
 
-**\[Complemento didático\]** `labcheck/test_aula11.py` (somente leitura):
+<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula11.py` (somente leitura):
 
 ```python
 """Checks da Aula 11: bronze do ano carregada, fiel e idempotente."""
@@ -336,7 +336,7 @@ def test_a11_idempotente(spark, ano):
 
 ## 12. Exercícios, revisão e desafios
 
-**Exercícios (guia, Parte 9)**
+**Exercícios (guia, Parte [9](../guia/parte-09.md))**
 
 1. Quantos vínculos e quantas colunas há?
 2. Liste os valores distintos de `sexo_trabalhador` e `vinculo_ativo_31_12`.

@@ -6,6 +6,17 @@ site_dir: site
 use_directory_urls: false
 theme:
   language: pt-BR
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: lucide/moon
+        name: Tema escuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: lucide/sun
+        name: Tema claro
   features:
     - navigation.sections
     - search.highlight
@@ -48,4 +59,26 @@ nav:
     - "15 — Tuning: threads, memória, partições e Spark UI": aulas/aula-15.md
     - "16 — Qualidade, testes, CI e boas práticas de GitHub": aulas/aula-16.md
   - Apêndices: apendices.md
+  - Guia original:
+    - Capa: guia/index.md
+    - "Parte 1 — Arquitetura e decisões": guia/parte-01.md
+    - "Parte 2 — Conceitos de Docker e Docker Compose": guia/parte-02.md
+    - "Parte 3 — Estrutura do repositório e Git": guia/parte-03.md
+    - "Parte 4 — Infraestrutura: Dockerfile, Compose e MinIO": guia/parte-04.md
+    - "Parte 5 — Fundamentos de PySpark": guia/parte-05.md
+    - "Parte 6 — Conhecendo a RAIS": guia/parte-06.md
+    - "Parte 7 — Código base: configuração e utilitários": guia/parte-07.md
+    - "Parte 8 — Ingestão (landing → raw)": guia/parte-08.md
+    - "Parte 9 — Bronze": guia/parte-09.md
+    - "Parte 10 — Silver": guia/parte-10.md
+    - "Parte 11 — Gold": guia/parte-11.md
+    - "Parte 12 — Pipeline completo (2019 → hoje)": guia/parte-12.md
+    - "Parte 13 — Delta Lake na prática": guia/parte-13.md
+    - "Parte 14 — Tuning: threads, memória e partições": guia/parte-14.md
+    - "Parte 15 — Qualidade, testes e CI": guia/parte-15.md
+    - "Parte 16 — Boas práticas de GitHub": guia/parte-16.md
+    - "Apêndice A — Armadilhas conhecidas": guia/apendice-a.md
+    - "Apêndice B — Solução de problemas": guia/apendice-b.md
+    - "Apêndice C — Glossário": guia/apendice-c.md
+    - "Apêndice D — Próximos passos": guia/apendice-d.md
   - Progresso: progresso.md

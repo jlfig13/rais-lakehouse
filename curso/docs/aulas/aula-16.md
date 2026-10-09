@@ -14,7 +14,7 @@ checks: ['a16_testes_passam', 'a16_lint_passa', 'a16_workflow_ci', 'a16_readme_c
 
 | | |
 | --- | --- |
-| Origem no guia | Guia Parte 15, Guia Parte 16 |
+| Origem no guia | Guia Parte [15](../guia/parte-15.md), Guia Parte [16](../guia/parte-16.md) |
 | Depende de | [Aula 01](aula-01.md), [Aula 02](aula-02.md), [Aula 03](aula-03.md), [Aula 04](aula-04.md), [Aula 05](aula-05.md), [Aula 06](aula-06.md), [Aula 07](aula-07.md), [Aula 08](aula-08.md), [Aula 09](aula-09.md), [Aula 10](aula-10.md), [Aula 11](aula-11.md), [Aula 12](aula-12.md), [Aula 13](aula-13.md), [Aula 14](aula-14.md), [Aula 15](aula-15.md) |
 | Entregas | `pyproject.toml`, `.github/workflows/ci.yml`, `README.md`, `LICENSE`, `tag v1.0.0` |
 | Onde os checks rodam | Container spark |
@@ -22,7 +22,7 @@ checks: ['a16_testes_passam', 'a16_lint_passa', 'a16_workflow_ci', 'a16_readme_c
 
 A última aula transforma o lakehouse num projeto profissional: testes que rodam a cada push, análise estática, histórico de commits legível e um README que mostra decisões, resultados e limitações.
 
-**Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
+**Convenção:** <span class="rl-complemento">Complemento didático</span> marca o que não está no guia original.
 
 ## 1. Objetivos e pré-requisitos
 
@@ -36,22 +36,22 @@ A última aula transforma o lakehouse num projeto profissional: testes que rodam
 
 ## 2. Contextualização
 
-Código de dados quebra de forma silenciosa: um ajuste numa regra da silver passa sem erro e muda um número da gold. Testes automatizados avisam antes de alguém ver um gráfico estranho. **\[Complemento didático\]** E, num projeto de portfólio, o repositório é avaliado pelo que mostra sem que você esteja presente: CI verde, commits claros e um README que explica as escolhas dizem mais que o código em si.
+Código de dados quebra de forma silenciosa: um ajuste numa regra da silver passa sem erro e muda um número da gold. Testes automatizados avisam antes de alguém ver um gráfico estranho. <span class="rl-complemento">Complemento didático</span> E, num projeto de portfólio, o repositório é avaliado pelo que mostra sem que você esteja presente: CI verde, commits claros e um README que explica as escolhas dizem mais que o código em si.
 
 ## 3. Fundamentação teórica
 
-### 3.1 Tipos de verificação (guia, Parte 15.1)
+### 3.1 Tipos de verificação (guia, Parte [15.1](../guia/parte-15.md#parte-15-1))
 
 | Tipo | O que verifica | Quando roda | Precisa de MinIO? | No projeto |
 | --- | --- | --- | --- | --- |
 | Teste de unidade | Uma função isolada, com dados minúsculos | A cada commit (CI) | Não | `tests/` |
 | Teste de fumaça | A infraestrutura funciona de ponta a ponta | Ao subir o ambiente | Sim | `scripts/smoke_test.py` |
 | Checagem de dados | O dado real faz sentido | A cada execução do pipeline | Sim | `src/checks.py` |
-| Checks da plataforma **\[Complemento didático\]** | O aluno concluiu cada aula | Sob demanda (`make check`) | Depende da aula | `labcheck/` |
+| Checks da plataforma <span class="rl-complemento">Complemento didático</span> | O aluno concluiu cada aula | Sob demanda (`make check`) | Depende da aula | `labcheck/` |
 
 ### 3.2 Análise estática com ruff
 
-**\[Complemento didático\]** Análise estática lê o código sem executá-lo e aponta problemas. As regras escolhidas pelo guia:
+<span class="rl-complemento">Complemento didático</span> Análise estática lê o código sem executá-lo e aponta problemas. As regras escolhidas pelo guia:
 
 | Grupo | Detecta |
 | --- | --- |
@@ -63,9 +63,9 @@ Código de dados quebra de forma silenciosa: um ajuste numa regra da silver pass
 
 ### 3.3 CI sem MinIO
 
-Os testes de unidade usam DataFrames em memória e não precisam de S3. Por isso as transformações foram escritas como **funções puras** (guia, Parte 15.5; Aula 13). O CI só precisa de Python, Java e as dependências.
+Os testes de unidade usam DataFrames em memória e não precisam de S3. Por isso as transformações foram escritas como **funções puras** (guia, Parte [15.5](../guia/parte-15.md#parte-15-5); Aula 13). O CI só precisa de Python, Java e as dependências.
 
-### 3.4 Conventional Commits (guia, Parte 16.1)
+### 3.4 Conventional Commits (guia, Parte [16.1](../guia/parte-16.md#parte-16-1))
 
 Formato: `tipo(escopo opcional): descrição no imperativo`.
 
@@ -81,7 +81,7 @@ Formato: `tipo(escopo opcional): descrição no imperativo`.
 
 Commits pequenos e frequentes: um commit faz **uma** coisa.
 
-### 3.5 Branches e Pull Requests (guia, Parte 16.2)
+### 3.5 Branches e Pull Requests (guia, Parte [16.2](../guia/parte-16.md#parte-16-2))
 
 - A `main` está sempre funcionando.
 - Uma branch por funcionalidade (`feat/`, `fix/`, `docs/`, `refactor/`).
@@ -105,7 +105,7 @@ Commits pequenos e frequentes: um commit faz **uma** coisa.
 
 ## 5. Tutorial
 
-### Passo 1 — `pyproject.toml` (guia, Parte 15.2)
+### Passo 1 — `pyproject.toml` (guia, Parte [15.2](../guia/parte-15.md#parte-15-2))
 
 ```toml
 [project]
@@ -141,7 +141,7 @@ make fmt      # ruff format . (formata)
 
 Corrija o que o ruff apontar; `ruff check --fix .` resolve parte automaticamente.
 
-### Passo 3 — CI (guia, Parte 15.5)
+### Passo 3 — CI (guia, Parte [15.5](../guia/parte-15.md#parte-15-5))
 
 `.github/workflows/ci.yml`:
 
@@ -188,7 +188,7 @@ jobs:
 | `setup-java` (temurin 17) | Java para o PySpark |
 | `ruff check .` e `pytest -q` | Falha o CI se lint ou testes falharem |
 
-**\[Complemento didático\] — passo da plataforma.** Depois que o site do curso existir (`curso/mkdocs.yml`), acrescente um passo que faça o build do site para pegar links quebrados. O comando exato do Zensical deve ser confirmado na documentação dele (plano técnico, seção 4).
+<span class="rl-complemento">Complemento didático</span> **passo da plataforma.** Depois que o site do curso existir (`curso/mkdocs.yml`), acrescente um passo que faça o build do site para pegar links quebrados. O comando exato do Zensical deve ser confirmado na documentação dele (plano técnico, seção 4).
 
 ### Passo 4 — Publicar no GitHub
 
@@ -201,7 +201,7 @@ git push -u origin main
 
 Abra a aba **Actions** do repositório: o workflow deve ficar verde.
 
-### Passo 5 — Fluxo com branch e PR (guia, Parte 16.2)
+### Passo 5 — Fluxo com branch e PR (guia, Parte [16.2](../guia/parte-16.md#parte-16-2))
 
 ```bash
 git switch -c feat/gold-faixa-etaria       # uma branch por funcionalidade
@@ -209,7 +209,7 @@ git switch -c feat/gold-faixa-etaria       # uma branch por funcionalidade
 git push -u origin feat/gold-faixa-etaria  # depois abra um PR no GitHub
 ```
 
-### Passo 6 — README (guia, Parte 16.3)
+### Passo 6 — README (guia, Parte [16.3](../guia/parte-16.md#parte-16-3))
 
 ```markdown
 # RAIS Lakehouse
@@ -247,7 +247,7 @@ RAIS/MTE — microdados públicos.
 
 Para portfólio, as seções que mais pesam são **Decisões técnicas**, **Resultados** (um gráfico vale muito) e **Limitações** (guia). Ajuste o intervalo de anos ao que você realmente processou.
 
-### Passo 7 — Licença e versão (guia, Parte 16.4)
+### Passo 7 — Licença e versão (guia, Parte [16.4](../guia/parte-16.md#parte-16-4))
 
 - **LICENSE:** escolha uma (MIT é a mais simples) para deixar claro como outros podem usar o código. O GitHub oferece modelos ao criar o arquivo pela interface.
 - **Tags:** marque marcos.
@@ -270,7 +270,7 @@ O guia sugere marcos como v0.1 = bronze/silver e v0.2 = gold; a v1.0.0 marca o c
 
 ## 7. Exemplos práticos
 
-**Exemplo 1 — Um teste que pega uma regressão.** **\[Complemento didático\]** Mude temporariamente o `rlike` do município na silver para `^\d{5}$`, extraia a validação para uma função pura e escreva um teste com `"261160"`: o teste falha e mostra o erro antes de qualquer pipeline rodar.
+**Exemplo 1 — Um teste que pega uma regressão.** <span class="rl-complemento">Complemento didático</span> Mude temporariamente o `rlike` do município na silver para `^\d{5}$`, extraia a validação para uma função pura e escreva um teste com `"261160"`: o teste falha e mostra o erro antes de qualquer pipeline rodar.
 
 **Exemplo 2 — Histórico legível.**
 
@@ -281,7 +281,7 @@ fix(silver): aceitar município com 6 dígitos apenas
 docs: limitações do eSocial no README
 ```
 
-**Exemplo 3 — Issues como backlog (guia, Parte 16.4).** Abra issues como "Adicionar RAIS Estabelecimentos" ou "Migrar gold para Iceberg" (Apêndice G).
+**Exemplo 3 — Issues como backlog (guia, Parte [16.4](../guia/parte-16.md#parte-16-4)).** Abra issues como "Adicionar RAIS Estabelecimentos" ou "Migrar gold para Iceberg" (Apêndice G).
 
 ## 8. Armadilhas, diagnóstico e soluções
 
@@ -291,10 +291,10 @@ docs: limitações do eSocial no README
 | CI falha em `ModuleNotFoundError: src` | Falta `pythonpath` no `pyproject.toml` | Passo 1 |
 | CI tenta acessar MinIO | Teste de unidade importando código que lê o lake na importação | Manter funções puras; leitura só dentro de funções |
 | `pytest` local roda os checks da plataforma | Rodado com caminho `labcheck/` | `make test` (usa `testpaths`) |
-| `.env` commitado | Faltou `.gitignore` | Remover e **trocar as senhas**: apagar o commit não basta (guia, Parte 16.4) |
+| `.env` commitado | Faltou `.gitignore` | Remover e **trocar as senhas**: apagar o commit não basta (guia, Parte [16.4](../guia/parte-16.md#parte-16-4)) |
 | PR com dezenas de mudanças misturadas | Commits grandes | Uma branch e um tema por PR |
 
-## 9. Boas práticas (guia, Parte 16)
+## 9. Boas práticas (guia, Parte [16](../guia/parte-16.md))
 
 1. Commits pequenos e frequentes, no padrão Conventional Commits.
 2. `main` sempre funcionando; PRs mesmo trabalhando sozinho.
@@ -317,7 +317,7 @@ docs: limitações do eSocial no README
 
 **Contribuição ao projeto:** o projeto final fica testado, documentado e publicado.
 
-**\[Complemento didático\]** `labcheck/test_aula16.py`:
+<span class="rl-complemento">Complemento didático</span> `labcheck/test_aula16.py`:
 
 ```python
 """Checks da Aula 16: qualidade e publicação."""
