@@ -812,4 +812,4 @@ make check-host AULA=03
 | `CONTAINER_MEM`, `SPARK_MEM`, `docker stats`, Spark UI 4040/4041 | Aula 15 | Parte 14 |
 | Erros de subida, permissão e memória | Apêndice B | Apêndice B |
 | Comandos `docker compose` e `make` | Apêndice D | Partes 2.4, 4.8 |
-| Serviço `curso` e alvos `check`, `check-host`, `progresso` | [Diagnóstico e plano técnico](https://claude.ai/code/artifact/68629f60-3f2f-40f2-a390-85d81360ea9e), seções 5 e 7 | — |
+| Serviço `curso` e alvos `check`, `check-host`, `progresso` | Diagnóstico e plano técnico, seções 5 e 7 | — |

@@ -695,4 +695,4 @@ make check-host AULA=02
 | Erros de build e permissão | Apêndice B | Apêndice B |
 | Comandos `docker` | Apêndice D | Parte 2.4 |
 | Termos: imagem, camada, bind mount, volume | Apêndice C | Apêndice C |
-| Plano técnico da plataforma (checks no host) | [Diagnóstico e plano técnico](https://claude.ai/code/artifact/68629f60-3f2f-40f2-a390-85d81360ea9e), seção 7 | — |
+| Plano técnico da plataforma (checks no host) | Diagnóstico e plano técnico, seção 7 | — |

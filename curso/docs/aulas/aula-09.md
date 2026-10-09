@@ -18,7 +18,6 @@ checks: ['a09_7z_na_landing', 'a09_7z_contem_txt', 'a09_dicionario_preenchido']
 | Depende de | [Aula 05](aula-05.md) |
 | Entregas | `staging/landing/<ano>/*.7z`, `docs/dicionario.md` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/41224932-e2c0-431d-8172-c8afac692149) |
 
 Antes de processar a RAIS, é preciso entender o que cada linha representa, como os arquivos são publicados e onde estão as armadilhas. Ao final desta aula você terá o primeiro `.7z` na landing e o `docs/dicionario.md` preenchido.
 

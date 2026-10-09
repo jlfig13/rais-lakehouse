@@ -18,7 +18,6 @@ checks: ['a14_varios_anos_na_gold', 'a14_checar_silver', 'a14_historico', 'a14_t
 | Depende de | [Aula 13](aula-13.md) |
 | Entregas | `src/run_pipeline.py`, `src/checks.py`, `notebooks/05_delta.ipynb` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/1b766905-154a-48d2-9291-f43d5dfa6ee4) |
 
 Até aqui cada camada foi rodada à mão. Esta aula junta tudo num pipeline de um comando, que processa 2019 até o último ano disponível, e ensina a operar as tabelas Delta: histórico, *time travel*, restauração, compactação e limpeza.
 

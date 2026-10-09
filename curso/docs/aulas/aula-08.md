@@ -18,7 +18,6 @@ checks: ['a08_maior_salario_por_uf', 'a08_join_broadcast', 'a08_detecta_shuffle'
 | Depende de | [Aula 07](aula-07.md) |
 | Entregas | `labs/aula08.py` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/a6511bda-2b14-4319-a278-e288ee8b9b5f) |
 
 Esta aula cobre o que separa "saber a sintaxe" de "saber usar o Spark": como ele decide executar (lazy evaluation e plano), o que custa caro (shuffle) e como os dados ficam no disco (partições e Parquet).
 

@@ -18,7 +18,6 @@ checks: ['a12_silver_delta', 'a12_contagem_igual_bronze', 'a12_tipos_do_contrato
 | Depende de | [Aula 11](aula-11.md) |
 | Entregas | `src/silver.py`, `notebooks/03_silver.ipynb`, `docs/dicionario.md (decisões)` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/fd16d518-50fe-44bc-adfc-dc512f42f943) |
 
 A silver transforma a bronze (texto fiel à origem) em dado confiável: tipos corretos, valores inválidos como NULL, campos derivados — e exatamente uma linha por vínculo, sem perder nenhuma.
 

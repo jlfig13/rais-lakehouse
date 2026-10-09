@@ -3,7 +3,7 @@
 [Complemento da plataforma] Fonte única: os metadados ficam no YAML e a lista de checks é
 lida dos próprios arquivos de teste (com `ast`, sem importar nada). Assim o site nunca
 descreve um check que não existe. O texto de cada aula vem de curso/conteudo/aula-NN.md
-(export em Markdown do documento da aula); sem ele, a página aponta para o documento.
+(export em Markdown do documento da aula); sem ele, a página avisa que falta o texto.
 
 Uso: python -m scripts.gerar_curso
 """
@@ -141,7 +141,7 @@ def comando(aula: int, onde: str, arquivo: Path) -> str:
     return f"make check AULA={aula:02d} ANO=2022"
 
 
-def limpar_conteudo(md: str, url_doc: str) -> str:
+def limpar_conteudo(md: str) -> str:
     """Adapta o export do documento à página: tira o repetido e o que não renderiza."""
     linhas = md.splitlines()
     # Título (a página gera o seu) e a linha de data/autor do documento
@@ -151,13 +151,10 @@ def limpar_conteudo(md: str, url_doc: str) -> str:
     texto = "\n".join(linhas)
     # Bloco de metadados (já está na tabela do topo da página)
     texto = re.sub(r"```yaml\n(?:#[^\n]*\n)?aula: .*?```\n+", "", texto, count=1, flags=re.S)
-    # Diagramas interativos do documento não vêm no export
-    texto = re.sub(
-        r"&#91;embedded content: (.+?)\\\]",
-        lambda m: f'!!! note "Diagrama interativo"\n    "{m.group(1)}" está no '
-                  f"[documento original]({url_doc}).",
-        texto,
-    )
+    # Diagramas interativos do documento não vêm no export: sai o marcador vazio
+    texto = re.sub(r"&#91;embedded content: .+?\\\]\n*", "", texto)
+    # Links para documentos privados do claude.ai não abrem para quem lê o site: fica só o texto
+    texto = re.sub(r"\[([^\]]+)\]\(https://claude\.ai/[^)]+\)", r"\1", texto)
     # Checklists escritos numa linha só ("**Checklist manual:** \[ \] a · \[ \] b") viram listas
     def lista(m: re.Match) -> str:
         itens = [i.strip() for i in re.split(r"\s*·\s*", m.group(2))]
@@ -173,7 +170,7 @@ def qtd_criterios(n: int) -> int:
     fonte = CONTEUDO / f"aula-{n:02d}.md"
     if not fonte.exists():
         return 0
-    return len(re.findall(r"^\s*- \[ \] ", limpar_conteudo(fonte.read_text(encoding="utf-8"), ""),
+    return len(re.findall(r"^\s*- \[ \] ", limpar_conteudo(fonte.read_text(encoding="utf-8")),
                           flags=re.M))
 
 
@@ -187,11 +184,10 @@ def arquivo_lab(a: dict) -> str:
     return ""
 
 
-def pagina_aula(a: dict, base: str) -> str:
+def pagina_aula(a: dict) -> str:
     n = a["aula"]
     arq = arquivo_de_checks(n)
     lista = checks(arq) if arq else []
-    url_doc = f"{base}/{a['doc']}"
     fonte = CONTEUDO / f"aula-{n:02d}.md"
     dep = ", ".join(f"[Aula {d:02d}](aula-{d:02d}.md)" for d in a["depende_de"]) or "—"
     linhas = [
@@ -216,17 +212,15 @@ def pagina_aula(a: dict, base: str) -> str:
         f"| Depende de | {dep} |",
         f"| Entregas | {', '.join(f'`{e}`' for e in a['entrega'])} |",
         f"| Onde os checks rodam | {ONDE[a['onde']]} |",
-        f"| Documento original | [abrir]({url_doc}) |",
         "",
     ]
     if fonte.exists():
-        texto = limpar_conteudo(fonte.read_text(encoding="utf-8"), url_doc)
+        texto = limpar_conteudo(fonte.read_text(encoding="utf-8"))
         linhas += [marcar_complemento(linkar_guia(texto, "../guia/")), ""]
     else:
         linhas += [
             '!!! warning "Conteúdo ainda não importado"',
-            f"    O texto desta aula ainda não está em `curso/conteudo/aula-{n:02d}.md`. "
-            f"Leia no [documento da Aula {n:02d}]({url_doc}).",
+            f"    O texto desta aula ainda não está em `curso/conteudo/aula-{n:02d}.md`.",
             "",
         ]
     linhas += ["## Checks automáticos", ""]
@@ -249,7 +243,7 @@ def pagina_aula(a: dict, base: str) -> str:
     return "\n".join(linhas) + "\n"
 
 
-def pagina_indice(meta: dict, base: str) -> str:
+def pagina_indice(meta: dict) -> str:
     linhas = [
         "# RAIS Lakehouse — Plataforma de aprendizagem",
         "",
@@ -285,20 +279,19 @@ def pagina_indice(meta: dict, base: str) -> str:
                       f'data-criterios="{qtd_criterios(n)}">—</span> |')
     linhas += [
         "",
-        f"Apêndices A–G: [página de apêndices](apendices.md). "
-        f"Diagnóstico e plano técnico da plataforma: [documento]({base}/{meta['plano_doc']}).",
+        "Apêndices A–G: [página de apêndices](apendices.md). "
+        "Guia em que o curso se baseia: [Guia original](guia/index.md).",
     ]
     return "\n".join(linhas) + "\n"
 
 
-def pagina_apendices(meta: dict, base: str) -> str:
-    url_doc = f"{base}/{meta['apendices_doc']}"
+def pagina_apendices(meta: dict) -> str:
     fonte = CONTEUDO / "apendices.md"
     if fonte.exists():
-        texto = limpar_conteudo(fonte.read_text(encoding="utf-8"), url_doc)
+        texto = limpar_conteudo(fonte.read_text(encoding="utf-8"))
         return "# Apêndices\n\n" + marcar_complemento(linkar_guia(texto, "guia/"))
-    linhas = ["# Apêndices", "", f"Todos os apêndices estão num único documento: "
-              f"[abrir os apêndices]({url_doc}).", ""]
+    linhas = ["# Apêndices", "", "O texto dos apêndices ainda não está em "
+              "`curso/conteudo/apendices.md`.", ""]
     linhas += [f"- Apêndice {t}" for t in meta["apendices"]]
     return "\n".join(linhas) + "\n"
 
@@ -324,13 +317,12 @@ def pagina_ambiente() -> str:
 
 def main() -> None:
     meta = yaml.safe_load(META.read_text(encoding="utf-8"))
-    base = meta["docs_base"]
     (DOCS / "aulas").mkdir(parents=True, exist_ok=True)
     for a in meta["aulas"]:
         destino = DOCS / "aulas" / f"aula-{a['aula']:02d}.md"
-        destino.write_text(pagina_aula(a, base), encoding="utf-8")
-    (DOCS / "index.md").write_text(pagina_indice(meta, base), encoding="utf-8")
-    (DOCS / "apendices.md").write_text(pagina_apendices(meta, base), encoding="utf-8")
+        destino.write_text(pagina_aula(a), encoding="utf-8")
+    (DOCS / "index.md").write_text(pagina_indice(meta), encoding="utf-8")
+    (DOCS / "apendices.md").write_text(pagina_apendices(meta), encoding="utf-8")
     (DOCS / "ambiente.md").write_text(pagina_ambiente(), encoding="utf-8")
     (DOCS / "guia").mkdir(exist_ok=True)
     for nome, md in paginas_guia().items():

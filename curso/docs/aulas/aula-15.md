@@ -18,7 +18,6 @@ checks: ['a15_memoria_cabe_no_container', 'a15_threads_explicitas', 'a15_benchma
 | Depende de | [Aula 14](aula-14.md) |
 | Entregas | `scripts/bench.sh`, `docs/benchmark.csv`, `ADR de configuração padrão em docs/decisoes.md`, `.env ajustado` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/b0aac994-bba9-4da2-8169-69b801a42a73) |
 
 O mesmo pipeline pode levar minutos ou horas, ou morrer por falta de memória, dependendo de quatro ou cinco configurações. Esta aula ensina a escolhê-las por medição, e não por palpite, e a registrar a escolha.
 

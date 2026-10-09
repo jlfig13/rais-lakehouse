@@ -18,7 +18,6 @@ checks: ['a13_cinco_tabelas', 'a13_total_bate_silver', 'a13_uf_preenchida', 'a13
 | Depende de | [Aula 12](aula-12.md) |
 | Entregas | `src/gold.py`, `tests/test_utils.py (test_gap_sexo)`, `notebooks/04_gold.ipynb` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/9899f93a-7b7c-4cbf-9663-51283e5d2b65) |
 
 A gold é o que alguém de fora do time de dados consome. Ao final desta aula existem cinco tabelas, cada uma respondendo uma pergunta, calculadas por funções testáveis e prontas para gráfico, BI ou relatório.
 

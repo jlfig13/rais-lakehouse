@@ -18,7 +18,6 @@ checks: ['a04_bucket_existe', 'a04_app_grava_no_rais', 'a04_app_nao_cria_bucket'
 | Depende de | [Aula 03](aula-03.md) |
 | Entregas | `docker/minio/init-minio.sh`, `docker/minio/policy-rais.json` |
 | Onde os checks rodam | Host (WSL/Linux) |
-| Documento original | [abrir](https://claude.ai/code/artifact/b2146c2c-98fe-429c-8a64-45ef03038b2d) |
 
 Ao final desta aula você entende como o lake é guardado no MinIO, o que o `minio-init` faz linha a linha e prova que o usuário da aplicação só consegue mexer no bucket `rais`.
 

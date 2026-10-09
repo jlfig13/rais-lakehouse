@@ -18,7 +18,6 @@ checks: ['a07_media_por_sexo', 'a07_admissoes_por_ano', 'a07_faixa_salarial', 'a
 | Depende de | [Aula 06](aula-06.md) |
 | Entregas | `labs/__init__.py`, `labs/aula07.py`, `notebooks/01_fundamentos.ipynb` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/1b3a5a26-3bd2-4117-9d33-559b3b8b9532) |
 
 Ao final desta aula você escreve as transformações básicas do PySpark — selecionar, filtrar, criar colunas, converter tipos, agregar e usar SQL — sobre dados pequenos em memória, antes de tocar na RAIS.
 

@@ -18,7 +18,6 @@ checks: ['a01_adrs_registrados']
 | Depende de | — |
 | Entregas | `docs/decisoes.md` |
 | Onde os checks rodam | Host (WSL/Linux) |
-| Documento original | [abrir](https://claude.ai/code/artifact/2a86be26-af3d-40e8-9385-2e68ce777f1e) |
 
 ## 1. Objetivos e pré-requisitos
 
@@ -169,9 +168,6 @@ O guia escolhe Delta (ADR nº 4). A comparação abaixo resume a justificativa d
 ## 4. Arquitetura do RAIS Lakehouse
 
 Três containers orquestrados pelo Docker Compose formam o projeto: `spark` processa, `minio` armazena e `minio-init` prepara o armazenamento e termina. A landing e a raw ficam em disco local; bronze, silver e gold ficam no MinIO como tabelas Delta.
-
-!!! note "Diagrama interativo"
-    "RAIS Lakehouse · 3 containers, 5 camadas" está no [documento original](https://claude.ai/code/artifact/2a86be26-af3d-40e8-9385-2e68ce777f1e).
 
 O `.7z` entra na landing e é extraído para a raw; o Spark lê esse texto e grava cada camada no bucket `rais`. Só a gold, em destaque, é consumida por análises e BI.
 

@@ -18,7 +18,6 @@ checks: ['a11_bronze_delta', 'a11_ano_carregado', 'a11_tudo_string', 'a11_arquiv
 | Depende de | [Aula 09](aula-09.md), [Aula 10](aula-10.md) |
 | Entregas | `src/ingest.py`, `src/bronze.py`, `notebooks/02_bronze.ipynb` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/b043954e-5c45-4bae-b96a-05f16753aa75) |
 
 Ao final desta aula o primeiro ano da RAIS está no lake: extraído da landing, lido com o separador e o encoding certos e gravado como tabela Delta na bronze, fiel à origem e reprocessável sem duplicar.
 

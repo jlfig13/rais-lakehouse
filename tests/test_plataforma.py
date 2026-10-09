@@ -47,12 +47,15 @@ def test_limpar_conteudo():
         "",
         "&#91;embedded content: Diagrama X\\]",
         "",
+        "Veja o [plano técnico](https://claude.ai/code/artifact/abc), seção 7.",
+        "",
         "**Checklist manual:** \\[ \\] item a · \\[ \\] item b",
     ])
-    saida = limpar_conteudo(md, "https://doc")
+    saida = limpar_conteudo(md)
     assert saida.startswith("Introdução.")
     assert "aula: 7" not in saida
-    assert '!!! note "Diagrama interativo"' in saida and "(https://doc)" in saida
+    assert "embedded content" not in saida
+    assert "Veja o plano técnico, seção 7." in saida and "claude.ai" not in saida
     assert "- [ ] item a\n- [ ] item b" in saida
 
 

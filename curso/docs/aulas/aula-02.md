@@ -18,7 +18,6 @@ checks: ['a02_imagem_existe', 'a02_java_17', 'a02_pyspark_delta', 'a02_jars_s3a_
 | Depende de | [Aula 01](aula-01.md) |
 | Entregas | `docker/spark/Dockerfile`, `requirements.txt`, `requirements-dev.txt`, `.dockerignore` |
 | Onde os checks rodam | Host (WSL/Linux) |
-| Documento original | [abrir](https://claude.ai/code/artifact/3a17b7ff-ce58-4699-b232-429afbe389e2) |
 
 Ao final desta aula a imagem `rais-spark:local` existe na sua máquina, com Python 3.11, Java 17, PySpark 3.5.3, Delta 3.2.0 e os JARs do S3A, rodando como usuário não-root. Ela é a base de todo o resto do curso.
 
@@ -154,9 +153,6 @@ Essas quatro peças (PySpark, Delta, hadoop-aws e SDK) precisam ser compatíveis
 ## 4. Arquitetura: as camadas da imagem rais-spark
 
 A imagem do curso é uma pilha de seis camadas, ordenada do que quase nunca muda (o sistema) ao que muda mais (o usuário e as pastas, que dependem do seu UID). Cada container criado a partir dela compartilha essas camadas e ganha só uma camada gravável própria.
-
-!!! note "Diagrama interativo"
-    "Imagem rais-spark · 6 camadas e 2 containers" está no [documento original](https://claude.ai/code/artifact/3a17b7ff-ce58-4699-b232-429afbe389e2).
 
 Uma mudança em `requirements-dev.txt` invalida a camada do `COPY` e todas acima dela; o Java e a imagem base continuam vindo do cache.
 
@@ -699,7 +695,7 @@ make check-host AULA=02
 | Erros de build e permissão | Apêndice B | Apêndice B |
 | Comandos `docker` | Apêndice D | Parte [2.4](../guia/parte-02.md#parte-2-4) |
 | Termos: imagem, camada, bind mount, volume | Apêndice C | Apêndice C |
-| Plano técnico da plataforma (checks no host) | [Diagnóstico e plano técnico](https://claude.ai/code/artifact/68629f60-3f2f-40f2-a390-85d81360ea9e), seção 7 | — |
+| Plano técnico da plataforma (checks no host) | Diagnóstico e plano técnico, seção 7 | — |
 
 
 ## Checks automáticos

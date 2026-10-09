@@ -18,7 +18,6 @@ checks: ['a03_compose_valido', 'a03_servicos_no_ar', 'a03_minio_init_ok', 'a03_p
 | Depende de | [Aula 02](aula-02.md) |
 | Entregas | `docker-compose.yml`, `.env.example`, `Makefile`, `docker/minio/init-minio.sh`, `docker/minio/policy-rais.json` |
 | Onde os checks rodam | Host (WSL/Linux) |
-| Documento original | [abrir](https://claude.ai/code/artifact/793081c7-12c1-461c-9264-a1ba634a16b5) |
 
 Ao final desta aula, um único comando (`make up`) sobe os três serviços do RAIS Lakehouse — `minio`, `minio-init` e `spark` — com rede, volumes, limites de recursos e configuração vinda do `.env`.
 
@@ -187,9 +186,6 @@ Uma variável no `.env` só chega ao container se for listada em `environment` (
 ## 4. Arquitetura: topologia do Compose e ordem de inicialização
 
 Os três serviços vivem numa rede privada criada pelo Compose. Do lado de fora, só o seu computador alcança quatro portas; dentro, os serviços se acham pelo nome.
-
-!!! note "Diagrama interativo"
-    "RAIS Lakehouse · 3 serviços, 2 volumes, 2 bind mounts" está no [documento original](https://claude.ai/code/artifact/793081c7-12c1-461c-9264-a1ba634a16b5).
 
 O `spark` fala com o `minio` pela rede interna (S3A) e só sobe depois que o `minio-init` termina; os dados do lake ficam no volume `minio-data`, e o código entra no `spark` por bind mount.
 
@@ -817,7 +813,7 @@ make check-host AULA=03
 | `CONTAINER_MEM`, `SPARK_MEM`, `docker stats`, Spark UI 4040/4041 | Aula 15 | Parte [14](../guia/parte-14.md) |
 | Erros de subida, permissão e memória | Apêndice B | Apêndice B |
 | Comandos `docker compose` e `make` | Apêndice D | Partes [2.4](../guia/parte-02.md#parte-2-4), [4.8](../guia/parte-04.md#parte-4-8) |
-| Serviço `curso` e alvos `check`, `check-host`, `progresso` | [Diagnóstico e plano técnico](https://claude.ai/code/artifact/68629f60-3f2f-40f2-a390-85d81360ea9e), seções 5 e 7 | — |
+| Serviço `curso` e alvos `check`, `check-host`, `progresso` | Diagnóstico e plano técnico, seções 5 e 7 | — |
 
 
 ## Checks automáticos

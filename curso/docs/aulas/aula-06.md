@@ -18,7 +18,6 @@ checks: ['a06_versao_spark', 'a06_config_s3a', 'a06_smoke_1000', 'a06_smoke_e_de
 | Depende de | [Aula 03](aula-03.md), [Aula 04](aula-04.md), [Aula 05](aula-05.md) |
 | Entregas | `src/utils.py (get_spark)`, `scripts/smoke_test.py`, `labcheck/conftest.py`, `scripts/gerar_progresso.py` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/71275b02-cd69-41ca-bf72-89b88b7012b5) |
 
 Ao final desta aula a função `get_spark` cria uma sessão Spark já ligada ao Delta e ao MinIO, e o teste de fumaça grava e lê 1000 linhas no lake. A partir daqui, todo código do curso começa com `get_spark()`. A aula também instala o mecanismo de progresso da plataforma.
 

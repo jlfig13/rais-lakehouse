@@ -18,7 +18,6 @@ checks: ['a10_testes_utils', 'a10_gravar_ano_idempotente', 'a10_replacewhere_pro
 | Depende de | [Aula 06](aula-06.md), [Aula 08](aula-08.md) |
 | Entregas | `src/utils.py (completo)`, `src/delta_io.py`, `src/dims.py`, `tests/conftest.py`, `tests/test_utils.py` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/c3c12a5b-9b8a-45a2-b3c1-63a91cbc0002) |
 
 Esta aula entrega as três peças de código que bronze, silver e gold reutilizam — utilitários de conversão, a camada de leitura e escrita Delta e as dimensões — e explica como o Delta garante que reprocessar um ano não corrompe nem duplica dados.
 

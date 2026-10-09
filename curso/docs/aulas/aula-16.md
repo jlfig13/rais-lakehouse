@@ -18,7 +18,6 @@ checks: ['a16_testes_passam', 'a16_lint_passa', 'a16_workflow_ci', 'a16_readme_c
 | Depende de | [Aula 01](aula-01.md), [Aula 02](aula-02.md), [Aula 03](aula-03.md), [Aula 04](aula-04.md), [Aula 05](aula-05.md), [Aula 06](aula-06.md), [Aula 07](aula-07.md), [Aula 08](aula-08.md), [Aula 09](aula-09.md), [Aula 10](aula-10.md), [Aula 11](aula-11.md), [Aula 12](aula-12.md), [Aula 13](aula-13.md), [Aula 14](aula-14.md), [Aula 15](aula-15.md) |
 | Entregas | `pyproject.toml`, `.github/workflows/ci.yml`, `README.md`, `LICENSE`, `tag v1.0.0` |
 | Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/02c8a8bb-a86e-4813-bbdb-a84118cf25a6) |
 
 A última aula transforma o lakehouse num projeto profissional: testes que rodam a cada push, análise estática, histórico de commits legível e um README que mostra decisões, resultados e limitações.
 
