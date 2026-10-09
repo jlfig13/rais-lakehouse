@@ -178,3 +178,24 @@ html.rl-largo .md-grid { max-width: none; }
 .rl-aula + .md-typeset__scrollwrap table:not([class]) { display: table; width: 100%; }
 .rl-aula + .md-typeset__scrollwrap table:not([class]) thead { display: none; }
 .rl-aula + .md-typeset__scrollwrap table:not([class]) td:first-child { width: 12rem; font-weight: 600; }
+
+/* Leitura em voz alta */
+.rl-leitor { display: inline-flex; gap: 0.25rem; align-items: center; margin-right: 0.4rem; }
+.rl-leitor[hidden] { display: none; }
+.rl-leitor select {
+  font: inherit;
+  font-size: 0.7rem;
+  color: inherit;
+  background: var(--md-default-bg-color, #fff);
+  border: 1px solid var(--md-default-fg-color--lightest, #ccc);
+  border-radius: 6px;
+  padding: 0.15em 0.3em;
+}
+.rl-leitor .rl-voz { max-width: 11rem; }
+.rl-lendo {
+  background: #fde04766;
+  border-radius: 4px;
+  box-shadow: 0 0 0 0.25em #fde04766;
+  transition: background 0.2s;
+}
+[data-md-color-scheme="slate"] .rl-lendo { background: #a16207aa; box-shadow: 0 0 0 0.25em #a16207aa; }

@@ -288,12 +288,109 @@
       const atual = parseFloat(lembrar("rl-escala") || "1");
       guardar("rl-escala", String(Math.min(1.6, Math.max(0.8, Math.round((atual + passo) * 10) / 10))));
     };
-    conteudo.prepend(el("div", { class: "rl-prefs" },
+    const player = leitor();
+    let abrirLeitor = null;
+    if (player) {
+      player.hidden = true;
+      abrirLeitor = el("button", { class: "rl-pref", title: "Ouvir a página (leitura em voz alta)",
+        "aria-label": "Ouvir a página" }, "🔊 Ouvir");
+      abrirLeitor.onclick = () => { player.hidden = !player.hidden; };
+    }
+    conteudo.prepend(el("div", { class: "rl-prefs" }, abrirLeitor, player,
       botao("A−", "Diminuir a fonte", escala(-0.1)),
       botao("A", "Fonte padrão", () => guardar("rl-escala", "1")),
       botao("A+", "Aumentar a fonte", escala(0.1)),
       botao("↔", "Alternar largura do conteúdo", () => guardar("rl-largo", lembrar("rl-largo") === "1" ? "0" : "1")),
     ));
+  }
+
+  // ------------------------------------------------------------------ leitura em voz alta
+  // Usa a síntese de voz do próprio navegador (Web Speech API): nada é enviado a servidor do
+  // curso. Lê bloco a bloco (um texto longo de uma vez é cortado em alguns navegadores),
+  // destaca o trecho atual e pula código e painéis.
+  const BLOCOS = "h1, h2, h3, h4, p, li, td, th, .admonition-title, summary";
+  const PULAR = "pre, code.rl-chip, .rl-aula, .rl-prefs, .rl-lateral, .rl-leitor, .md-source-file";
+
+  function textoDoBloco(b) {
+    const copia = b.cloneNode(true);
+    copia.querySelectorAll(`.headerlink, pre, ${BLOCOS}`).forEach((x) => x.remove());
+    return copia.textContent.replace(/\s+/g, " ").trim();
+  }
+
+  function blocosDaPagina() {
+    const raizTexto = document.querySelector(".md-content__inner");
+    if (!raizTexto) return [];
+    return [...raizTexto.querySelectorAll(BLOCOS)]
+      .filter((b) => !b.closest(PULAR))
+      // li que só embrulha parágrafos: os parágrafos já são lidos
+      .filter((b) => !(b.tagName === "LI" && b.querySelector(":scope > p")))
+      .filter((b) => textoDoBloco(b));
+  }
+
+  function leitor() {
+    const voz = window.speechSynthesis;
+    if (!voz) return null;
+    let fila = [], posicao = 0, ativo = false;
+    const vozesPt = () => voz.getVoices().filter((v) => v.lang.toLowerCase().startsWith("pt"))
+      // vozes neurais ("Natural"/"Online") primeiro, depois as de pt-BR
+      .sort((a, b) => (/natural|online/i.test(b.name) - /natural|online/i.test(a.name))
+        || (b.lang === "pt-BR") - (a.lang === "pt-BR"));
+    const seletorVoz = el("select", { class: "rl-voz", title: "Voz" });
+    const seletorVel = el("select", { class: "rl-vel", title: "Velocidade" },
+      ...["0.75", "1", "1.25", "1.5", "1.75", "2"].map((v) => el("option", { value: v }, `${v.replace(".", ",")}×`)));
+    seletorVel.value = lembrar("rl-voz-vel") || "1";
+    seletorVel.onchange = () => guardar("rl-voz-vel", seletorVel.value);
+    const preencherVozes = () => {
+      const vozes = vozesPt();
+      seletorVoz.replaceChildren(...vozes.map((v) =>
+        el("option", { value: v.name }, v.name.replace(/^Microsoft /, "").replace(/ - .*$/, ""))));
+      const salva = lembrar("rl-voz-nome");
+      if (salva && vozes.some((v) => v.name === salva)) seletorVoz.value = salva;
+    };
+    preencherVozes();
+    voz.onvoiceschanged = preencherVozes;
+    seletorVoz.onchange = () => guardar("rl-voz-nome", seletorVoz.value);
+
+    const tocar = el("button", { class: "rl-pref", title: "Ler / pausar" }, "▶");
+    const parar = el("button", { class: "rl-pref", title: "Parar" }, "⏹");
+    const marcar = (b) => {
+      document.querySelectorAll(".rl-lendo").forEach((x) => x.classList.remove("rl-lendo"));
+      if (b) { b.classList.add("rl-lendo"); b.scrollIntoView({ block: "center", behavior: "smooth" }); }
+    };
+    const encerrar = () => { ativo = false; voz.cancel(); marcar(null); tocar.textContent = "▶"; };
+    const falar = () => {
+      if (!ativo || posicao >= fila.length) return encerrar();
+      const item = fila[posicao];
+      const u = new SpeechSynthesisUtterance(item.texto);
+      u.lang = "pt-BR";
+      u.rate = parseFloat(seletorVel.value);
+      u.voice = voz.getVoices().find((v) => v.name === seletorVoz.value) || null;
+      u.onend = () => { posicao += 1; falar(); };
+      u.onerror = (e) => { if (e.error !== "interrupted" && e.error !== "canceled") { posicao += 1; falar(); } };
+      marcar(item.bloco);
+      voz.speak(u);
+    };
+    tocar.onclick = () => {
+      if (ativo && voz.speaking && !voz.paused) { voz.pause(); tocar.textContent = "▶"; return; }
+      if (ativo && voz.paused) { voz.resume(); tocar.textContent = "⏸"; return; }
+      const selecao = String(window.getSelection() || "").trim();
+      if (selecao) {
+        fila = [{ texto: selecao, bloco: null }];
+      } else {
+        const blocos = blocosDaPagina();
+        // começa no primeiro bloco visível: role até onde parou e aperte play
+        const inicio = Math.max(0, blocos.findIndex((b) => b.getBoundingClientRect().bottom > 80));
+        fila = blocos.slice(inicio).map((b) => ({ texto: textoDoBloco(b), bloco: b }));
+      }
+      posicao = 0;
+      ativo = true;
+      voz.cancel();
+      tocar.textContent = "⏸";
+      falar();
+    };
+    parar.onclick = encerrar;
+    window.addEventListener("pagehide", () => voz.cancel());
+    return el("span", { class: "rl-leitor" }, tocar, parar, seletorVel, seletorVoz);
   }
 
   // ------------------------------------------------------------------ início
