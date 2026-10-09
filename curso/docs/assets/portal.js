@@ -165,7 +165,10 @@
       return;
     }
     if (existente) return;
-    const url = comToken(`${dados?.servicos?.jupyter?.url ?? "http://localhost:8888"}/lab/tree/estudos/aula-${pad(n)}/aula-${pad(n)}.ipynb`);
+    // Um workspace do JupyterLab por aula: cada uma guarda o próprio layout e abre com a árvore
+    // de arquivos na pasta da aula (sem isso, o Jupyter restaura o último estado, na raiz)
+    const url = comToken(`${dados?.servicos?.jupyter?.url ?? "http://localhost:8888"}` +
+      `/lab/workspaces/aula-${pad(n)}/tree/estudos/aula-${pad(n)}/aula-${pad(n)}.ipynb`);
     html.style.setProperty("--rl-w", lembrar("rl-split-w") || "50vw");
     const quadro = el("iframe", { src: url, title: "JupyterLab", allow: "clipboard-read; clipboard-write" });
     const arrasto = el("div", { class: "rl-arrasto", title: "Arraste para redimensionar" });
@@ -393,9 +396,77 @@
     return el("span", { class: "rl-leitor" }, tocar, parar, seletorVel, seletorVoz);
   }
 
+  // ------------------------------------------------------------------ prévia das citações do guia
+  // Clicar em "Parte 4.5" mostra o trecho do guia num cartão, sem sair do lugar da leitura.
+  // A página do guia continua disponível pelo botão "Abrir no guia" (nova aba).
+  const cacheGuia = new Map();
+
+  async function trechoDoGuia(href) {
+    const url = new URL(href, location.href);
+    if (!cacheGuia.has(url.pathname)) {
+      cacheGuia.set(url.pathname, fetch(url.pathname).then((r) => r.text())
+        .then((html) => new DOMParser().parseFromString(html, "text/html")));
+    }
+    const doc = await cacheGuia.get(url.pathname);
+    const artigo = doc.querySelector(".md-content__inner") || doc.body;
+    const inicio = url.hash ? artigo.querySelector(url.hash) : artigo.querySelector("h1");
+    if (!inicio) return null;
+    // A seção vai do título até o próximo título do mesmo nível (ou superior)
+    const nivel = Number(inicio.tagName[1]);
+    const partes = [inicio.cloneNode(true)];
+    for (let n = inicio.nextElementSibling; n; n = n.nextElementSibling) {
+      if (/^H[1-6]$/.test(n.tagName) && Number(n.tagName[1]) <= nivel) break;
+      partes.push(n.cloneNode(true));
+    }
+    partes.forEach((p) => p.querySelectorAll(".headerlink").forEach((x) => x.remove()));
+    // Links relativos do guia passam a valer a partir da página da aula
+    partes.forEach((p) => p.querySelectorAll("a[href]").forEach((a) => {
+      a.setAttribute("href", new URL(a.getAttribute("href"), url).href);
+    }));
+    return partes;
+  }
+
+  function fecharPrevia() { document.querySelector(".rl-previa")?.remove(); }
+
+  function previasDoGuia() {
+    if (location.pathname.includes("/guia/")) return;    // nas páginas do guia, navega normal
+    document.addEventListener("click", async (ev) => {
+      const link = ev.target.closest(".md-content a[href*='guia/parte-'], .md-content a[href*='guia/apendice-']");
+      if (!link || ev.ctrlKey || ev.metaKey || ev.shiftKey) return;   // Ctrl+clique: nova aba normal
+      ev.preventDefault();
+      fecharPrevia();
+      const cartao = el("div", { class: "rl-previa md-typeset", role: "dialog", "aria-label": "Trecho do guia" });
+      const fechar = el("button", { class: "rl-pref", title: "Fechar (Esc)" }, "✕");
+      fechar.onclick = fecharPrevia;
+      const corpo = el("div", { class: "rl-previa-corpo" }, el("p", { class: "rl-dica" }, "Carregando o trecho do guia…"));
+      cartao.append(
+        el("div", { class: "rl-previa-barra" },
+          el("strong", {}, `Guia — ${link.textContent.trim()}`),
+          el("a", { class: "md-button", href: link.href, target: "_blank", rel: "noopener" }, "Abrir no guia ↗"),
+          fechar),
+        corpo);
+      document.body.append(cartao);
+      const r = link.getBoundingClientRect();
+      cartao.style.top = `${Math.min(r.bottom + 8, window.innerHeight - cartao.offsetHeight - 12)}px`;
+      cartao.style.left = `${Math.max(12, Math.min(r.left, window.innerWidth - cartao.offsetWidth - 12))}px`;
+      try {
+        const partes = await trechoDoGuia(link.getAttribute("href"));
+        corpo.replaceChildren(...(partes || [el("p", {}, "Trecho não encontrado; use Abrir no guia.")]));
+      } catch {
+        corpo.replaceChildren(el("p", {}, "Não consegui carregar o trecho; use Abrir no guia."));
+      }
+    });
+    document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") fecharPrevia(); });
+    document.addEventListener("click", (ev) => {
+      const aberto = document.querySelector(".rl-previa");
+      if (aberto && !aberto.contains(ev.target) && !ev.target.closest("a[href*='guia/']")) fecharPrevia();
+    });
+  }
+
   // ------------------------------------------------------------------ início
   document.addEventListener("DOMContentLoaded", async () => {
     preferencias();
+    previasDoGuia();
     const painel = document.querySelector(".rl-aula");
     const amb = document.getElementById("rl-ambiente");
     if (!painel && !amb && !document.querySelector(".rl-trilha")) return;

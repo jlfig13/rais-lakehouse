@@ -187,3 +187,29 @@ html.rl-largo .md-grid { max-width: none; }
   transition: background 0.2s;
 }
 [data-md-color-scheme="slate"] .rl-lendo { background: #a16207aa; box-shadow: 0 0 0 0.25em #a16207aa; }
+
+/* Prévia das citações do guia (cartão flutuante) */
+.rl-previa {
+  position: fixed;
+  z-index: 20;
+  width: min(42rem, calc(100vw - 24px));
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--md-default-bg-color, #fff);
+  border: 1px solid var(--md-default-fg-color--lighter, #bbb);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px #0003;
+  font-size: calc(0.72rem * var(--rl-escala, 1));
+}
+.rl-previa-barra {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest, #ddd);
+}
+.rl-previa-barra strong { flex: 1; }
+.rl-previa-barra .md-button { margin: 0; padding: 0.3em 0.8em; font-size: 0.7rem; }
+.rl-previa-corpo { overflow: auto; padding: 0 1rem 0.8rem; }
+.rl-previa-corpo h2, .rl-previa-corpo h1 { font-size: 1.1em; margin-top: 0.8rem; }

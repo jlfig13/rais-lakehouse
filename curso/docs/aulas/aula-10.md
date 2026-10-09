@@ -81,6 +81,36 @@ Com `mode("overwrite").option("replaceWhere", "ano = 2022")`, o Delta troca só 
 
 Se um dia o projeto migrar para Iceberg, muda **um arquivo** (`delta_io.py`) — princípio *Don't Repeat Yourself* (guia, Parte [7.4](../guia/parte-07.md#parte-7-4)).
 
+### 3.7 Validar configuração e contratos com Pydantic
+
+Um `.env` com `SPARK_MEM=4 GB` (com espaço) não dá erro na leitura: o erro aparece minutos depois, quando a JVM tenta subir. **Pydantic** valida dados estruturados por meio de classes Python com tipos: converte o que dá (`"4"` vira `4`) e recusa o resto com uma mensagem que aponta o campo. Use-o para o que é pequeno e estruturado (configuração, metadados, contratos, respostas de API); para validar milhões de linhas, use as checagens em PySpark (Aulas 12 e 14), porque o Pydantic valida um objeto por vez, em Python.
+
+```python
+from pydantic import BaseModel, Field, ValidationError, field_validator
+
+
+class ConfigSpark(BaseModel):
+    threads: int = Field(ge=1, le=64)
+    mem: str = Field(pattern=r"^\d+[mg]$")        # "4g", "512m"
+    shuffle: int = Field(ge=1)
+
+    @field_validator("shuffle")
+    @classmethod
+    def multiplo_de_threads(cls, v, info):
+        threads = info.data.get("threads")
+        if threads and v % threads:
+            raise ValueError(f"SPARK_SHUFFLE={v} deveria ser múltiplo de SPARK_THREADS={threads}")
+        return v
+
+
+cfg = ConfigSpark(threads=os.getenv("SPARK_THREADS", "4"), mem=os.getenv("SPARK_MEM", "4g"),
+                  shuffle=os.getenv("SPARK_SHUFFLE", "32"))
+```
+
+Resultado conferido: `ConfigSpark(threads="4", mem="4g", shuffle="32")` passa e converte as strings em inteiros; `ConfigSpark(threads=4, mem="4 GB", shuffle=30)` falha com dois erros, um em `mem` (formato) e outro em `shuffle` (não é múltiplo de 4, a regra da Aula 15). Validar no início do `get_spark` transforma um erro confuso da JVM numa mensagem clara.
+
+O mesmo recurso valida o catálogo de dados da Aula 17: cada tabela e coluna descrita em YAML vira um objeto Pydantic, e uma descrição vazia ou um nome inválido param a execução antes de qualquer coisa ser gravada.
+
 ## 4. Arquitetura e fluxo
 
 ```

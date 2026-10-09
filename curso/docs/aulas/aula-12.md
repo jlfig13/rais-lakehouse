@@ -224,6 +224,46 @@ As faixas de NULL aceitáveis são calibradas com o seu dado; os limites iniciai
 
 **Exemplo 2 — Onde os NULL surgiram.** Compare `s.filter(F.col("cod_uf").isNull())` com a bronze, juntando pela `arquivo_origem`, para ver se os NULL vêm do arquivo NI.
 
+**Exemplo 3 — Validações recomendadas da silver: perfil de nulos e domínios.** A silver transforma valores inválidos em NULL; o risco é uma regra errada zerar uma coluna inteira sem ninguém notar. Duas checagens pegam isso: o perfil de nulos por coluna (compare com a carga anterior) e a conferência de domínio contra as dimensões.
+
+```python
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
+
+from config.settings import SILVER
+from src.delta_io import ler
+from src.dims import dim_sexo
+
+
+def perfil_nulos(df: DataFrame) -> DataFrame:
+    """Uma linha por coluna com o % de NULL. Guarde o resultado de cada carga para comparar."""
+    total = df.count()
+    linha = df.select([F.sum(F.col(c).isNull().cast("int")).alias(c) for c in df.columns]).first()
+    dados = [(c, round(100 * (linha[c] or 0) / total, 2)) for c in df.columns]
+    return spark.createDataFrame(dados, "coluna string, pct_nulo double").orderBy(F.desc("pct_nulo"))
+
+
+s = ler(spark, SILVER).filter(F.col("ano") == 2022)
+perfil_nulos(s).show(30, truncate=False)
+
+# Domínio: código de sexo preenchido que não existe na dimensão
+fora = s.join(dim_sexo(spark), "sexo", "left_anti").filter(F.col("sexo").isNotNull()).count()
+assert fora == 0, f"{fora} vínculos com código de sexo fora da dimensão: confira o dicionário"
+```
+
+Testado sobre a amostra: perfil com as 21 colunas da silver e nenhum código de sexo fora da dimensão.
+
+**Como ler o perfil.** Um valor alto não é erro por si só: `mes_desligamento` é NULL para todo vínculo não desligado, e isso é esperado. O que importa é a **variação** entre cargas e colunas que deveriam estar quase cheias (`cod_municipio`, `remun_dezembro_nom`). Se `remun_dezembro_nom` passa de 2% para 100% de NULL num ano novo, a conversão decimal quebrou (no layout de 2023, o decimal é ponto, ver Aula 09).
+
+| Validação da silver | Regra | Onde |
+| --- | --- | --- |
+| Contagem silver = bronze | Nenhuma linha perdida ou inventada | `checar_silver`, check `a12_contagem_igual_bronze` |
+| Tipos do contrato | `decimal(18,2)` para dinheiro, `string` para códigos | check `a12_tipos_do_contrato` |
+| Perfil de nulos | Variação pequena entre cargas | Exemplo 3 |
+| Domínios | Códigos dentro das dimensões | Exemplo 3 (`left_anti`) |
+| Faixas plausíveis | Idade 14–100; mês 1–12 | check `a12_idade_plausivel` |
+| UF derivada | Menos de 1% de UF nula | check `a12_uf_valida` |
+
 ## 8. Armadilhas, diagnóstico e soluções
 
 | Sintoma | Causa | Solução |

@@ -105,3 +105,9 @@ aulas:
     depende_de: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     entrega: ["pyproject.toml", ".github/workflows/ci.yml", "README.md", "LICENSE", "tag v1.0.0"]
     onde: container
+  - aula: 17
+    titulo: "Catálogo de dados, metadados e consumo por IA"
+    origem: ["Complemento da plataforma"]
+    depende_de: [10, 13, 14]
+    entrega: ["catalogo/rais.yml", "src/catalogo.py", "catalogo/rais.json"]
+    onde: container

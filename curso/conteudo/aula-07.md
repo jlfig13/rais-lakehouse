@@ -233,6 +233,51 @@ print(sorted(a.collect()) == sorted(b.collect()))   # True: mesmo resultado
 
 `collect()` traz tudo para o driver — aceitável aqui, com 3 linhas; proibido em tabelas grandes (Aula 08).
 
+**Exemplo 4 — A mesma consulta em pandas, Polars, DuckDB e PySpark.** A Aula 01 (seção 3.7) explica quando usar cada ferramenta; aqui está a mesma pergunta, "quantidade e salário médio por UF", nas quatro. As bibliotecas `polars` e `duckdb` já estão na imagem (`requirements-dev.txt`).
+
+```python
+import duckdb
+import pandas as pd
+import polars as pl
+from pyspark.sql import functions as F
+
+from labs.aula07 import DADOS
+
+COLUNAS = ["id", "nome", "sexo", "uf", "salario", "admissao"]
+
+# pandas: em memória, API com índice
+pdf = pd.DataFrame(DADOS, columns=COLUNAS)
+r_pandas = (pdf.groupby("uf", as_index=False)
+               .agg(qtd=("id", "count"), media=("salario", "mean"))
+               .assign(media=lambda d: d["media"].round(2)))
+
+# Polars: expressões, multithread; .lazy() permitiria otimizar o plano como o Spark
+r_polars = (pl.DataFrame(DADOS, schema=COLUNAS, orient="row")
+              .group_by("uf")
+              .agg(pl.len().alias("qtd"), pl.col("salario").mean().round(2).alias("media"))
+              .sort("uf"))
+
+# DuckDB: SQL direto sobre o DataFrame pandas (ou sobre arquivos Parquet/CSV)
+r_duck = duckdb.sql("""
+    SELECT uf, count(*) AS qtd, round(avg(salario), 2) AS media
+    FROM pdf GROUP BY uf ORDER BY uf
+""").df()
+
+# PySpark: o mesmo plano, mas distribuível
+r_spark = (spark.createDataFrame(DADOS, COLUNAS).groupBy("uf")
+           .agg(F.count("*").alias("qtd"), F.round(F.avg("salario"), 2).alias("media"))
+           .orderBy("uf"))
+```
+
+As quatro devolvem a mesma resposta: BA → 2 vínculos e 3700,00; PE → 2 e 3650,25; SP → 2 e 4350,00 (conferido executando o código acima). Para seis linhas, pandas, Polars e DuckDB respondem em milissegundos e o Spark leva alguns segundos para planejar e subir tarefas; com dezenas de milhões de linhas e vários anos, a ordem se inverte, e só o Spark com Delta mantém as garantias de escrita do lakehouse.
+
+| Aspecto | pandas | Polars | DuckDB | PySpark |
+| --- | --- | --- | --- | --- |
+| Execução | imediata | imediata ou *lazy* | SQL otimizado | *lazy* (plano + ação) |
+| Paralelismo | quase sempre 1 núcleo | todos os núcleos | todos os núcleos | todos os núcleos e, num cluster, várias máquinas |
+| Limite prático | memória da máquina | memória (com *streaming* para mais) | disco de uma máquina | cluster |
+| Delta Lake | não | leitura e escrita via `deltalake` (delta-rs) | leitura (extensão `delta`) | leitura e escrita transacional (este curso) |
+
 ## 8. Armadilhas, diagnóstico e soluções
 
 | Sintoma | Causa | Solução |

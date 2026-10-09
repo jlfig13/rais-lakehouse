@@ -67,3 +67,23 @@ def test_linkar_guia():
     assert "[5.1](../guia/parte-05.md#parte-5-1)–[5.2](../guia/parte-05.md#parte-5-2)" in t
     assert "[Apêndice B](../guia/apendice-b.md) do guia" in t
     assert "Apêndice C." in t and "`Parte 9`" in t  # apêndice do curso e código ficam intactos
+
+
+def test_catalogo_valido_e_conferencia():
+    import pytest
+    from pydantic import ValidationError
+
+    from src.catalogo import Catalogo, carregar, conferir
+
+    cat = carregar()
+    gold = next(t for t in cat.tabelas if t.nome == "gold.gold_emprego_uf_ano")
+    colunas = [c.nome for c in gold.colunas]
+    assert conferir(cat, {gold.nome: colunas}) == [
+        f"{t.nome}: tabela não encontrada em {t.caminho}" for t in cat.tabelas if t is not gold]
+    problemas = conferir(cat, {gold.nome: colunas[1:] + ["coluna_nova"]})
+    assert f"{gold.nome}: coluna descrita não existe: {colunas[0]}" in problemas
+    assert f"{gold.nome}: coluna sem descrição: coluna_nova" in problemas
+    with pytest.raises(ValidationError):
+        Catalogo.model_validate({"nome": "x", "descricao": "x", "dono": "x", "tabelas": [
+            {"nome": "gold.t", "caminho": "gold/t", "descricao": "curta", "grao": "g",
+             "atualizacao": "a", "colunas": []}]})

@@ -58,6 +58,7 @@ nav:
     - "14 — Pipeline completo, idempotência e operações Delta": aulas/aula-14.md
     - "15 — Tuning: threads, memória, partições e Spark UI": aulas/aula-15.md
     - "16 — Qualidade, testes, CI e boas práticas de GitHub": aulas/aula-16.md
+    - "17 — Catálogo de dados, metadados e consumo por IA": aulas/aula-17.md
   - Apêndices: apendices.md
   - Guia original:
     - Capa: guia/index.md

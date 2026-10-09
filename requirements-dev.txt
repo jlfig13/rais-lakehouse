@@ -4,6 +4,10 @@ jupyterlab-git==0.50.1
 pytest==8.3.3
 ruff==0.6.9
 pandas==2.2.3
+# Comparação de ferramentas (Aulas 01 e 07)
+polars==1.9.0
+duckdb==1.1.1
+pyarrow==17.0.0
 matplotlib==3.9.2
 pyyaml==6.0.2
 # Site do curso (plataforma). Projeto novo: confirme a versão antes de atualizar.

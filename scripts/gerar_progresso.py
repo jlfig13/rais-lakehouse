@@ -20,7 +20,7 @@ def main() -> None:
 
     linhas = ["# Progresso", "", "Gerado por `make progresso` a partir de execuções reais.", "",
               "| Aula | Checks passando | Última execução |", "| --- | --- | --- |"]
-    for aula in range(1, 17):
+    for aula in range(1, 18):
         rs = por_aula.get(aula, [])
         ok = sum(r["status"] == "passou" for r in rs)
         quando = max((r["ts"] for r in rs), default="—")

@@ -1,0 +1,426 @@
+{
+  "catalogo": "rais",
+  "descricao": "Microdados de vínculos formais de trabalho da RAIS (MTE), ano-base 2019 em diante, organizados em bronze (cópia fiel), silver (tipada e validada) e gold (respostas prontas).",
+  "regras_de_negocio": [
+    "A unidade é o VÍNCULO de trabalho, não a pessoa: uma pessoa com dois empregos aparece duas vezes. Nunca escreva 'trabalhadores'.",
+    "Para comparar anos, use as colunas em salários mínimos (*_sm). Valores *_nom são reais nominais e sofrem inflação.",
+    "Indicadores de estoque (quantos empregos existem) usam só vínculos ativos em 31/12 (vinculo_ativo = true).",
+    "Taxa de desligamento usa todos os vínculos do ano, não só os ativos.",
+    "Códigos (município, CNAE, CBO, UF) são texto: zeros à esquerda fazem parte do código.",
+    "UF nula significa município fora da tabela de UFs (ex.: arquivo NI, não identificado)."
+  ],
+  "tabelas": [
+    {
+      "nome": "bronze.rais_vinculos",
+      "caminho": "s3a://rais/bronze/rais_vinculos",
+      "descricao": "Cópia fiel dos arquivos .txt da RAIS, com nomes de coluna normalizados e todas as colunas como texto.",
+      "pergunta": null,
+      "grao": "uma linha por linha do arquivo de origem (um vínculo)",
+      "atualizacao": "substitui só o ano processado (replaceWhere por ano)",
+      "colunas": [
+        {
+          "nome": "ano",
+          "tipo": "int",
+          "descricao": "Ano-base da RAIS (partição da tabela).",
+          "unidade": null
+        },
+        {
+          "nome": "arquivo_origem",
+          "tipo": "string",
+          "descricao": "Nome do arquivo .txt de onde a linha veio (rastreabilidade).",
+          "unidade": null
+        },
+        {
+          "nome": "municipio",
+          "tipo": "string",
+          "descricao": "Código IBGE de 6 dígitos do município do estabelecimento",
+          "unidade": null
+        },
+        {
+          "nome": "vl_remun_dezembro_nom",
+          "tipo": "string",
+          "descricao": "Remuneração de dezembro em R$ nominais, texto com vírgula decimal.",
+          "unidade": null
+        }
+      ]
+    },
+    {
+      "nome": "silver.rais_vinculos",
+      "caminho": "s3a://rais/silver/rais_vinculos",
+      "descricao": "Vínculos tipados e validados; valores inválidos viram NULL e nenhuma linha é descartada.",
+      "pergunta": null,
+      "grao": "um vínculo de trabalho por linha (mesma contagem da bronze no ano)",
+      "atualizacao": "substitui só o ano processado (replaceWhere por ano)",
+      "colunas": [
+        {
+          "nome": "ano",
+          "tipo": "int",
+          "descricao": "Ano-base da RAIS.",
+          "unidade": null
+        },
+        {
+          "nome": "cod_municipio",
+          "tipo": "string",
+          "descricao": "Código IBGE do município (6 dígitos) do estabelecimento; NULL se inválido.",
+          "unidade": null
+        },
+        {
+          "nome": "cod_uf",
+          "tipo": "string",
+          "descricao": "Código IBGE da UF (2 primeiros dígitos do município).",
+          "unidade": null
+        },
+        {
+          "nome": "cnae_classe",
+          "tipo": "string",
+          "descricao": "Classe CNAE 2.0 da atividade do estabelecimento (5 dígitos); NULL se inválida.",
+          "unidade": null
+        },
+        {
+          "nome": "cnae_divisao",
+          "tipo": "string",
+          "descricao": "Divisão CNAE (2 primeiros dígitos da classe).",
+          "unidade": null
+        },
+        {
+          "nome": "cbo",
+          "tipo": "string",
+          "descricao": "Ocupação na CBO 2002 (texto; zeros à esquerda importam).",
+          "unidade": null
+        },
+        {
+          "nome": "natureza_juridica",
+          "tipo": "string",
+          "descricao": "Código da natureza jurídica do estabelecimento.",
+          "unidade": null
+        },
+        {
+          "nome": "sexo",
+          "tipo": "int",
+          "descricao": "Sexo do trabalhador: 1 = masculino, 2 = feminino (confira no dicionário do ano).",
+          "unidade": null
+        },
+        {
+          "nome": "escolaridade",
+          "tipo": "int",
+          "descricao": "Grau de instrução (códigos 1 a 11; ver gold_escolaridade_ano).",
+          "unidade": null
+        },
+        {
+          "nome": "raca_cor",
+          "tipo": "int",
+          "descricao": "Código de raça/cor do dicionário da RAIS.",
+          "unidade": null
+        },
+        {
+          "nome": "idade",
+          "tipo": "int",
+          "descricao": "Idade em anos; NULL fora de 14 a 100.",
+          "unidade": null
+        },
+        {
+          "nome": "tamanho_estab",
+          "tipo": "int",
+          "descricao": "Faixa de tamanho do estabelecimento (código do dicionário).",
+          "unidade": null
+        },
+        {
+          "nome": "mes_desligamento",
+          "tipo": "int",
+          "descricao": "Mês do desligamento (1 a 12); NULL se o vínculo não foi desligado no ano.",
+          "unidade": null
+        },
+        {
+          "nome": "motivo_desligamento",
+          "tipo": "int",
+          "descricao": "Código do motivo do desligamento.",
+          "unidade": null
+        },
+        {
+          "nome": "tempo_emprego_meses",
+          "tipo": "decimal(10,1)",
+          "descricao": "Tempo de emprego no vínculo",
+          "unidade": "meses"
+        },
+        {
+          "nome": "vinculo_ativo",
+          "tipo": "boolean",
+          "descricao": "Verdadeiro se o vínculo estava ativo em 31/12 do ano-base.",
+          "unidade": null
+        },
+        {
+          "nome": "desligado_no_ano",
+          "tipo": "boolean",
+          "descricao": "Verdadeiro se houve desligamento no ano (mes_desligamento preenchido).",
+          "unidade": null
+        },
+        {
+          "nome": "remun_dezembro_nom",
+          "tipo": "decimal(18,2)",
+          "descricao": "Remuneração de dezembro em reais nominais.",
+          "unidade": "R$ nominais"
+        },
+        {
+          "nome": "remun_media_nom",
+          "tipo": "decimal(18,2)",
+          "descricao": "Remuneração média do ano em reais nominais.",
+          "unidade": "R$ nominais"
+        },
+        {
+          "nome": "remun_dezembro_sm",
+          "tipo": "decimal(18,2)",
+          "descricao": "Remuneração de dezembro em salários mínimos (comparável entre anos).",
+          "unidade": "salários mínimos"
+        },
+        {
+          "nome": "remun_media_sm",
+          "tipo": "decimal(18,2)",
+          "descricao": "Remuneração média do ano em salários mínimos (comparável entre anos).",
+          "unidade": "salários mínimos"
+        }
+      ]
+    },
+    {
+      "nome": "gold.gold_emprego_uf_ano",
+      "caminho": "s3a://rais/gold/gold_emprego_uf_ano",
+      "descricao": "Estoque de vínculos ativos e remuneração por UF e ano.",
+      "pergunta": "Quantos vínculos ativos existem e quanto pagam, por UF e ano?",
+      "grao": "ano × UF",
+      "atualizacao": "recalculada inteira a cada execução da gold",
+      "colunas": [
+        {
+          "nome": "ano",
+          "tipo": "int",
+          "descricao": "Ano-base.",
+          "unidade": null
+        },
+        {
+          "nome": "cod_uf",
+          "tipo": "string",
+          "descricao": "Código IBGE da UF.",
+          "unidade": null
+        },
+        {
+          "nome": "uf",
+          "tipo": "string",
+          "descricao": "Sigla da UF; NULL se o código não está na dimensão.",
+          "unidade": null
+        },
+        {
+          "nome": "qtd_vinculos",
+          "tipo": "bigint",
+          "descricao": "Vínculos ativos em 31/12.",
+          "unidade": "vínculos"
+        },
+        {
+          "nome": "massa_salarial_dez_nom",
+          "tipo": "decimal(28,2)",
+          "descricao": "Soma das remunerações de dezembro dos vínculos ativos.",
+          "unidade": "R$ nominais"
+        },
+        {
+          "nome": "remun_media_dez_nom",
+          "tipo": "decimal(19,2)",
+          "descricao": "Média da remuneração de dezembro.",
+          "unidade": "R$ nominais"
+        },
+        {
+          "nome": "remun_media_dez_sm",
+          "tipo": "decimal(19,2)",
+          "descricao": "Média da remuneração de dezembro em salários mínimos.",
+          "unidade": "salários mínimos"
+        },
+        {
+          "nome": "remun_mediana_dez_sm",
+          "tipo": "decimal(18,2)",
+          "descricao": "Mediana aproximada da remuneração de dezembro em salários mínimos.",
+          "unidade": "salários mínimos"
+        }
+      ]
+    },
+    {
+      "nome": "gold.gold_gap_sexo_uf_ano",
+      "caminho": "s3a://rais/gold/gold_gap_sexo_uf_ano",
+      "descricao": "Remuneração média de mulheres e homens e a razão entre elas, por UF e ano.",
+      "pergunta": "Quanto a remuneração média das mulheres representa da dos homens?",
+      "grao": "ano × UF",
+      "atualizacao": "recalculada inteira a cada execução da gold",
+      "colunas": [
+        {
+          "nome": "ano",
+          "tipo": "int",
+          "descricao": "Ano-base.",
+          "unidade": null
+        },
+        {
+          "nome": "cod_uf",
+          "tipo": "string",
+          "descricao": "Código IBGE da UF.",
+          "unidade": null
+        },
+        {
+          "nome": "uf",
+          "tipo": "string",
+          "descricao": "Sigla da UF.",
+          "unidade": null
+        },
+        {
+          "nome": "rem_mulher_sm",
+          "tipo": "decimal(22,6)",
+          "descricao": "Média da remuneração de dezembro dos vínculos femininos ativos.",
+          "unidade": "salários mínimos"
+        },
+        {
+          "nome": "rem_homem_sm",
+          "tipo": "decimal(22,6)",
+          "descricao": "Média da remuneração de dezembro dos vínculos masculinos ativos.",
+          "unidade": "salários mínimos"
+        },
+        {
+          "nome": "razao_mulher_homem",
+          "tipo": "decimal(26,3)",
+          "descricao": "rem_mulher_sm / rem_homem_sm; 0,75 = mulheres recebem em média 75% do que recebem os homens.",
+          "unidade": "razão"
+        }
+      ]
+    },
+    {
+      "nome": "gold.gold_top_cnae_uf_ano",
+      "caminho": "s3a://rais/gold/gold_top_cnae_uf_ano",
+      "descricao": "As 10 divisões CNAE com maior massa salarial de dezembro em cada UF e ano.",
+      "pergunta": "Quais atividades concentram a massa salarial em cada UF?",
+      "grao": "ano × UF × divisão CNAE (no máximo 10 por ano e UF)",
+      "atualizacao": "recalculada inteira a cada execução da gold",
+      "colunas": [
+        {
+          "nome": "ano",
+          "tipo": "int",
+          "descricao": "Ano-base.",
+          "unidade": null
+        },
+        {
+          "nome": "cod_uf",
+          "tipo": "string",
+          "descricao": "Código IBGE da UF.",
+          "unidade": null
+        },
+        {
+          "nome": "uf",
+          "tipo": "string",
+          "descricao": "Sigla da UF.",
+          "unidade": null
+        },
+        {
+          "nome": "cnae_divisao",
+          "tipo": "string",
+          "descricao": "Divisão CNAE 2.0 (2 dígitos).",
+          "unidade": null
+        },
+        {
+          "nome": "qtd_vinculos",
+          "tipo": "bigint",
+          "descricao": "Vínculos ativos da divisão.",
+          "unidade": "vínculos"
+        },
+        {
+          "nome": "massa_salarial_dez_nom",
+          "tipo": "decimal(28,2)",
+          "descricao": "Soma das remunerações de dezembro da divisão.",
+          "unidade": "R$ nominais"
+        },
+        {
+          "nome": "posicao",
+          "tipo": "int",
+          "descricao": "Posição no ranking da UF e ano (1 = maior massa salarial).",
+          "unidade": null
+        }
+      ]
+    },
+    {
+      "nome": "gold.gold_escolaridade_ano",
+      "caminho": "s3a://rais/gold/gold_escolaridade_ano",
+      "descricao": "Vínculos ativos e remuneração média por grau de instrução e ano.",
+      "pergunta": "Como a remuneração varia com a escolaridade?",
+      "grao": "ano × escolaridade",
+      "atualizacao": "recalculada inteira a cada execução da gold",
+      "colunas": [
+        {
+          "nome": "ano",
+          "tipo": "int",
+          "descricao": "Ano-base.",
+          "unidade": null
+        },
+        {
+          "nome": "escolaridade",
+          "tipo": "int",
+          "descricao": "Código do grau de instrução (1 a 11).",
+          "unidade": null
+        },
+        {
+          "nome": "escolaridade_desc",
+          "tipo": "string",
+          "descricao": "Rótulo do grau de instrução.",
+          "unidade": null
+        },
+        {
+          "nome": "qtd_vinculos",
+          "tipo": "bigint",
+          "descricao": "Vínculos ativos.",
+          "unidade": "vínculos"
+        },
+        {
+          "nome": "remun_media_dez_sm",
+          "tipo": "decimal(19,2)",
+          "descricao": "Média da remuneração de dezembro.",
+          "unidade": "salários mínimos"
+        }
+      ]
+    },
+    {
+      "nome": "gold.gold_desligamento_uf_ano",
+      "caminho": "s3a://rais/gold/gold_desligamento_uf_ano",
+      "descricao": "Proporção de vínculos desligados no ano, por UF.",
+      "pergunta": "Qual a proporção de vínculos desligados no ano?",
+      "grao": "ano × UF",
+      "atualizacao": "recalculada inteira a cada execução da gold",
+      "colunas": [
+        {
+          "nome": "ano",
+          "tipo": "int",
+          "descricao": "Ano-base.",
+          "unidade": null
+        },
+        {
+          "nome": "cod_uf",
+          "tipo": "string",
+          "descricao": "Código IBGE da UF.",
+          "unidade": null
+        },
+        {
+          "nome": "uf",
+          "tipo": "string",
+          "descricao": "Sigla da UF.",
+          "unidade": null
+        },
+        {
+          "nome": "qtd_vinculos_no_ano",
+          "tipo": "bigint",
+          "descricao": "Todos os vínculos do ano (ativos ou não).",
+          "unidade": "vínculos"
+        },
+        {
+          "nome": "qtd_desligados",
+          "tipo": "bigint",
+          "descricao": "Vínculos com desligamento no ano.",
+          "unidade": "vínculos"
+        },
+        {
+          "nome": "taxa_desligamento",
+          "tipo": "double",
+          "descricao": "qtd_desligados / qtd_vinculos_no_ano (0 a 1).",
+          "unidade": "proporção"
+        }
+      ]
+    }
+  ]
+}

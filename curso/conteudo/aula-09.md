@@ -76,6 +76,45 @@ R$ nominal não é comparável entre anos (inflação e reajuste do mínimo). Pa
 
 O guia usa `ANOS = 2019–2024`. O site do MTE tem material de apresentação identificado como "RAIS ano-base 2025"; confirme se os **microdados** desse ano já estão publicados e, se estiverem, ajuste `ANOS` em `config/settings.py` (Aula 05).
 
+### 3.8 Enriquecimento: dar contexto aos códigos
+
+A RAIS chega cheia de códigos: `261160`, `47113`, `411005`. Para uma pessoa (ou uma IA) responder "qual o salário médio dos vendedores em Recife", esses códigos precisam virar nomes, regiões e unidades comparáveis. **Enriquecer** é juntar ao dado fontes oficiais que dão esse contexto. Ele acontece em dois lugares:
+
+- **Na silver ou em dimensões**, quando o enriquecimento é um atributo estável do código (nome do município, região, descrição da CBO).
+- **Na gold**, quando depende da pergunta (valores deflacionados, faixas, indicadores por habitante).
+
+| Fonte oficial | O que acrescenta | Como obter | Chave de junção |
+| --- | --- | --- | --- |
+| IBGE — localidades | Nome do município, UF, região | [API de localidades](https://servicodados.ibge.gov.br/api/docs/localidades) (JSON, sem cadastro) | Código do município: o IBGE usa 7 dígitos; a RAIS, os 6 primeiros (sem o dígito verificador) |
+| MTE — CBO 2002 | Título da ocupação, grande grupo | [Site da CBO](https://cbo.mte.gov.br/) (tabelas para download) | Código CBO (6 dígitos, texto) |
+| IBGE/CONCLA — CNAE 2.0 | Descrição da seção, divisão e classe de atividade | Comissão Nacional de Classificação (CONCLA), no site do IBGE | Classe (5 dígitos) ou divisão (2) |
+| IBGE — IPCA | Inflação, para levar valores nominais a preços de um ano de referência | [SIDRA, tabela 1737](https://sidra.ibge.gov.br/tabela/1737) | Ano (e mês) |
+| Salário mínimo anual | Converter entre R$ nominais e salários mínimos | Valores oficiais publicados por decreto | Ano |
+| IBGE — população estimada | Indicadores por habitante | SIDRA (estimativas de população) | Código do município e ano |
+
+**Exemplo testado: dimensão de municípios a partir da API do IBGE.** A resposta vem compactada em gzip; o código trata isso.
+
+```python
+import gzip, json, urllib.request
+
+URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
+with urllib.request.urlopen(URL, timeout=60) as r:
+    bruto = r.read()
+dados = json.loads(gzip.decompress(bruto) if bruto[:2] == b"\x1f\x8b" else bruto)
+
+def linha(m):
+    uf = m["regiao-imediata"]["regiao-intermediaria"]["UF"]
+    return (str(m["id"])[:6], m["nome"], uf["sigla"], uf["regiao"]["nome"])
+
+dim_municipio = spark.createDataFrame(
+    [linha(m) for m in dados], "cod_municipio string, municipio string, uf string, regiao string")
+dim_municipio.filter("cod_municipio = '261160'").show()   # Recife, PE, Nordeste
+```
+
+Resultado conferido: 5.571 municípios, e os códigos de 6 dígitos continuam únicos (o dígito verificador não é necessário para distinguir). Salve a dimensão no lake (`gravar_tabela`, Aula 10) para não depender da API a cada execução, e registre a data do download.
+
+**Cuidados.** Fontes externas mudam: municípios são criados, a CBO e a CNAE ganham revisões. Guarde a versão usada (data do download) e confira, depois do join, quantos códigos ficaram sem correspondência (`left_anti`, Aula 08): esse número deve ser pequeno e explicado.
+
 ## 4. Arquitetura e fluxo
 
 ```
@@ -164,6 +203,16 @@ Acrescente ao arquivo, por coluna: o nome original no cabeçalho do seu ano, os 
 8. **Vínculo ≠ pessoa.**
 9. **Disco:** apague `raw` após a bronze (`--limpar-raw`).
 10. **Encoding:** `Munic�pio` indica encoding errado.
+11. **O layout do arquivo muda de um ano para outro, e não só os nomes.** Conferido nos arquivos reais do Nordeste: 2021 e 2022 seguem o formato descrito nesta aula, mas 2023 mudou quatro coisas de uma vez.
+
+| | 2021 e 2022 | 2023 |
+| --- | --- | --- |
+| Extensão do arquivo extraído | `.txt` | `.COMT` |
+| Separador | `;` | `,`, com cada campo entre aspas |
+| Nome das colunas | `Município`, `CBO Ocupação 2002`, `Vl Remun Dezembro Nom` | `Município - Código`, `CBO 2002 Ocupação - Código`, `Vl Rem Dezembro Nom` |
+| Separador decimal | vírgula (`2350,75`) | ponto (`7771.49`) |
+
+Cada mudança quebra um pedaço diferente do pipeline: o `glob("*.txt")` não encontra o arquivo; a leitura com `sep=";"` devolve uma única coluna; as colunas obrigatórias "somem"; e a conversão que remove pontos de milhar transforma `7771.49` em `777149`, um salário cem vezes maior, **sem erro nenhum**. Por isso, antes de processar um ano novo, leia a primeira linha do arquivo e compare com o dicionário; o exercício 3 mostra como.
 
 | Sintoma no pipeline | Armadilha provável |
 | --- | --- |
@@ -239,6 +288,47 @@ def test_a09_dicionario_preenchido():
 
 1. No dicionário oficial, encontre os códigos de `sexo_trabalhador` e `escolaridade_apos_2005` e confira com as dimensões que serão criadas na Aula 10.
 2. Liste os arquivos disponíveis para 2022 e anote o tamanho de cada região.
+3. Antes de processar um ano novo, confira o layout: leia só a primeira linha de cada arquivo extraído e verifique se as colunas que o projeto usa estão lá. O código abaixo detecta o separador e foi executado sobre os arquivos reais do Nordeste. Resultado: 2021 e 2022 com `;`, 60 colunas e nenhuma falta; 2023 com `,`, 62 colunas e **15 faltas**, porque os nomes mudaram (só `idade` e `tempo_emprego` continuam iguais).
+
+```python
+from pathlib import Path
+
+from src.utils import normalize_col
+
+USADAS = ["municipio", "cnae_2_0_classe", "cbo_ocupacao_2002", "vinculo_ativo_31_12",
+          "sexo_trabalhador", "escolaridade_apos_2005", "raca_cor", "idade", "tempo_emprego",
+          "mes_desligamento", "motivo_desligamento", "tamanho_estabelecimento",
+          "natureza_juridica", "vl_remun_dezembro_nom", "vl_remun_media_nom",
+          "vl_remun_dezembro_sm", "vl_remun_media_sm"]
+
+for arq in sorted(Path("/staging/raw/2023").iterdir()):        # qualquer extensão
+    with open(arq, encoding="latin-1") as f:
+        cabecalho = f.readline().rstrip("\n")
+    sep = ";" if cabecalho.count(";") > cabecalho.count(",") else ","
+    colunas = [normalize_col(c.strip('"')) for c in cabecalho.split(sep)]
+    faltam = [c for c in USADAS if c not in colunas]
+    print(f"{arq.name}: separador {sep!r}, {len(colunas)} colunas, faltam {len(faltam)}: {faltam}")
+```
+
+O de-para dos nomes de 2023 para os nomes usados pelo projeto (já normalizados), levantado nos arquivos reais:
+
+| Nome em 2023 | Nome do projeto |
+| --- | --- |
+| `municipio_codigo` | `municipio` |
+| `cnae_2_0_classe_codigo` | `cnae_2_0_classe` |
+| `cbo_2002_ocupacao_codigo` | `cbo_ocupacao_2002` |
+| `ind_vinculo_ativo_31_12_codigo` | `vinculo_ativo_31_12` |
+| `sexo_codigo` | `sexo_trabalhador` |
+| `escolaridade_apos_2005_codigo` | `escolaridade_apos_2005` |
+| `raca_cor_codigo` | `raca_cor` |
+| `mes_desligamento_codigo` | `mes_desligamento` |
+| `motivo_desligamento_codigo` | `motivo_desligamento` |
+| `tamanho_estabelecimento_codigo` | `tamanho_estabelecimento` |
+| `natureza_juridica_codigo` | `natureza_juridica` |
+| `vl_rem_dezembro_nom` / `vl_rem_media_nom` | `vl_remun_dezembro_nom` / `vl_remun_media_nom` |
+| `vl_rem_dezembro_sm` / `vl_rem_media_sm` | `vl_remun_dezembro_sm` / `vl_remun_media_sm` |
+
+Cuidado com `municipio_trab_codigo`: é o município onde a pessoa trabalha, não o do estabelecimento; não o confunda com `municipio_codigo`. O que fazer com essas diferenças é decisão de projeto: renomear para os nomes canônicos na bronze (um dicionário de-para por layout), tratar o ponto decimal na silver e registrar tudo como ADR.
 
 **Revisão**
 

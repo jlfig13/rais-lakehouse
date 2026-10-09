@@ -84,6 +84,28 @@ Commits pequenos e frequentes: um commit faz **uma** coisa.
 - Uma branch por funcionalidade (`feat/`, `fix/`, `docs/`, `refactor/`).
 - Mesmo sozinho, use PRs: o CI roda antes do merge e o PR documenta o porquê da mudança.
 
+### 3.6 Matriz de validações do projeto
+
+As validações aparecem espalhadas pelas aulas; esta é a visão completa, de onde vem cada uma e o que ela protege. Use como checklist ao revisar um pull request que mexe no pipeline.
+
+| Etapa | Validação | Tipo | Onde está | Protege contra |
+| --- | --- | --- | --- | --- |
+| Configuração | Tipos e formatos do `.env` | Pydantic | Aula 10, seção 3.7 | JVM que não sobe por `SPARK_MEM` mal escrito |
+| Landing | Hash e versão do arquivo | Registro manual | Aula 09 | Misturar versão parcial e final |
+| Raw | Layout do cabeçalho (separador, colunas) | Script | Aula 09, exercício 3 | Ano com layout novo (2023) |
+| Bronze | Linhas = `.txt`, por arquivo | Contagem | Aula 11, exemplo 4 | Separador ou aspas errados, extração parcial |
+| Bronze | Tudo `string`, `arquivo_origem` | Schema | `labcheck/test_aula11.py` | Tipagem precoce, perda de rastreabilidade |
+| Silver | Contagem = bronze | Contagem | `src/checks.py` (para o pipeline) | Filtro que descarta vínculos |
+| Silver | % de NULL por coluna | Perfil | Aula 12, exemplo 3 | Regra de conversão que zera uma coluna |
+| Silver | Domínios e faixas | Regra de negócio | Aula 12; `labcheck/test_aula12.py` | Código fora do dicionário, idade absurda |
+| Gold | Soma = ativos da silver | Reconciliação | `labcheck/test_aula13.py` | Join que duplica ou perde linhas |
+| Gold | Enriquecimento sem órfãos | `left_anti` | Aula 13, seção 3.6 | Município fora da dimensão sem explicação |
+| Pipeline | Manifesto e idempotência | Histórico | Aula 14, exemplo 4 | Reprocessamento que duplica, volume implausível |
+| Catálogo | Toda coluna da gold descrita | Conferência | `src/catalogo.py` (Aula 17) | Tabela sem documentação para pessoas e IA |
+| Código | Testes de unidade e lint | Automático | `tests/`, CI | Regressão em funções puras |
+
+**Ferramentas especializadas.** Quando as regras crescem, bibliotecas declarativas evitam reescrever asserts: [Pandera](https://pandera.readthedocs.io/) (schemas para DataFrames pandas, Polars e PySpark, com checagens por coluna) e [Great Expectations](https://docs.greatexpectations.io/) (expectativas com relatórios HTML de qualidade). Para o tamanho deste projeto, as checagens em PySpark e os labchecks bastam; vale migrar quando várias pessoas mantêm as regras ou quando é preciso publicar relatórios de qualidade.
+
 ## 4. Arquitetura e fluxo
 
 ```

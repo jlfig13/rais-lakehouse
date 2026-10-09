@@ -273,6 +273,46 @@ print(antes.filter("idade IS NULL").count(), depois.filter("idade IS NULL").coun
 
 **Exemplo 3 — Só a gold.** Mudou a definição de uma tabela gold? `make pipeline ETAPAS=gold` recria só a gold, em minutos.
 
+**Exemplo 4 — Manifesto da execução: contagens de cada camada a cada rodada.** As checagens param o pipeline quando algo está errado *agora*; o manifesto guarda o histórico para você comparar *entre execuções*. Uma linha JSON por execução e ano, num arquivo que só cresce:
+
+```python
+import json
+from datetime import datetime, timezone
+
+from pyspark.sql import functions as F
+
+from config.settings import BRONZE, GOLD, SILVER
+from src.delta_io import ler
+
+
+def manifesto(spark, ano: int) -> dict:
+    bronze = ler(spark, BRONZE).filter(F.col("ano") == ano).count()
+    silver = ler(spark, SILVER).filter(F.col("ano") == ano).count()
+    gold = (ler(spark, f"{GOLD}/gold_emprego_uf_ano").filter(F.col("ano") == ano)
+            .agg(F.sum("qtd_vinculos")).first()[0])
+    return {"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), "ano": ano,
+            "spark": spark.version, "bronze": bronze, "silver": silver,
+            "gold_vinculos_ativos": int(gold or 0)}
+
+
+registro = manifesto(spark, 2022)
+assert registro["bronze"] == registro["silver"], registro
+with open("/staging/manifesto.jsonl", "a", encoding="utf-8") as f:
+    f.write(json.dumps(registro, ensure_ascii=False) + "\n")
+```
+
+Saída real sobre a amostra: `{"ano": 2022, "spark": "3.5.3", "bronze": 500, "silver": 500, "gold_vinculos_ativos": 389}`. Com o histórico, perguntas como "o total de 2022 mudou depois que reprocessamos?" (idempotência) ou "o ano novo tem um volume plausível perto dos anteriores?" passam a ter resposta em segundos.
+
+**Checklist de idempotência e consistência do pipeline.**
+
+| Pergunta | Como verificar | Esperado |
+| --- | --- | --- |
+| Reprocessar um ano duplica dados? | Rode `--anos 2022` duas vezes e compare o manifesto | Mesmas contagens |
+| Reprocessar 2022 mexe em 2021? | Contagem de 2021 antes e depois | Igual |
+| A gold reflete todos os anos? | `groupBy("ano")` na gold × anos da silver | Mesmos anos |
+| Uma execução que falhou no meio deixou lixo? | `DESCRIBE HISTORY` (Passo 4): a escrita interrompida não aparece | Só versões completas |
+| O volume do ano é plausível? | Compare com o ano anterior no manifesto | Variação explicável (ver Apêndice A: eSocial, versão parcial) |
+
 ## 8. Armadilhas, diagnóstico e soluções
 
 | Sintoma | Causa | Solução |

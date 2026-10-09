@@ -65,6 +65,71 @@ Cada tabela é uma **função pura**: recebe DataFrames e devolve DataFrame, sem
 
 A gold é recriada por completo a cada execução (`gravar_tabela` com `overwriteSchema`). Como as tabelas são pequenas, isso é barato e elimina toda uma classe de erro de atualização incremental (exercício 1 da Aula 01).
 
+### 3.6 Enriquecimento: por que e como
+
+Uma gold só com códigos responde à máquina, não a quem decide. "UF 26, divisão 47" vira informação quando aparece como "Pernambuco, Nordeste, comércio varejista". **Enriquecer** é juntar ao dado atributos de fontes confiáveis (as da Aula 09) para que a tabela responda perguntas sem consulta extra. Os tipos mais úteis na RAIS:
+
+| Tipo | Exemplo | Como fazer |
+| --- | --- | --- |
+| Hierarquia geográfica | município → UF → região | Dimensão do IBGE, ou derivação pelo código (1º dígito da UF = região) |
+| Descrição de códigos | CNAE 47 → "Comércio varejista"; CBO → título da ocupação | Dimensões com as tabelas oficiais (CONCLA, CBO) |
+| Unidade comparável | R$ nominal → salários mínimos ou R$ de um ano de referência (IPCA) | Colunas `*_sm` (já vêm na RAIS) ou deflator por ano |
+| Faixas e categorias | idade → faixa etária; tamanho → porte | `F.when` (exercício 4) |
+| Indicadores relativos | vínculos por mil habitantes | População do IBGE por município e ano |
+
+**Exemplo testado: região a partir do código da UF.** O primeiro dígito do código IBGE da UF indica a região (1 = Norte, 2 = Nordeste, 3 = Sudeste, 4 = Sul, 5 = Centro-Oeste). Não precisa de arquivo externo:
+
+```python
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
+
+REGIOES = {"1": "Norte", "2": "Nordeste", "3": "Sudeste", "4": "Sul", "5": "Centro-Oeste"}
+
+
+def com_regiao(df: DataFrame) -> DataFrame:
+    mapa = F.create_map(*[F.lit(x) for par in REGIOES.items() for x in par])
+    return df.withColumn("regiao", mapa[F.substring("cod_uf", 1, 1)])
+
+
+g = com_regiao(ler(spark, f"{GOLD}/gold_emprego_uf_ano"))
+g.groupBy("regiao").agg(F.sum("qtd_vinculos").alias("vinculos")).show()
+```
+
+Sobre a amostra do projeto, o resultado foi Nordeste 246, Sudeste 140 e 3 vínculos sem região, exatamente os de UF nula (código de município inválido). **Validação do enriquecimento:** depois de todo join com dimensão, conte quantas linhas ficaram sem correspondência; o número tem de ser pequeno e explicado, nunca ignorado.
+
+### 3.7 Preparar a gold para consumo por IA
+
+Modelos de linguagem (LLMs) já são usados para responder perguntas sobre dados: geram SQL a partir de uma pergunta (*text-to-SQL*), resumem tabelas e escrevem relatórios. Eles erram de forma previsível quando o dado é ambíguo: confundem vínculo com pessoa, somam valores nominais de anos diferentes, inventam o significado de um código. Preparar a gold para IA é remover essas ambiguidades **no dado e nos metadados**, não no texto da pergunta.
+
+| Prática | Por que ajuda a IA | No projeto |
+| --- | --- | --- |
+| Nomes de coluna descritivos e com unidade | `remun_media_dez_sm` diz o quê, quando e em que unidade | Convenção `*_nom` / `*_sm` |
+| Descrição de cada tabela e coluna, com grão e unidade | É o "dicionário" que o modelo lê antes de responder | Catálogo da Aula 17 (`COMMENT` nas tabelas + `catalogo/rais.json`) |
+| Regras de negócio escritas | "unidade é vínculo", "compare anos em SM" | Campo `regras` do catálogo |
+| Códigos acompanhados de rótulos | O modelo não precisa adivinhar o que é `escolaridade = 7` | Dimensões e enriquecimento (3.6) |
+| Tabelas pequenas e agregadas | Cabem no contexto e não expõem microdados | A própria gold |
+| Sem dados pessoais e sem células com contagem muito pequena | Evita reidentificação e vazamento | Gold agregada por UF/ano |
+
+**Descrições em linguagem natural.** Para busca semântica e assistentes, vale gerar uma frase por linha da gold. Gerar por modelo (template) e não por IA garante que os números do texto são os da tabela:
+
+```python
+def descrever(linha) -> str:
+    qtd = f"{linha['qtd_vinculos']:,}".replace(",", ".")            # 1.234.567
+    media = f"{float(linha['remun_media_dez_sm']):.2f}".replace(".", ",")
+    mediana = f"{float(linha['remun_mediana_dez_sm']):.2f}".replace(".", ",")
+    return (f"Em {linha['ano']}, {linha['uf'] or 'UF não identificada'} tinha {qtd} vínculos "
+            f"formais ativos em 31/12, com remuneração média de {media} salários mínimos em "
+            f"dezembro (mediana {mediana}). Unidade: vínculos, não pessoas.")
+
+
+for linha in g.filter("uf is not null").orderBy("uf").limit(3).collect():
+    print(descrever(linha))
+```
+
+Saída real sobre a amostra: *"Em 2022, BA tinha 67 vínculos formais ativos em 31/12, com remuneração média de 4,05 salários mínimos em dezembro (mediana 4,01). Unidade: vínculos, não pessoas."* Frases assim podem ser indexadas num buscador vetorial ou entregues a um LLM junto com o catálogo; a regra "vínculos, não pessoas" viaja dentro do próprio texto.
+
+**Consumo seguro por IA.** Dê ao modelo acesso só à gold (nunca à silver com microdados), em modo leitura, com o catálogo como contexto; registre as consultas geradas; e confira os números de qualquer resposta contra a tabela antes de publicar.
+
 ## 4. Arquitetura e fluxo
 
 ```

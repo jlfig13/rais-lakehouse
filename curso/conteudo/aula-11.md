@@ -235,6 +235,42 @@ Depois de validar a bronze, apague `staging/raw/2022/`: o `.7z` na landing conti
 
 **Exemplo 3 — Colunas esperadas.** `set(colunas_esperadas) - set(b.columns)` com as colunas da Aula 09 revela diferenças de nome naquele ano antes de chegar à silver.
 
+**Exemplo 4 — Validação recomendada: reconciliar a bronze com os arquivos de origem.** A bronze promete ser uma cópia fiel; a forma mais barata de provar isso é contar. O código abaixo conta as linhas de dados de cada `.txt` (sem o cabeçalho) e compara com a contagem da bronze por `arquivo_origem`. Rode logo depois da carga e **antes** de apagar a raw.
+
+```python
+from pyspark.sql import functions as F
+
+from config.settings import BRONZE, RAW
+from src.delta_io import ler
+
+
+def linhas_por_arquivo(pasta) -> dict[str, int]:
+    """Linhas de dados de cada .txt (sem o cabeçalho), lidas em latin-1."""
+    contagem = {}
+    for arq in sorted(pasta.glob("*.txt")):
+        with open(arq, encoding="latin-1") as f:
+            contagem[arq.name] = sum(1 for _ in f) - 1
+    return contagem
+
+
+ano = 2022
+origem = linhas_por_arquivo(RAW / str(ano))
+bronze = {r["arquivo_origem"]: r["count"] for r in
+          ler(spark, BRONZE).filter(F.col("ano") == ano).groupBy("arquivo_origem").count().collect()}
+divergentes = {a: (n, bronze.get(a)) for a, n in origem.items() if bronze.get(a) != n}
+assert not divergentes, f"arquivo: (txt, bronze) -> {divergentes}"
+```
+
+Testado sobre a amostra do projeto: 500 linhas no `.txt` e 500 na bronze. Uma divergência aponta para um destes casos: separador errado (linhas que viraram uma), aspas não fechadas juntando linhas, arquivo extraído pela metade ou leitura de um layout diferente (a armadilha 11 da Aula 09, o caso real de 2023). É barato: no arquivo real do Nordeste de 2022 (6,6 GB), a contagem achou 13.584.961 vínculos em 33 segundos, bem menos que reprocessar um ano errado.
+
+| Validação da bronze | Como | Quando falha, investigue |
+| --- | --- | --- |
+| Linhas = origem | Exemplo 4 | Separador, aspas, layout novo |
+| Tudo `string` (exceto `ano`) | `dtypes` (check `a11_tudo_string`) | Alguém usou `inferSchema=True` |
+| `arquivo_origem` sem nulos | `filter(isNull)` (check `a11_arquivo_origem`) | Leitura sem `_metadata` |
+| Colunas esperadas presentes | `set(esperadas) - set(b.columns)` | Nomes mudaram no ano (Aula 09) |
+| Reprocessar não duplica | Contagem antes e depois (check `a11_idempotente`) | Escrita com `append` em vez de `replaceWhere` |
+
 ## 8. Armadilhas, diagnóstico e soluções
 
 | Sintoma | Causa | Solução |

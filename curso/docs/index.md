@@ -33,5 +33,6 @@ Curso prático de PySpark, Delta Lake e MinIO construindo um lakehouse com os mi
 | 14 | [Pipeline completo, idempotência e operações Delta](aulas/aula-14.md) | 13 | 5 | <span class="rl-trilha" data-aula="14" data-criterios="4">—</span> |
 | 15 | [Tuning: threads, memória, partições e Spark UI](aulas/aula-15.md) | 14 | 4 | <span class="rl-trilha" data-aula="15" data-criterios="3">—</span> |
 | 16 | [Qualidade, testes, CI e boas práticas de GitHub](aulas/aula-16.md) | 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15 | 5 | <span class="rl-trilha" data-aula="16" data-criterios="4">—</span> |
+| 17 | [Catálogo de dados, metadados e consumo por IA](aulas/aula-17.md) | 10, 13, 14 | 4 | <span class="rl-trilha" data-aula="17" data-criterios="4">—</span> |
 
 Apêndices A–G: [página de apêndices](apendices.md). Guia em que o curso se baseia: [Guia original](guia/index.md).

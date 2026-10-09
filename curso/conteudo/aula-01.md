@@ -96,7 +96,14 @@ A separação entre storage e engine é o que permite, por exemplo, processar co
 
 **O que é.** Um formato que grava os dados coluna por coluna, com compressão e estatísticas (mínimo e máximo) por bloco.
 
-**Por que importa.** Uma consulta que usa 3 de 50 colunas lê só essas 3 do disco. Filtros podem pular blocos inteiros cujo mínimo e máximo não atendem à condição. O guia (Partes 5.8 e 9) mostra essa vantagem ao comparar o tamanho do `.txt` com o da bronze.
+**Por que importa.** Uma consulta que usa 3 de 50 colunas lê só essas 3 do disco. Filtros podem pular blocos inteiros cujo mínimo e máximo não atendem à condição.
+
+**Exemplo com números reais.** O arquivo de vínculos do Nordeste de 2022 tem 60 colunas. Compactado (`.7z`) ocupa 462 MB; extraído (`.txt`), 6,6 GB. Uma pergunta como "remuneração média por UF" precisa de 3 dessas colunas (município, vínculo ativo e remuneração): lendo o `.txt`, o Spark percorre os 6,6 GB inteiros, porque texto não tem como pular colunas; lendo a bronze em Parquet, lê só os blocos dessas 3 colunas, já comprimidos. Meça na sua máquina depois da Aula 11:
+
+```bash
+du -sh staging/raw/2022            # texto extraído
+mc du app/rais/bronze              # a mesma informação em Parquet (Aula 04)
+```
 
 **O limite.** Parquet descreve um arquivo, não uma tabela. Uma pasta com 200 arquivos Parquet não sabe quais deles são válidos, quais estão pela metade ou qual era o conteúdo de ontem.
 
@@ -146,6 +153,70 @@ O guia escolhe Delta (ADR nº 4). A comparação abaixo resume a justificativa d
 ### 3.6 Idempotência
 
 **O que é.** Executar o mesmo passo duas vezes produz o mesmo resultado que executar uma vez. **Por que importa:** pipelines falham e são reexecutados; sem idempotência, cada reexecução duplica dados. No guia ela vem de três escolhas: pular arquivos já baixados, gravar bronze e silver com `replaceWhere` por ano e recriar a gold inteira (Parte 12.1). É um conceito que atravessa todo o curso.
+
+### 3.7 O ecossistema de ferramentas: o que cada uma faz e quando usar
+
+O projeto usa PySpark porque o volume é grande, mas no dia a dia de dados você vai encontrar outras ferramentas, muitas vezes no mesmo projeto. Elas não competem entre si: cada uma resolve um tamanho de problema. A Aula 07 mostra a mesma consulta escrita em PySpark, pandas, Polars e DuckDB.
+
+| Ferramenta | O que é | Use quando | Evite quando | No curso |
+| --- | --- | --- | --- | --- |
+| **PySpark** | Motor distribuído (JVM) com API de DataFrame e SQL | Dados maiores que a memória; pipelines que podem crescer para um cluster; integração com Delta | Dados pequenos (menos de alguns GB): o custo de subir a JVM e planejar o job domina | Todo o processamento |
+| **pandas** | DataFrame em memória, um processo, uma thread na maior parte das operações | Tabelas pequenas, gráficos, análise exploratória, ecossistema enorme (matplotlib, scikit-learn) | Dados que não cabem na RAM (estima-se 5 a 10× o tamanho do arquivo em memória) | Gold → gráficos (Aula 13) |
+| **Polars** | DataFrame em Rust, colunar (Arrow), multithread, com modo *lazy* | Dados médios (até dezenas de GB numa máquina) com velocidade muito maior que pandas | Quando o pipeline precisa de Delta com escrita transacional distribuída ou de cluster | Comparação (Aula 07) |
+| **DuckDB** | Banco analítico embutido (como um SQLite colunar), SQL sobre Parquet, CSV e DataFrames | Consultar Parquet/CSV direto com SQL, sem servidor; análises rápidas sobre a gold | Muitos escritores concorrentes; papel de banco transacional de uma aplicação | Comparação (Aula 07) |
+| **PyArrow / Apache Arrow** | Formato colunar em memória e biblioteca de leitura/escrita | Trocar dados entre ferramentas sem copiar (Spark ↔ pandas ↔ Polars ↔ DuckDB) | — (é infraestrutura das outras) | Por baixo de `toPandas()` |
+| **Pydantic** | Validação de dados por tipos Python (modelos) | Configuração, contratos, metadados, registros de API: dados *estruturados e pequenos* | Validar milhões de linhas (é linha a linha, em Python) | Configuração (Aula 10) e catálogo (Aula 17) |
+| **Pandera / Great Expectations / Soda** | Validação de DataFrames inteiros (schema, faixas, unicidade) | Regras de qualidade declarativas, relatórios de qualidade | Projetos pequenos em que asserts simples bastam | Alternativas às checagens das Aulas 14 e 16 |
+| **dbt** | Transformações em SQL versionadas, com testes e documentação | Equipes que modelam em SQL sobre um warehouse ou engine SQL | Lógica que exige Python (parsing, ML) | Não usado; alternativa para modelar a gold em SQL |
+| **Delta Lake / Iceberg** | Formatos de tabela sobre Parquet (ACID, versões) | Sempre que várias escritas e leituras precisam ver dados consistentes | Arquivo único de troca pontual (aí basta Parquet) | Todas as camadas |
+
+**Limitações que costumam surpreender.**
+
+- **pandas** copia dados com frequência: uma operação pode usar o dobro da memória do DataFrame. Tipos `object` (texto) são lentos e pesados; prefira `string[pyarrow]`.
+- **Polars** tem API diferente da do pandas (expressões em vez de índice); código pandas não roda nele sem reescrita.
+- **DuckDB** processa numa máquina só; ótimo até centenas de GB, mas não distribui.
+- **PySpark** em modo local divide a memória de uma JVM entre as threads (Aula 15); `collect()`/`toPandas()` trazem tudo para o driver.
+- **Pydantic** valida objetos Python, não colunas: para tabelas, use as checagens em PySpark ou Pandera.
+
+**Regra prática de escolha.** Cabe confortavelmente na memória e é exploração? pandas ou Polars. É SQL sobre arquivos, numa máquina? DuckDB. É pipeline de produção, vários anos, precisa de ACID? PySpark + Delta (este curso). Precisa validar configuração ou metadados? Pydantic.
+
+### 3.8 Validações em cada camada
+
+Cada camada tem uma pergunta de validação própria. Sem elas, um erro na bronze só aparece meses depois, num gráfico estranho. As aulas de cada camada trazem o código; este é o mapa.
+
+| Camada | Pergunta | Validação recomendada | Aula |
+| --- | --- | --- | --- |
+| landing | O arquivo é o certo e está inteiro? | Hash (`sha256sum`), tamanho, versão (parcial × final) registrada | 09 |
+| raw | A extração produziu o que se esperava? | Arquivos `.txt` presentes; cabeçalho com o separador esperado; contagem de linhas | 11 |
+| bronze | Nada se perdeu na carga? | Linhas da bronze = linhas dos `.txt` (por arquivo de origem); tudo `string`; `arquivo_origem` preenchido | 11 |
+| silver | A limpeza não inventou nem perdeu vínculos? | Contagem silver = bronze; perfil de nulos por coluna comparado com a carga anterior; domínios (sexo, escolaridade) dentro das dimensões; faixas (idade 14–100) | 12 |
+| gold | Os números batem com a origem? | Soma de `qtd_vinculos` = vínculos ativos da silver; nenhuma UF nula sem explicação; ranking com no máximo N linhas | 13 |
+| pipeline | Rodar de novo muda alguma coisa? | Idempotência: reprocessar um ano não altera contagens; manifesto com contagens de cada execução | 14 |
+| projeto | O código continua certo? | Testes de unidade, lint e CI a cada mudança | 16 |
+
+**Contagem é a validação mais barata e a que mais pega erro.** Ela não diz se um valor está certo, mas diz quando linhas sumiram ou duplicaram, que é o erro mais comum de pipeline (filtro esquecido, join que multiplica, `append` em vez de substituição).
+
+### 3.9 Para se aprofundar
+
+Artigos e documentações de referência, dos autores ou mantenedores de cada tecnologia:
+
+| Tema | Referência |
+| --- | --- |
+| Lakehouse | Armbrust, Ghodsi, Xin e Zaharia. *Lakehouse: A New Generation of Open Platforms that Unify Data Warehousing and Advanced Analytics*. CIDR 2021. [PDF](https://www.cidrdb.org/cidr2021/papers/cidr2021_paper17.pdf) |
+| Delta Lake | Armbrust et al. *Delta Lake: High-Performance ACID Table Storage over Cloud Object Stores*. VLDB 2020. [PDF](https://www.vldb.org/pvldb/vol13/p3411-armbrust.pdf) · [documentação](https://docs.delta.io/latest/index.html) |
+| Apache Spark | Zaharia et al. *Resilient Distributed Datasets*. NSDI 2012. [PDF](https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf) · Armbrust et al. *Spark SQL: Relational Data Processing in Spark*. SIGMOD 2015. [PDF](https://people.csail.mit.edu/matei/papers/2015/sigmod_spark_sql.pdf) · [documentação 3.5.3](https://spark.apache.org/docs/3.5.3/) |
+| Parquet e formato colunar | Melnik et al. *Dremel: Interactive Analysis of Web-Scale Datasets* (Google, VLDB 2010), base do formato Parquet. [Página](https://research.google/pubs/dremel-interactive-analysis-of-web-scale-datasets-2/) · [documentação do Parquet](https://parquet.apache.org/docs/) · [formato colunar do Arrow](https://arrow.apache.org/docs/format/Columnar.html) |
+| Apache Iceberg | [Especificação do formato](https://iceberg.apache.org/spec/) |
+| Arquitetura medallion | Databricks. [*Medallion architecture*](https://www.databricks.com/glossary/medallion-architecture) |
+| DuckDB | Raasveldt e Mühleisen. *DuckDB: an Embeddable Analytical Database*. SIGMOD 2019. [PDF](https://mytherin.github.io/papers/2019-duckdbdemo.pdf) · [documentação](https://duckdb.org/docs/) |
+| pandas | McKinney. *Data Structures for Statistical Computing in Python*. SciPy 2010. [Artigo](https://proceedings.scipy.org/articles/Majora-92bf1922-00a) · [documentação](https://pandas.pydata.org/docs/) |
+| Polars | [Guia do usuário](https://docs.pola.rs/) |
+| Pydantic | [Documentação](https://docs.pydantic.dev/latest/) |
+| Pandera e Great Expectations | [Pandera](https://pandera.readthedocs.io/) · [Great Expectations](https://docs.greatexpectations.io/) |
+| dbt | [O que é o dbt](https://docs.getdbt.com/docs/introduction) |
+| Unity Catalog | [Repositório do Unity Catalog OSS](https://github.com/unitycatalog/unitycatalog) · [site do projeto](https://www.unitycatalog.io/) |
+| ADRs | Michael Nygard. [*Documenting Architecture Decisions*](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions) (2011), o texto que popularizou o formato |
+| Configuração por ambiente | [The Twelve-Factor App](https://12factor.net/) |
 
 ## 4. Arquitetura do RAIS Lakehouse
 
@@ -277,7 +348,23 @@ Cada item do contrato vira uma verificação automática nas Aulas 12 e 16 (ex.:
 
 ### Passo 5 — Desenhar o diagrama
 
-Reproduza o diagrama da seção 4 desta aula no seu README (ASCII, Mermaid ou imagem). O guia traz uma versão em ASCII na Parte 1.1 que pode ser copiada como ponto de partida.
+Reproduza o diagrama da seção 4 desta aula no seu README (ASCII, Mermaid ou imagem). Esta é a versão em ASCII do guia, que pode ser copiada como ponto de partida:
+
+```
+                    ┌──────────────────────── docker compose ────────────────────────┐
+                    │                                                                 │
+  gov.br (.7z) ───▶ │  container "spark"                     container "minio"        │
+                    │  ┌───────────────────────────┐        ┌───────────────────────┐ │
+                    │  │ Python + Java + PySpark   │  S3A   │ bucket "rais"          │ │
+                    │  │ + Delta + JupyterLab      │ ─────▶ │  bronze/ (Delta)       │ │
+                    │  │                           │        │  silver/ (Delta)       │ │
+                    │  │ /staging (disco local):   │        │  gold/   (Delta)       │ │
+                    │  │   landing/ (.7z)          │        └───────────────────────┘ │
+                    │  │   raw/ (.txt temporário)  │                                   │
+                    │  └───────────────────────────┘        container "minio-init"    │
+                    │                                       (cria bucket e usuário)   │
+                    └─────────────────────────────────────────────────────────────────┘
+```
 
 ## 6. Como cada etapa funciona e o que esperar
 

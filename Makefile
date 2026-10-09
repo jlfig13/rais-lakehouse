@@ -1,10 +1,10 @@
 COMPOSE := docker compose
 ANOS    ?= 2022
-ETAPAS  ?= extrair bronze silver gold
+ETAPAS  ?= extrair bronze silver gold catalogo
 AULA    ?= 01
 ANO     ?= 2022
 
-.PHONY: help up down logs ps shell smoke pipeline test lint fmt check check-host progresso curso
+.PHONY: help up down logs ps shell smoke pipeline test lint fmt check check-host progresso curso catalogo
 
 help:            ## lista os comandos
 	@grep -E '^[a-z-]+:.*##' Makefile | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -51,3 +51,6 @@ progresso:       ## gera curso/docs/progresso.md a partir do histórico
 curso:           ## regenera as páginas e sobe o site em http://localhost:8000
 	$(COMPOSE) exec spark python -m scripts.gerar_curso
 	$(COMPOSE) up -d curso
+
+catalogo:        ## valida o catálogo, grava as descrições nas tabelas e gera catalogo/rais.json
+	$(COMPOSE) exec spark python -m src.catalogo --aplicar
