@@ -1,0 +1,32 @@
+# Segredos
+.env
+
+# Dados (nunca versionar)
+staging/*
+!staging/.gitkeep
+*.7z
+*.parquet
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Spark
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Plataforma
+progress/*
+!progress/.gitkeep
+.venv-host/
+curso/site/
+.cache/
+labs/amostra/saida/
+logs/

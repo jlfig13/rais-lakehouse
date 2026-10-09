@@ -1,0 +1,40 @@
+# Origem: Guia Parte 15.5 / Aula 16. Passo "Build do site": [Complemento] da plataforma.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Testes
+        run: pytest -q
+
+      - name: Páginas do curso em dia com curso/aulas.yml e labcheck/
+        run: |
+          python -m scripts.gerar_curso
+          git diff --exit-code -- curso/docs/aulas curso/docs/index.md curso/docs/apendices.md
+
+      - name: Build do site do curso
+        run: zensical build -f curso/mkdocs.yml

@@ -1,0 +1,86 @@
+# Origem: Guia Parte 4.7 / Aula 03. Serviço `curso`: [Complemento] da plataforma.
+name: rais-lakehouse
+
+services:
+
+  # ---------------------------------------------------------------- armazenamento
+  minio:
+    image: ${MINIO_IMAGE:?defina MINIO_IMAGE no .env}
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?defina MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?defina MINIO_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:9000:9000"     # API S3
+      - "127.0.0.1:9001:9001"     # console web
+    volumes:
+      - minio-data:/data
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- setup (roda e termina)
+  minio-init:
+    image: ${MC_IMAGE:?defina MC_IMAGE no .env}
+    depends_on:
+      - minio
+    entrypoint: ["/bin/sh", "/init/init-minio.sh"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      APP_ACCESS_KEY: ${APP_ACCESS_KEY:?defina APP_ACCESS_KEY}
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?defina APP_SECRET_KEY}
+      RAIS_BUCKET: ${RAIS_BUCKET:-rais}
+    volumes:
+      - ./docker/minio/init-minio.sh:/init/init-minio.sh:ro
+      - ./docker/minio/policy-rais.json:/init/policy-rais.json:ro
+    restart: "no"
+
+  # ---------------------------------------------------------------- processamento
+  spark:
+    build:
+      context: .
+      dockerfile: docker/spark/Dockerfile
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+    image: rais-spark:local
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      # O container recebe SÓ o que precisa (nada de senha de root)
+      MINIO_ENDPOINT: http://minio:9000          # nome do serviço, não localhost!
+      S3_ACCESS_KEY: ${APP_ACCESS_KEY}
+      S3_SECRET_KEY: ${APP_SECRET_KEY}
+      RAIS_LAKE: s3a://${RAIS_BUCKET:-rais}
+      RAIS_STAGING: /staging
+      SPARK_THREADS: ${SPARK_THREADS:-4}
+      SPARK_MEM: ${SPARK_MEM:-8g}
+      SPARK_SHUFFLE: ${SPARK_SHUFFLE:-32}
+      SPARK_TMP: /tmp/spark
+    ports:
+      - "127.0.0.1:8888:8888"             # JupyterLab
+      - "127.0.0.1:4040-4041:4040-4041"   # Spark UI (4040) e a de um 2º processo simultâneo (4041)
+    volumes:
+      - ./:/app                                   # seu código (bind mount)
+      - ${HOST_STAGING_DIR:-./staging}:/staging   # landing/raw
+      - spark-tmp:/tmp/spark                      # spill/shuffle do Spark
+    cpus: ${CONTAINER_CPUS:-4}
+    mem_limit: ${CONTAINER_MEM:-8g}
+    command: >
+      jupyter lab --ip=0.0.0.0 --port=8888 --no-browser
+      --ServerApp.token=${JUPYTER_TOKEN:?defina JUPYTER_TOKEN}
+
+  # ---------------------------------------------------------------- site do curso (só leitura)
+  curso:
+    image: rais-spark:local
+    depends_on:
+      - spark                                     # garante que a imagem foi construída
+    working_dir: /app
+    volumes:
+      - ./:/app:ro                                # o site só lê o repositório
+    ports:
+      - "127.0.0.1:8000:8000"
+    command: zensical serve -f curso/mkdocs.yml -a 0.0.0.0:8000
+
+volumes:
+  minio-data:     # o lake inteiro mora aqui
+  spark-tmp:

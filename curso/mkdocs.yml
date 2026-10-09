@@ -1,0 +1,38 @@
+# Site do curso (Zensical lê o formato mkdocs.yml). Build: zensical build -f curso/mkdocs.yml
+site_name: RAIS Lakehouse — Curso
+site_description: PySpark, Delta Lake e MinIO com os microdados da RAIS
+docs_dir: docs
+site_dir: site
+use_directory_urls: false
+theme:
+  language: pt-BR
+  features:
+    - navigation.sections
+    - search.highlight
+    - content.code.copy
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+nav:
+  - Início: index.md
+  - Aulas:
+    - "01 — Arquitetura Lakehouse e o projeto RAIS Lakehouse": aulas/aula-01.md
+    - "02 — Docker: imagens, containers e o Dockerfile do Spark": aulas/aula-02.md
+    - "03 — Docker Compose: serviços, rede, volumes e configuração": aulas/aula-03.md
+    - "04 — MinIO e S3: buckets, S3A e menor privilégio": aulas/aula-04.md
+    - "05 — Repositório, Git e configuração por ambiente": aulas/aula-05.md
+    - "06 — Ambiente no ar: SparkSession, Delta, S3A e teste de fumaça": aulas/aula-06.md
+    - "07 — PySpark I: DataFrames, transformações, agregações e SQL": aulas/aula-07.md
+    - "08 — PySpark II: joins, window functions, lazy evaluation e partições": aulas/aula-08.md
+    - "09 — O domínio RAIS: microdados, dicionário e armadilhas": aulas/aula-09.md
+    - "10 — Delta Lake e código base: transações, utilitários e dimensões": aulas/aula-10.md
+    - "11 — Ingestão e camada bronze": aulas/aula-11.md
+    - "12 — Camada silver: tipagem, validação e campos derivados": aulas/aula-12.md
+    - "13 — Camada gold: perguntas de negócio e funções puras": aulas/aula-13.md
+    - "14 — Pipeline completo, idempotência e operações Delta": aulas/aula-14.md
+    - "15 — Tuning: threads, memória, partições e Spark UI": aulas/aula-15.md
+    - "16 — Qualidade, testes, CI e boas práticas de GitHub": aulas/aula-16.md
+  - Apêndices: apendices.md
+  - Progresso: progresso.md

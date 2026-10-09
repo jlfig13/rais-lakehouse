@@ -1,0 +1,127 @@
+# Fonte única dos metadados das aulas. As páginas em curso/docs/aulas/ são GERADAS
+# a partir daqui e dos checks em labcheck/ por: python -m scripts.gerar_curso
+# O conteúdo completo de cada aula (13 seções) está no documento indicado em `doc`.
+docs_base: https://claude.ai/code/artifact
+apendices_doc: 185d567f-33eb-4565-8a68-bd3953900778
+plano_doc: 68629f60-3f2f-40f2-a390-85d81360ea9e
+apendices:
+  - "A — Armadilhas da RAIS"
+  - "B — Solução de problemas"
+  - "C — Glossário"
+  - "D — Referência de comandos"
+  - "E — Checklists operacionais"
+  - "F — Versões e configurações"
+  - "G — Próximos passos"
+aulas:
+  - aula: 1
+    titulo: "Arquitetura Lakehouse e o projeto RAIS Lakehouse"
+    doc: 2a86be26-af3d-40e8-9385-2e68ce777f1e
+    origem: ["Guia Parte 1"]
+    depende_de: []
+    entrega: ["docs/decisoes.md"]
+    onde: host
+  - aula: 2
+    titulo: "Docker: imagens, containers e o Dockerfile do Spark"
+    doc: 3a17b7ff-ce58-4699-b232-429afbe389e2
+    origem: ["Guia Parte 2.1", "Guia Parte 2.2", "Guia Parte 4.2", "Guia Parte 4.3", "Guia Parte 4.4"]
+    depende_de: [1]
+    entrega: ["docker/spark/Dockerfile", "requirements.txt", "requirements-dev.txt", ".dockerignore"]
+    onde: host
+  - aula: 3
+    titulo: "Docker Compose: serviços, rede, volumes e configuração"
+    doc: 793081c7-12c1-461c-9264-a1ba634a16b5
+    origem: ["Guia Parte 2.3", "Guia Parte 2.4", "Guia Parte 4.6", "Guia Parte 4.7", "Guia Parte 4.8", "Guia Parte 4.9"]
+    depende_de: [2]
+    entrega: ["docker-compose.yml", ".env.example", "Makefile", "docker/minio/init-minio.sh", "docker/minio/policy-rais.json"]
+    onde: host
+  - aula: 4
+    titulo: "MinIO e S3: buckets, S3A e menor privilégio"
+    doc: b2146c2c-98fe-429c-8a64-45ef03038b2d
+    origem: ["Guia Parte 4.1", "Guia Parte 4.5", "Guia Apêndice B"]
+    depende_de: [3]
+    entrega: ["docker/minio/init-minio.sh", "docker/minio/policy-rais.json"]
+    onde: host
+  - aula: 5
+    titulo: "Repositório, Git e configuração por ambiente"
+    doc: deb2b052-a840-40d4-b0da-d8e8478ca6de
+    origem: ["Guia Parte 3", "Guia Parte 7.1", "Guia Parte 7.2"]
+    depende_de: [1, 3]
+    entrega: [".gitignore", "config/settings.py", "estrutura de pastas", "primeiro commit"]
+    onde: host
+  - aula: 6
+    titulo: "Ambiente no ar: SparkSession, Delta, S3A e teste de fumaça"
+    doc: 71275b02-cd69-41ca-bf72-89b88b7012b5
+    origem: ["Guia Parte 4.2", "Guia Parte 4.9", "Guia Parte 4.10", "Guia Parte 7.3 (get_spark)"]
+    depende_de: [3, 4, 5]
+    entrega: ["src/utils.py (get_spark)", "scripts/smoke_test.py", "labcheck/conftest.py", "scripts/gerar_progresso.py"]
+    onde: container
+  - aula: 7
+    titulo: "PySpark I: DataFrames, transformações, agregações e SQL"
+    doc: 1b3a5a26-3bd2-4117-9d33-559b3b8b9532
+    origem: ["Guia Parte 5.1", "Guia Parte 5.2", "Guia Parte 5.3", "Guia Parte 5.4", "Guia Parte 5.9"]
+    depende_de: [6]
+    entrega: ["labs/__init__.py", "labs/aula07.py", "notebooks/01_fundamentos.ipynb"]
+    onde: container
+  - aula: 8
+    titulo: "PySpark II: joins, window functions, lazy evaluation e partições"
+    doc: a6511bda-2b14-4319-a278-e288ee8b9b5f
+    origem: ["Guia Parte 5.5", "Guia Parte 5.6", "Guia Parte 5.7", "Guia Parte 5.8"]
+    depende_de: [7]
+    entrega: ["labs/aula08.py"]
+    onde: container
+  - aula: 9
+    titulo: "O domínio RAIS: microdados, dicionário e armadilhas"
+    doc: 41224932-e2c0-431d-8172-c8afac692149
+    origem: ["Guia Parte 6", "Guia Apêndice A"]
+    depende_de: [5]
+    entrega: ["staging/landing/<ano>/*.7z", "docs/dicionario.md"]
+    onde: container
+  - aula: 10
+    titulo: "Delta Lake e código base: transações, utilitários e dimensões"
+    doc: c3c12a5b-9b8a-45a2-b3c1-63a91cbc0002
+    origem: ["Guia Parte 7.3", "Guia Parte 7.4", "Guia Parte 7.5", "Guia Parte 13.1", "Guia Parte 15.3"]
+    depende_de: [6, 8]
+    entrega: ["src/utils.py (completo)", "src/delta_io.py", "src/dims.py", "tests/conftest.py", "tests/test_utils.py"]
+    onde: container
+  - aula: 11
+    titulo: "Ingestão e camada bronze"
+    doc: b043954e-5c45-4bae-b96a-05f16753aa75
+    origem: ["Guia Parte 8", "Guia Parte 9"]
+    depende_de: [9, 10]
+    entrega: ["src/ingest.py", "src/bronze.py", "notebooks/02_bronze.ipynb"]
+    onde: container
+  - aula: 12
+    titulo: "Camada silver: tipagem, validação e campos derivados"
+    doc: fd16d518-50fe-44bc-adfc-dc512f42f943
+    origem: ["Guia Parte 10"]
+    depende_de: [11]
+    entrega: ["src/silver.py", "notebooks/03_silver.ipynb", "docs/dicionario.md (decisões)"]
+    onde: container
+  - aula: 13
+    titulo: "Camada gold: perguntas de negócio e funções puras"
+    doc: 9899f93a-7b7c-4cbf-9663-51283e5d2b65
+    origem: ["Guia Parte 11", "Guia Parte 15.3 (test_gap_sexo)"]
+    depende_de: [12]
+    entrega: ["src/gold.py", "tests/test_utils.py (test_gap_sexo)", "notebooks/04_gold.ipynb"]
+    onde: container
+  - aula: 14
+    titulo: "Pipeline completo, idempotência e operações Delta"
+    doc: 1b766905-154a-48d2-9291-f43d5dfa6ee4
+    origem: ["Guia Parte 12", "Guia Parte 13.2", "Guia Parte 15.4 (checks.py)"]
+    depende_de: [13]
+    entrega: ["src/run_pipeline.py", "src/checks.py", "notebooks/05_delta.ipynb"]
+    onde: container
+  - aula: 15
+    titulo: "Tuning: threads, memória, partições e Spark UI"
+    doc: b0aac994-bba9-4da2-8169-69b801a42a73
+    origem: ["Guia Parte 14"]
+    depende_de: [14]
+    entrega: ["scripts/bench.sh", "docs/benchmark.csv", "ADR de configuração padrão em docs/decisoes.md", ".env ajustado"]
+    onde: container
+  - aula: 16
+    titulo: "Qualidade, testes, CI e boas práticas de GitHub"
+    doc: 02c8a8bb-a86e-4813-bbdb-a84118cf25a6
+    origem: ["Guia Parte 15", "Guia Parte 16"]
+    depende_de: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    entrega: ["pyproject.toml", ".github/workflows/ci.yml", "README.md", "LICENSE", "tag v1.0.0"]
+    onde: container

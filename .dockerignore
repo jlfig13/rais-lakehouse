@@ -1,0 +1,9 @@
+.git
+.env
+staging
+.venv
+.venv-host
+**/__pycache__
+.ipynb_checkpoints
+progress
+curso/site
