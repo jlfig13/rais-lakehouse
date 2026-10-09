@@ -1,26 +1,17 @@
----
-aula: 12
-titulo: "Camada silver: tipagem, validação e campos derivados"
-origem: ['Guia Parte 10']
-depende_de: [11]
-checks: ['a12_silver_delta', 'a12_contagem_igual_bronze', 'a12_tipos_do_contrato', 'a12_uf_valida', 'a12_idade_plausivel']
----
-
 # Aula 12 — Camada silver: tipagem, validação e campos derivados
 
-<!-- Página GERADA por scripts/gerar_curso.py. Edite aulas.yml e curso/conteudo/. -->
-
-<div class="rl-aula" data-aula="12" data-onde="container" data-lab="src/silver.py"></div>
-
-| | |
-| --- | --- |
-| Origem no guia | Guia Parte 10 |
-| Depende de | [Aula 11](aula-11.md) |
-| Entregas | `src/silver.py`, `notebooks/03_silver.ipynb`, `docs/dicionario.md (decisões)` |
-| Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/fd16d518-50fe-44bc-adfc-dc512f42f943) |
+Oct 9, 2026
 
 A silver transforma a bronze (texto fiel à origem) em dado confiável: tipos corretos, valores inválidos como NULL, campos derivados — e exatamente uma linha por vínculo, sem perder nenhuma.
+
+```yaml
+aula: 12
+titulo: "Camada silver: tipagem, validação e campos derivados"
+origem: ["Guia Parte 10"]
+depende_de: [11]
+entrega: ["src/silver.py", "notebooks/03_silver.ipynb", "docs/dicionario.md (decisões)"]
+checks: [a12_silver_delta, a12_contagem_igual_bronze, a12_tipos_do_contrato, a12_uf_valida, a12_idade_plausivel]
+```
 
 **Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
@@ -317,11 +308,7 @@ def test_a12_idade_plausivel(spark, ano):
 - `~F.col("idade").between(...)` com idade NULL dá NULL e a linha não entra no filtro — o check conta só idades não nulas fora da faixa (Aula 07, seção 3.4).
 - Rode com `make check AULA=12 ANO=2022`.
 
-**Checklist manual:**
-
-- [ ] rodei a contagem de NULL por coluna
-- [ ] registrei pelo menos uma decisão no dicionário
-- [ ] sei explicar por que não deduplicamos.
+**Checklist manual:** \[ \] rodei a contagem de NULL por coluna · \[ \] registrei pelo menos uma decisão no dicionário · \[ \] sei explicar por que não deduplicamos.
 
 ## 12. Exercícios, revisão e desafios
 
@@ -358,20 +345,3 @@ def test_a12_idade_plausivel(spark, ano):
 | Consumo pela gold | Aula 13 |
 | `checar_silver` no pipeline | Aula 14 |
 | Limites de NULL e testes | Aula 16 |
-
-
-## Checks automáticos
-
-```bash
-make check AULA=12 ANO=2022
-```
-
-Arquivo: `labcheck/test_aula12.py`. Cada execução grava o resultado em `progress/historico.jsonl`; depois rode `make progresso` para atualizar a página [Progresso](../progresso.md).
-
-| Check | O que verifica |
-| --- | --- |
-| `a12_silver_delta` | silver delta |
-| `a12_contagem_igual_bronze` | contagem igual bronze |
-| `a12_tipos_do_contrato` | tipos do contrato |
-| `a12_uf_valida` | uf valida |
-| `a12_idade_plausivel` | idade plausivel |

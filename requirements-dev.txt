@@ -1,4 +1,6 @@
 jupyterlab==4.2.5
+# Painel Git no JupyterLab (clonar, commit, push/pull do GitHub)
+jupyterlab-git==0.50.1
 pytest==8.3.3
 ruff==0.6.9
 pandas==2.2.3

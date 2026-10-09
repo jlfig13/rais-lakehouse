@@ -15,8 +15,21 @@ markdown_extensions:
   - admonition
   - pymdownx.highlight
   - pymdownx.superfences
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+# [Complemento da plataforma] progresso gravável e ferramentas integradas (scripts/portal_api.py)
+extra_css:
+  - assets/portal.css
+extra_javascript:
+  - assets/portal.js
 nav:
   - Início: index.md
+  - Ambiente: ambiente.md
   - Aulas:
     - "01 — Arquitetura Lakehouse e o projeto RAIS Lakehouse": aulas/aula-01.md
     - "02 — Docker: imagens, containers e o Dockerfile do Spark": aulas/aula-02.md

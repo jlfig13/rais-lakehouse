@@ -11,7 +11,7 @@ ARG HOST_UID=1000
 
 # 3) Pacotes do sistema (muda pouco -> fica no topo para aproveitar o cache)
 RUN apt-get update \
- && apt-get install -y --no-install-recommends openjdk-17-jre-headless curl procps \
+ && apt-get install -y --no-install-recommends openjdk-17-jre-headless curl procps git \
  && rm -rf /var/lib/apt/lists/*
 
 # 4) Dependências Python (antes do código, para aproveitar o cache)
@@ -36,6 +36,9 @@ RUN SPARK_JARS="$(python -c 'import os, pyspark; print(os.path.join(os.path.dirn
 RUN useradd -m -u "${HOST_UID}" app \
  && mkdir -p /app /staging /tmp/spark \
  && chown -R app:app /app /staging /tmp/spark
+
+# 7) [Complemento da plataforma] Magic %%sql nos notebooks (células SQL como no Databricks)
+COPY --chown=app:app docker/spark/ipython_sql.py /home/app/.ipython/profile_default/startup/00-sql.py
 
 ENV PYTHONPATH=/app \
     PYTHONUNBUFFERED=1

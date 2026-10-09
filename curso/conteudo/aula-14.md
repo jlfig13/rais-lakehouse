@@ -1,26 +1,17 @@
----
-aula: 14
-titulo: "Pipeline completo, idempotência e operações Delta"
-origem: ['Guia Parte 12', 'Guia Parte 13.2', 'Guia Parte 15.4 (checks.py)']
-depende_de: [13]
-checks: ['a14_varios_anos_na_gold', 'a14_checar_silver', 'a14_historico', 'a14_time_travel', 'a14_optimize']
----
-
 # Aula 14 — Pipeline completo, idempotência e operações Delta
 
-<!-- Página GERADA por scripts/gerar_curso.py. Edite aulas.yml e curso/conteudo/. -->
-
-<div class="rl-aula" data-aula="14" data-onde="container" data-lab="src/run_pipeline.py"></div>
-
-| | |
-| --- | --- |
-| Origem no guia | Guia Parte 12, Guia Parte 13.2, Guia Parte 15.4 (checks.py) |
-| Depende de | [Aula 13](aula-13.md) |
-| Entregas | `src/run_pipeline.py`, `src/checks.py`, `notebooks/05_delta.ipynb` |
-| Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/1b766905-154a-48d2-9291-f43d5dfa6ee4) |
+Oct 9, 2026
 
 Até aqui cada camada foi rodada à mão. Esta aula junta tudo num pipeline de um comando, que processa 2019 até o último ano disponível, e ensina a operar as tabelas Delta: histórico, *time travel*, restauração, compactação e limpeza.
+
+```yaml
+aula: 14
+titulo: "Pipeline completo, idempotência e operações Delta"
+origem: ["Guia Parte 12", "Guia Parte 13.2", "Guia Parte 15.4 (checks.py)"]
+depende_de: [13]
+entrega: ["src/run_pipeline.py", "src/checks.py", "notebooks/05_delta.ipynb"]
+checks: [a14_varios_anos_na_gold, a14_checar_silver, a14_historico, a14_time_travel, a14_optimize]
+```
 
 **Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
@@ -354,12 +345,7 @@ def test_a14_optimize(spark):
 - `a14_time_travel` falha se um `VACUUM` já tiver removido os arquivos da versão 0 — nesse caso, é a demonstração prática do aviso do guia; anote e siga.
 - Rode com `make check AULA=14 ANO=2022`.
 
-**Checklist manual:**
-
-- [ ] rodei o pipeline com pelo menos 2 anos
-- [ ] vi `history()` e li uma versão antiga
-- [ ] fiz o passo 5 numa cópia
-- [ ] sei explicar por que `VACUUM` limita o time travel.
+**Checklist manual:** \[ \] rodei o pipeline com pelo menos 2 anos · \[ \] vi `history()` e li uma versão antiga · \[ \] fiz o passo 5 numa cópia · \[ \] sei explicar por que `VACUUM` limita o time travel.
 
 ## 12. Exercícios, revisão e desafios
 
@@ -392,20 +378,3 @@ def test_a14_optimize(spark):
 | Recursos e tempo de execução | Aula 15 |
 | Testes e CI | Aula 16 |
 | Comandos Delta | Apêndice D |
-
-
-## Checks automáticos
-
-```bash
-make check AULA=14 ANO=2022
-```
-
-Arquivo: `labcheck/test_aula14.py`. Cada execução grava o resultado em `progress/historico.jsonl`; depois rode `make progresso` para atualizar a página [Progresso](../progresso.md).
-
-| Check | O que verifica |
-| --- | --- |
-| `a14_varios_anos_na_gold` | varios anos na gold |
-| `a14_checar_silver` | checar silver |
-| `a14_historico` | historico |
-| `a14_time_travel` | time travel |
-| `a14_optimize` | optimize |

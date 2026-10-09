@@ -30,3 +30,6 @@ curso/site/
 .cache/
 labs/amostra/saida/
 logs/
+
+# Seu espaço de estudo (cadernos das aulas). Tire esta linha se quiser versioná-lo.
+estudos/

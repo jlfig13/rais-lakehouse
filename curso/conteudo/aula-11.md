@@ -1,26 +1,17 @@
----
-aula: 11
-titulo: "Ingestão e camada bronze"
-origem: ['Guia Parte 8', 'Guia Parte 9']
-depende_de: [9, 10]
-checks: ['a11_bronze_delta', 'a11_ano_carregado', 'a11_tudo_string', 'a11_arquivo_origem', 'a11_idempotente']
----
-
 # Aula 11 — Ingestão e camada bronze
 
-<!-- Página GERADA por scripts/gerar_curso.py. Edite aulas.yml e curso/conteudo/. -->
-
-<div class="rl-aula" data-aula="11" data-onde="container" data-lab="src/ingest.py"></div>
-
-| | |
-| --- | --- |
-| Origem no guia | Guia Parte 8, Guia Parte 9 |
-| Depende de | [Aula 09](aula-09.md), [Aula 10](aula-10.md) |
-| Entregas | `src/ingest.py`, `src/bronze.py`, `notebooks/02_bronze.ipynb` |
-| Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/b043954e-5c45-4bae-b96a-05f16753aa75) |
+Oct 9, 2026
 
 Ao final desta aula o primeiro ano da RAIS está no lake: extraído da landing, lido com o separador e o encoding certos e gravado como tabela Delta na bronze, fiel à origem e reprocessável sem duplicar.
+
+```yaml
+aula: 11
+titulo: "Ingestão e camada bronze"
+origem: ["Guia Parte 8", "Guia Parte 9"]
+depende_de: [9, 10]
+entrega: ["src/ingest.py", "src/bronze.py", "notebooks/02_bronze.ipynb"]
+checks: [a11_bronze_delta, a11_ano_carregado, a11_tudo_string, a11_arquivo_origem, a11_idempotente]
+```
 
 **Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
@@ -328,11 +319,7 @@ def test_a11_idempotente(spark, ano):
 - O último check usa *time travel* (Aula 14) para comparar versões **sem** reprocessar nada.
 - Rode com `make check AULA=11 ANO=2022`.
 
-**Checklist manual:**
-
-- [ ] vi o acento correto no `printSchema`
-- [ ] reprocessei o ano uma vez
-- [ ] apaguei a raw depois de validar.
+**Checklist manual:** \[ \] vi o acento correto no `printSchema` · \[ \] reprocessei o ano uma vez · \[ \] apaguei a raw depois de validar.
 
 ## 12. Exercícios, revisão e desafios
 
@@ -365,20 +352,3 @@ def test_a11_idempotente(spark, ano):
 | `--limpar-raw`, pipeline e time travel | Aula 14 |
 | Memória e partições de leitura | Aula 15 |
 | Armadilhas de encoding e disco | Apêndice A |
-
-
-## Checks automáticos
-
-```bash
-make check AULA=11 ANO=2022
-```
-
-Arquivo: `labcheck/test_aula11.py`. Cada execução grava o resultado em `progress/historico.jsonl`; depois rode `make progresso` para atualizar a página [Progresso](../progresso.md).
-
-| Check | O que verifica |
-| --- | --- |
-| `a11_bronze_delta` | bronze delta |
-| `a11_ano_carregado` | ano carregado |
-| `a11_tudo_string` | tudo string |
-| `a11_arquivo_origem` | arquivo origem |
-| `a11_idempotente` | Em todas as versões da tabela que contêm o ano, a contagem dele é a mesma. |

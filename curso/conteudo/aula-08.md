@@ -1,26 +1,17 @@
----
-aula: 8
-titulo: "PySpark II: joins, window functions, lazy evaluation e partições"
-origem: ['Guia Parte 5.5', 'Guia Parte 5.6', 'Guia Parte 5.7', 'Guia Parte 5.8']
-depende_de: [7]
-checks: ['a08_maior_salario_por_uf', 'a08_join_broadcast', 'a08_detecta_shuffle', 'a08_particionado_pruning']
----
-
 # Aula 08 — PySpark II: joins, window functions, lazy evaluation e partições
 
-<!-- Página GERADA por scripts/gerar_curso.py. Edite aulas.yml e curso/conteudo/. -->
-
-<div class="rl-aula" data-aula="8" data-onde="container" data-lab="labs/aula08.py"></div>
-
-| | |
-| --- | --- |
-| Origem no guia | Guia Parte 5.5, Guia Parte 5.6, Guia Parte 5.7, Guia Parte 5.8 |
-| Depende de | [Aula 07](aula-07.md) |
-| Entregas | `labs/aula08.py` |
-| Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/a6511bda-2b14-4319-a278-e288ee8b9b5f) |
+Oct 9, 2026
 
 Esta aula cobre o que separa "saber a sintaxe" de "saber usar o Spark": como ele decide executar (lazy evaluation e plano), o que custa caro (shuffle) e como os dados ficam no disco (partições e Parquet).
+
+```yaml
+aula: 8
+titulo: "PySpark II: joins, window functions, lazy evaluation e partições"
+origem: ["Guia Parte 5.5", "Guia Parte 5.6", "Guia Parte 5.7", "Guia Parte 5.8"]
+depende_de: [7]
+entrega: ["labs/aula08.py"]
+checks: [a08_maior_salario_por_uf, a08_join_broadcast, a08_detecta_shuffle, a08_particionado_pruning]
+```
 
 **Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
@@ -298,11 +289,7 @@ def test_a08_particionado_pruning(spark, tmp_path):
 - `tmp_path` é uma fixture do pytest: uma pasta temporária única por teste.
 - Rode com `make check AULA=08`.
 
-**Checklist manual:**
-
-- [ ] li um plano com `Exchange` e outro com `BroadcastExchange`
-- [ ] vi as pastas `uf=...` no disco
-- [ ] sei explicar por que `HashAggregate` aparece duas vezes.
+**Checklist manual:** \[ \] li um plano com `Exchange` e outro com `BroadcastExchange` · \[ \] vi as pastas `uf=...` no disco · \[ \] sei explicar por que `HashAggregate` aparece duas vezes.
 
 ## 12. Exercícios, revisão e desafios
 
@@ -346,19 +333,3 @@ def com_nome_uf(df, ufs):
 | Partições por `ano` e `replaceWhere` | Aulas 10 e 11 |
 | AQE, `shuffle.partitions`, Spark UI, skew, cache | Aula 15 |
 | Termos: shuffle, broadcast, pruning, lazy evaluation | Apêndice C |
-
-
-## Checks automáticos
-
-```bash
-make check AULA=08 ANO=2022
-```
-
-Arquivo: `labcheck/test_aula08.py`. Cada execução grava o resultado em `progress/historico.jsonl`; depois rode `make progresso` para atualizar a página [Progresso](../progresso.md).
-
-| Check | O que verifica |
-| --- | --- |
-| `a08_maior_salario_por_uf` | maior salario por uf |
-| `a08_join_broadcast` | join broadcast |
-| `a08_detecta_shuffle` | detecta shuffle |
-| `a08_particionado_pruning` | particionado pruning |

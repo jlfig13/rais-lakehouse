@@ -1,26 +1,23 @@
----
-aula: 2
-titulo: "Docker: imagens, containers e o Dockerfile do Spark"
-origem: ['Guia Parte 2.1', 'Guia Parte 2.2', 'Guia Parte 4.2', 'Guia Parte 4.3', 'Guia Parte 4.4']
-depende_de: [1]
-checks: ['a02_imagem_existe', 'a02_java_17', 'a02_pyspark_delta', 'a02_jars_s3a_delta', 'a02_usuario_nao_root']
----
-
 # Aula 02 — Docker: imagens, containers e o Dockerfile do Spark
 
-<!-- Página GERADA por scripts/gerar_curso.py. Edite aulas.yml e curso/conteudo/. -->
-
-<div class="rl-aula" data-aula="2" data-onde="host" data-lab=""></div>
-
-| | |
-| --- | --- |
-| Origem no guia | Guia Parte 2.1, Guia Parte 2.2, Guia Parte 4.2, Guia Parte 4.3, Guia Parte 4.4 |
-| Depende de | [Aula 01](aula-01.md) |
-| Entregas | `docker/spark/Dockerfile`, `requirements.txt`, `requirements-dev.txt`, `.dockerignore` |
-| Onde os checks rodam | Host (WSL/Linux) |
-| Documento original | [abrir](https://claude.ai/code/artifact/3a17b7ff-ce58-4699-b232-429afbe389e2) |
+Oct 9, 2026 · @João Lucas Ribeiro Figueiredo
 
 Ao final desta aula a imagem `rais-spark:local` existe na sua máquina, com Python 3.11, Java 17, PySpark 3.5.3, Delta 3.2.0 e os JARs do S3A, rodando como usuário não-root. Ela é a base de todo o resto do curso.
+
+```yaml
+# Metadados (vão para o front matter de curso/docs/aulas/aula-02.md)
+aula: 2
+titulo: "Docker: imagens, containers e o Dockerfile do Spark"
+origem: ["Guia Parte 2.1", "Guia Parte 2.2", "Guia Parte 4.2", "Guia Parte 4.3", "Guia Parte 4.4"]
+depende_de: [1]
+entrega: ["docker/spark/Dockerfile", "requirements.txt", "requirements-dev.txt", ".dockerignore"]
+checks:
+  - id: a02_imagem_existe
+  - id: a02_java_17
+  - id: a02_pyspark_delta
+  - id: a02_jars_s3a_delta
+  - id: a02_usuario_nao_root
+```
 
 **Convenção:** **\[Complemento didático\]** marca explicações que não estão no guia original. O resto vem do RAIS Lakehouse Guide, com a parte indicada.
 
@@ -155,8 +152,7 @@ Essas quatro peças (PySpark, Delta, hadoop-aws e SDK) precisam ser compatíveis
 
 A imagem do curso é uma pilha de seis camadas, ordenada do que quase nunca muda (o sistema) ao que muda mais (o usuário e as pastas, que dependem do seu UID). Cada container criado a partir dela compartilha essas camadas e ganha só uma camada gravável própria.
 
-!!! note "Diagrama interativo"
-    "Imagem rais-spark · 6 camadas e 2 containers" está no [documento original](https://claude.ai/code/artifact/3a17b7ff-ce58-4699-b232-429afbe389e2).
+&#91;embedded content: Imagem rais-spark · 6 camadas e 2 containers\]
 
 Uma mudança em `requirements-dev.txt` invalida a camada do `COPY` e todas acima dela; o Java e a imagem base continuam vindo do cache.
 
@@ -700,20 +696,3 @@ make check-host AULA=02
 | Comandos `docker` | Apêndice D | Parte 2.4 |
 | Termos: imagem, camada, bind mount, volume | Apêndice C | Apêndice C |
 | Plano técnico da plataforma (checks no host) | [Diagnóstico e plano técnico](https://claude.ai/code/artifact/68629f60-3f2f-40f2-a390-85d81360ea9e), seção 7 | — |
-
-
-## Checks automáticos
-
-```bash
-make check-host AULA=02
-```
-
-Arquivo: `labcheck/host/test_aula02.py`. Cada execução grava o resultado em `progress/historico.jsonl`; depois rode `make progresso` para atualizar a página [Progresso](../progresso.md).
-
-| Check | O que verifica |
-| --- | --- |
-| `a02_imagem_existe` | imagem existe |
-| `a02_java_17` | java 17 |
-| `a02_pyspark_delta` | pyspark delta |
-| `a02_jars_s3a_delta` | jars s3a delta |
-| `a02_usuario_nao_root` | usuario nao root |

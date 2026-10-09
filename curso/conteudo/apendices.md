@@ -1,4 +1,6 @@
-# Apêndices
+# Apêndices A–G — RAIS Lakehouse
+
+Oct 9, 2026
 
 Material de consulta do curso: armadilhas, solução de problemas, glossário, comandos, checklists, versões e próximos passos. Os apêndices A a C e G vêm dos apêndices do guia, ampliados com o conteúdo das aulas; D, E e F consolidam o que está espalhado pelas 16 aulas. Trechos novos estão marcados como **\[Complemento didático\]**.
 

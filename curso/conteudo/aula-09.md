@@ -1,26 +1,17 @@
----
-aula: 9
-titulo: "O domínio RAIS: microdados, dicionário e armadilhas"
-origem: ['Guia Parte 6', 'Guia Apêndice A']
-depende_de: [5]
-checks: ['a09_7z_na_landing', 'a09_7z_contem_txt', 'a09_dicionario_preenchido']
----
-
 # Aula 09 — O domínio RAIS: microdados, dicionário e armadilhas
 
-<!-- Página GERADA por scripts/gerar_curso.py. Edite aulas.yml e curso/conteudo/. -->
-
-<div class="rl-aula" data-aula="9" data-onde="container" data-lab=""></div>
-
-| | |
-| --- | --- |
-| Origem no guia | Guia Parte 6, Guia Apêndice A |
-| Depende de | [Aula 05](aula-05.md) |
-| Entregas | `staging/landing/<ano>/*.7z`, `docs/dicionario.md` |
-| Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/41224932-e2c0-431d-8172-c8afac692149) |
+Oct 9, 2026
 
 Antes de processar a RAIS, é preciso entender o que cada linha representa, como os arquivos são publicados e onde estão as armadilhas. Ao final desta aula você terá o primeiro `.7z` na landing e o `docs/dicionario.md` preenchido.
+
+```yaml
+aula: 9
+titulo: "O domínio RAIS: microdados, dicionário e armadilhas"
+origem: ["Guia Parte 6", "Guia Apêndice A"]
+depende_de: [5]
+entrega: ["staging/landing/<ano>/*.7z", "docs/dicionario.md"]
+checks: [a09_7z_na_landing, a09_7z_contem_txt, a09_dicionario_preenchido]
+```
 
 **Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
@@ -241,11 +232,7 @@ def test_a09_dicionario_preenchido():
 - `getnames()` lista o conteúdo do `.7z` sem extrair — barato.
 - Rode com `make check AULA=09 ANO=2022`.
 
-**Checklist manual:**
-
-- [ ] li as notas técnicas do ano escolhido
-- [ ] sei explicar por que vínculo ≠ pessoa
-- [ ] registrei versão (parcial/final), data e hash do arquivo.
+**Checklist manual:** \[ \] li as notas técnicas do ano escolhido · \[ \] sei explicar por que vínculo ≠ pessoa · \[ \] registrei versão (parcial/final), data e hash do arquivo.
 
 ## 12. Exercícios, revisão e desafios
 
@@ -276,18 +263,3 @@ def test_a09_dicionario_preenchido():
 | Tipagem e validação | Aula 12 |
 | Indicadores e rótulos | Aula 13 |
 | Lista completa de armadilhas | Apêndice A |
-
-
-## Checks automáticos
-
-```bash
-make check AULA=09 ANO=2022
-```
-
-Arquivo: `labcheck/test_aula09.py`. Cada execução grava o resultado em `progress/historico.jsonl`; depois rode `make progresso` para atualizar a página [Progresso](../progresso.md).
-
-| Check | O que verifica |
-| --- | --- |
-| `a09_7z_na_landing` | 7z na landing |
-| `a09_7z_contem_txt` | 7z contem txt |
-| `a09_dicionario_preenchido` | dicionario preenchido |

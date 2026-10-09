@@ -1,26 +1,17 @@
----
-aula: 5
-titulo: "Repositório, Git e configuração por ambiente"
-origem: ['Guia Parte 3', 'Guia Parte 7.1', 'Guia Parte 7.2']
-depende_de: [1, 3]
-checks: ['a05_repositorio_git', 'a05_env_ignorado', 'a05_env_nao_versionado', 'a05_estrutura', 'a05_settings_padrao']
----
-
 # Aula 05 — Repositório, Git e configuração por ambiente
 
-<!-- Página GERADA por scripts/gerar_curso.py. Edite aulas.yml e curso/conteudo/. -->
-
-<div class="rl-aula" data-aula="5" data-onde="host" data-lab="config/settings.py"></div>
-
-| | |
-| --- | --- |
-| Origem no guia | Guia Parte 3, Guia Parte 7.1, Guia Parte 7.2 |
-| Depende de | [Aula 01](aula-01.md), [Aula 03](aula-03.md) |
-| Entregas | `.gitignore`, `config/settings.py`, `estrutura de pastas`, `primeiro commit` |
-| Onde os checks rodam | Host (WSL/Linux) |
-| Documento original | [abrir](https://claude.ai/code/artifact/deb2b052-a840-40d4-b0da-d8e8478ca6de) |
+Oct 9, 2026
 
 Ao final desta aula o RAIS Lakehouse é um repositório Git organizado, sem dados nem segredos versionados, com a configuração lida de variáveis de ambiente em `config/settings.py`.
+
+```yaml
+aula: 5
+titulo: "Repositório, Git e configuração por ambiente"
+origem: ["Guia Parte 3", "Guia Parte 7.1", "Guia Parte 7.2"]
+depende_de: [1, 3]
+entrega: [".gitignore", "config/settings.py", "estrutura de pastas", "primeiro commit"]
+checks: [a05_repositorio_git, a05_env_ignorado, a05_env_nao_versionado, a05_estrutura, a05_settings_padrao]
+```
 
 **Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
@@ -357,20 +348,3 @@ def test_a05_settings_padrao():
 | `docs/dicionario.md` | Aula 09 |
 | Conventional Commits, branches, README, LICENSE | Aula 16 |
 | Plano técnico: pastas da plataforma | Diagnóstico e plano técnico, seção 6 |
-
-
-## Checks automáticos
-
-```bash
-make check-host AULA=05
-```
-
-Arquivo: `labcheck/host/test_aula05.py`. Cada execução grava o resultado em `progress/historico.jsonl`; depois rode `make progresso` para atualizar a página [Progresso](../progresso.md).
-
-| Check | O que verifica |
-| --- | --- |
-| `a05_repositorio_git` | repositorio git |
-| `a05_env_ignorado` | env ignorado |
-| `a05_env_nao_versionado` | env nao versionado |
-| `a05_estrutura` | estrutura |
-| `a05_settings_padrao` | settings padrao |

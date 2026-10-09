@@ -89,6 +89,13 @@ make check AULA=11 ANO=2022      # Aulas 06–16 (container spark)
 make progresso                   # atualiza curso/docs/progresso.md a partir do histórico
 ```
 
+No site, cada aula traz o conteúdo completo, um painel de progresso (checks reais +
+critérios que você marca, gravados em `progress/estudo.json`) e o botão **Estudar com notebook**,
+que divide a tela com o JupyterLab (caderno da aula em `estudos/aula-NN/`, árvore de arquivos,
+Git e células `%%sql`). A página **Ambiente** reúne JupyterLab, console do MinIO e Spark UI, já
+logados. A API desses recursos é `scripts/portal_api.py` (porta 8001). O texto das aulas fica em
+`curso/conteudo/` e entra nas páginas pelo `make curso`.
+
 Para os checks do host: `python3 -m venv .venv-host && .venv-host/bin/pip install pytest`.
 Cada check grava uma linha em `progress/historico.jsonl` com `"origem": "execucao_real"`;
 a página de progresso só mostra o que foi executado na sua máquina.

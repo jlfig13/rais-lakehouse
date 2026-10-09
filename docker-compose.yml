@@ -10,6 +10,11 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:?defina MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?defina MINIO_ROOT_PASSWORD}
+      # Libera o console dentro do site do curso (página Ambiente); outras origens seguem bloqueadas
+      MINIO_BROWSER_CONTENT_SECURITY_POLICY: >-
+        default-src 'self' 'unsafe-eval' 'unsafe-inline'; script-src 'self' https://unpkg.com;
+        connect-src 'self' https://unpkg.com;
+        frame-ancestors 'self' http://localhost:8000 http://127.0.0.1:8000
     ports:
       - "127.0.0.1:9000:9000"     # API S3
       - "127.0.0.1:9001:9001"     # console web
@@ -67,21 +72,37 @@ services:
     mem_limit: ${CONTAINER_MEM:-8g}
     command: >
       jupyter lab --ip=0.0.0.0 --port=8888 --no-browser
+      --config=/app/docker/spark/jupyter_server_config.py
       --ServerApp.token=${JUPYTER_TOKEN:?defina JUPYTER_TOKEN}
 
-  # ---------------------------------------------------------------- site do curso (só leitura)
+  # ---------------------------------------------------------------- site do curso + API de progresso
   curso:
     image: rais-spark:local
     depends_on:
       - spark                                     # garante que a imagem foi construída
     working_dir: /app
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+      # URLs que o navegador usa para abrir as ferramentas na página Ambiente
+      CURSO_JUPYTER_URL: ${CURSO_JUPYTER_URL:-http://localhost:8888}
+      CURSO_MINIO_URL: ${CURSO_MINIO_URL:-http://localhost:9001}
+      CURSO_SPARKUI_URL: ${CURSO_SPARKUI_URL:-http://localhost:4040}
+      # Login automático nas ferramentas embutidas (scripts/portal_api.py, rota /api/sessao).
+      # MinIO entra como rais-app (só o bucket rais), nunca como root.
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN}
+      APP_ACCESS_KEY: ${APP_ACCESS_KEY}
+      APP_SECRET_KEY: ${APP_SECRET_KEY}
     volumes:
       - ./:/app:ro                                # o site só lê o repositório
       - ./curso/site:/app/curso/site              # ...exceto a saída gerada
       - ./curso/.cache:/app/curso/.cache          # e o cache do Zensical
+      - ./progress:/app/progress                  # a API grava o que você marca nas aulas
     ports:
-      - "127.0.0.1:8000:8000"
-    command: zensical serve -f curso/mkdocs.yml -a 0.0.0.0:8000
+      - "127.0.0.1:8000:8000"                     # site
+      - "127.0.0.1:8001:8001"                     # API de progresso (scripts/portal_api.py)
+    command: >
+      sh -c "python -m scripts.portal_api &
+      exec zensical serve -f curso/mkdocs.yml -a 0.0.0.0:8000"
 
 volumes:
   minio-data:     # o lake inteiro mora aqui

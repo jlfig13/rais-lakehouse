@@ -1,26 +1,17 @@
----
-aula: 10
-titulo: "Delta Lake e código base: transações, utilitários e dimensões"
-origem: ['Guia Parte 7.3', 'Guia Parte 7.4', 'Guia Parte 7.5', 'Guia Parte 13.1', 'Guia Parte 15.3']
-depende_de: [6, 8]
-checks: ['a10_testes_utils', 'a10_gravar_ano_idempotente', 'a10_replacewhere_protege', 'a10_dims_tipos']
----
-
 # Aula 10 — Delta Lake e código base: transações, utilitários e dimensões
 
-<!-- Página GERADA por scripts/gerar_curso.py. Edite aulas.yml e curso/conteudo/. -->
-
-<div class="rl-aula" data-aula="10" data-onde="container" data-lab="src/utils.py"></div>
-
-| | |
-| --- | --- |
-| Origem no guia | Guia Parte 7.3, Guia Parte 7.4, Guia Parte 7.5, Guia Parte 13.1, Guia Parte 15.3 |
-| Depende de | [Aula 06](aula-06.md), [Aula 08](aula-08.md) |
-| Entregas | `src/utils.py (completo)`, `src/delta_io.py`, `src/dims.py`, `tests/conftest.py`, `tests/test_utils.py` |
-| Onde os checks rodam | Container spark |
-| Documento original | [abrir](https://claude.ai/code/artifact/c3c12a5b-9b8a-45a2-b3c1-63a91cbc0002) |
+Oct 9, 2026
 
 Esta aula entrega as três peças de código que bronze, silver e gold reutilizam — utilitários de conversão, a camada de leitura e escrita Delta e as dimensões — e explica como o Delta garante que reprocessar um ano não corrompe nem duplica dados.
+
+```yaml
+aula: 10
+titulo: "Delta Lake e código base: transações, utilitários e dimensões"
+origem: ["Guia Parte 7.3", "Guia Parte 7.4", "Guia Parte 7.5", "Guia Parte 13.1", "Guia Parte 15.3"]
+depende_de: [6, 8]
+entrega: ["src/utils.py (completo)", "src/delta_io.py", "src/dims.py", "tests/conftest.py", "tests/test_utils.py"]
+checks: [a10_testes_utils, a10_gravar_ano_idempotente, a10_replacewhere_protege, a10_dims_tipos]
+```
 
 **Convenção:** **\[Complemento didático\]** marca o que não está no guia original.
 
@@ -400,11 +391,7 @@ def test_a10_dims_tipos(spark):
 - `pytest.raises(Exception)` passa se o bloco lançar erro — aqui, o erro **é** o comportamento correto.
 - Rode com `make check AULA=10`.
 
-**Checklist manual:**
-
-- [ ] abri um JSON do `_delta_log` e identifiquei `add`/`remove`
-- [ ] sei explicar as quatro barras do `to_decimal`
-- [ ] sei quando usar `mergeSchema` e quando não.
+**Checklist manual:** \[ \] abri um JSON do `_delta_log` e identifiquei `add`/`remove` · \[ \] sei explicar as quatro barras do `to_decimal` · \[ \] sei quando usar `mergeSchema` e quando não.
 
 ## 12. Exercícios, revisão e desafios
 
@@ -434,19 +421,3 @@ def test_a10_dims_tipos(spark):
 | Uso na bronze, silver e gold | Aulas 11, 12 e 13 |
 | Histórico, time travel, OPTIMIZE, VACUUM | Aula 14 |
 | Checagem de NULL e CI | Aula 16 |
-
-
-## Checks automáticos
-
-```bash
-make check AULA=10 ANO=2022
-```
-
-Arquivo: `labcheck/test_aula10.py`. Cada execução grava o resultado em `progress/historico.jsonl`; depois rode `make progresso` para atualizar a página [Progresso](../progresso.md).
-
-| Check | O que verifica |
-| --- | --- |
-| `a10_testes_utils` | testes utils |
-| `a10_gravar_ano_idempotente` | gravar ano idempotente |
-| `a10_replacewhere_protege` | replacewhere protege |
-| `a10_dims_tipos` | dims tipos |

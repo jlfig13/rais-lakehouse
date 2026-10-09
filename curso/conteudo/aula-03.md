@@ -1,26 +1,22 @@
----
-aula: 3
-titulo: "Docker Compose: serviços, rede, volumes e configuração"
-origem: ['Guia Parte 2.3', 'Guia Parte 2.4', 'Guia Parte 4.6', 'Guia Parte 4.7', 'Guia Parte 4.8', 'Guia Parte 4.9']
-depende_de: [2]
-checks: ['a03_compose_valido', 'a03_servicos_no_ar', 'a03_minio_init_ok', 'a03_portas_so_locais']
----
-
 # Aula 03 — Docker Compose: serviços, rede, volumes e configuração
 
-<!-- Página GERADA por scripts/gerar_curso.py. Edite aulas.yml e curso/conteudo/. -->
-
-<div class="rl-aula" data-aula="3" data-onde="host" data-lab=""></div>
-
-| | |
-| --- | --- |
-| Origem no guia | Guia Parte 2.3, Guia Parte 2.4, Guia Parte 4.6, Guia Parte 4.7, Guia Parte 4.8, Guia Parte 4.9 |
-| Depende de | [Aula 02](aula-02.md) |
-| Entregas | `docker-compose.yml`, `.env.example`, `Makefile`, `docker/minio/init-minio.sh`, `docker/minio/policy-rais.json` |
-| Onde os checks rodam | Host (WSL/Linux) |
-| Documento original | [abrir](https://claude.ai/code/artifact/793081c7-12c1-461c-9264-a1ba634a16b5) |
+Oct 9, 2026 · @João Lucas Ribeiro Figueiredo
 
 Ao final desta aula, um único comando (`make up`) sobe os três serviços do RAIS Lakehouse — `minio`, `minio-init` e `spark` — com rede, volumes, limites de recursos e configuração vinda do `.env`.
+
+```yaml
+# Metadados (front matter de curso/docs/aulas/aula-03.md)
+aula: 3
+titulo: "Docker Compose: serviços, rede, volumes e configuração"
+origem: ["Guia Parte 2.3", "Guia Parte 2.4", "Guia Parte 4.6", "Guia Parte 4.7", "Guia Parte 4.8", "Guia Parte 4.9"]
+depende_de: [2]
+entrega: ["docker-compose.yml", ".env.example", "Makefile", "docker/minio/init-minio.sh", "docker/minio/policy-rais.json"]
+checks:
+  - id: a03_compose_valido
+  - id: a03_servicos_no_ar
+  - id: a03_minio_init_ok
+  - id: a03_portas_so_locais
+```
 
 **Convenção:** **\[Complemento didático\]** marca o que não está no guia original; o resto vem do RAIS Lakehouse Guide, com a parte indicada.
 
@@ -188,8 +184,7 @@ Uma variável no `.env` só chega ao container se for listada em `environment` (
 
 Os três serviços vivem numa rede privada criada pelo Compose. Do lado de fora, só o seu computador alcança quatro portas; dentro, os serviços se acham pelo nome.
 
-!!! note "Diagrama interativo"
-    "RAIS Lakehouse · 3 serviços, 2 volumes, 2 bind mounts" está no [documento original](https://claude.ai/code/artifact/793081c7-12c1-461c-9264-a1ba634a16b5).
+&#91;embedded content: RAIS Lakehouse · 3 serviços, 2 volumes, 2 bind mounts\]
 
 O `spark` fala com o `minio` pela rede interna (S3A) e só sobe depois que o `minio-init` termina; os dados do lake ficam no volume `minio-data`, e o código entra no `spark` por bind mount.
 
@@ -818,19 +813,3 @@ make check-host AULA=03
 | Erros de subida, permissão e memória | Apêndice B | Apêndice B |
 | Comandos `docker compose` e `make` | Apêndice D | Partes 2.4, 4.8 |
 | Serviço `curso` e alvos `check`, `check-host`, `progresso` | [Diagnóstico e plano técnico](https://claude.ai/code/artifact/68629f60-3f2f-40f2-a390-85d81360ea9e), seções 5 e 7 | — |
-
-
-## Checks automáticos
-
-```bash
-make check-host AULA=03
-```
-
-Arquivo: `labcheck/host/test_aula03.py`. Cada execução grava o resultado em `progress/historico.jsonl`; depois rode `make progresso` para atualizar a página [Progresso](../progresso.md).
-
-| Check | O que verifica |
-| --- | --- |
-| `a03_compose_valido` | compose valido |
-| `a03_servicos_no_ar` | servicos no ar |
-| `a03_minio_init_ok` | minio init ok |
-| `a03_portas_so_locais` | portas so locais |
