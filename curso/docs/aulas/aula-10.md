@@ -166,13 +166,20 @@ def to_int(df: DataFrame, name: str) -> Column:
 
 
 def to_decimal(df: DataFrame, name: str, precision: int = 18, scale: int = 2) -> Column:
-    """'1.234,56' ou '1234,56' -> decimal. Inválido ou ausente vira NULL."""
+    """Texto -> decimal, nos dois formatos que a RAIS já usou. Inválido ou ausente vira NULL.
+
+    Com vírgula, formato brasileiro (até 2022): '1.234,56' e '1234,56' -> 1234.56.
+    Sem vírgula, ponto decimal (2023 em diante): '7771.49' -> 7771.49.
+    """
     if name not in df.columns:
         return F.lit(None).cast(f"decimal({precision},{scale})")
-    sem_milhar = f"regexp_replace(trim(`{name}`), '\\\\.', '')"
-    com_ponto = f"regexp_replace({sem_milhar}, ',', '.')"
-    return F.expr(f"try_cast({com_ponto} AS decimal({precision},{scale}))")
+    v = f"trim(`{name}`)"
+    brasileiro = f"regexp_replace(regexp_replace({v}, '\\\\.', ''), ',', '.')"
+    texto = f"CASE WHEN instr({v}, ',') > 0 THEN {brasileiro} ELSE {v} END"
+    return F.expr(f"try_cast({texto} AS decimal({precision},{scale}))")
 ```
+
+O guia trazia uma versão que sempre removia os pontos (tratando-os como separador de milhar). Ela funciona até 2022, mas no layout de 2023, que usa ponto decimal, transforma `7771.49` em `777149`: um salário cem vezes maior, sem erro nenhum (Aula 09, armadilha 11). A versão acima decide pelo formato: se há vírgula, o padrão é brasileiro; se não há, o ponto é decimal. Os testes em `tests/test_utils.py` e `tests/test_layouts.py` cobrem os dois casos.
 
 | Função | Entrada | Saída | Erro possível |
 | --- | --- | --- | --- |

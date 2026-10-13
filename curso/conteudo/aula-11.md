@@ -193,6 +193,34 @@ if __name__ == "__main__":
 - `spark: SparkSession | None = None`: a função aceita uma sessão existente (o pipeline passa a mesma para todas as etapas, Aula 14) ou cria uma.
 - O `ano` é acrescentado após a normalização e é a única coluna `int` da bronze.
 
+**Versão do projeto: vários layouts no mesmo pipeline.** O código acima é o do guia e lê `*.txt` com `;`. Ele funciona até 2022; em 2023 o arquivo vem como `.COMT`, separado por vírgula e com outros nomes de coluna (Aula 09, armadilha 11). O `src/bronze.py` do projeto generaliza a leitura sem mudar a ideia:
+
+```python
+def separador(arquivo: Path) -> str:
+    """';' ou ',' conforme o que mais aparece no cabeçalho do arquivo."""
+    with open(arquivo, encoding="latin-1") as f:
+        cabecalho = f.readline()
+    return ";" if cabecalho.count(";") >= cabecalho.count(",") else ","
+
+
+def ler_ano(spark: SparkSession, pasta: Path, ano: int) -> DataFrame:
+    """Todos os arquivos da pasta (qualquer extensão), agrupados por separador e unidos."""
+    grupos: dict[str, list[str]] = {}
+    for arq in sorted(p for p in pasta.iterdir() if p.is_file() and not p.name.startswith(".")):
+        grupos.setdefault(separador(arq), []).append(str(arq))
+    if not grupos:
+        raise FileNotFoundError(f"Nenhum arquivo em {pasta}")
+    partes = [preparar_bronze(ler_texto(spark, arqs, sep), ano) for sep, arqs in grupos.items()]
+    df = partes[0]
+    for parte in partes[1:]:
+        df = df.unionByName(parte, allowMissingColumns=True)
+    return df
+```
+
+- Cada grupo de arquivos é lido e preparado separadamente (nome do arquivo de origem, normalização e renomeação para os nomes canônicos com o dicionário `DE_PARA`) **antes** de juntar: assim dois layouts no mesmo ano não geram colunas duplicadas.
+- `unionByName(..., allowMissingColumns=True)` junta por nome e preenche com NULL as colunas que só existem num dos layouts.
+- Testado com 20 mil vínculos reais de 2021 (`.txt`, `;`) e de 2023 (`.COMT`, `,`): as duas cargas passaram na checagem bronze = silver.
+
 ```bash
 docker compose exec spark python -m src.bronze 2022
 ```

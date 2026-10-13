@@ -211,8 +211,15 @@ Acrescente ao arquivo, por coluna: o nome original no cabeçalho do seu ano, os 
 | Separador | `;` | `,`, com cada campo entre aspas |
 | Nome das colunas | `Município`, `CBO Ocupação 2002`, `Vl Remun Dezembro Nom` | `Município - Código`, `CBO 2002 Ocupação - Código`, `Vl Rem Dezembro Nom` |
 | Separador decimal | vírgula (`2350,75`) | ponto (`7771.49`) |
+| Remuneração ausente no período | zero (`0000000000,00`) | campo vazio |
 
-Cada mudança quebra um pedaço diferente do pipeline: o `glob("*.txt")` não encontra o arquivo; a leitura com `sep=";"` devolve uma única coluna; as colunas obrigatórias "somem"; e a conversão que remove pontos de milhar transforma `7771.49` em `777149`, um salário cem vezes maior, **sem erro nenhum**. Por isso, antes de processar um ano novo, leia a primeira linha do arquivo e compare com o dicionário; o exercício 3 mostra como.
+Cada mudança quebra um pedaço diferente do pipeline: o `glob("*.txt")` não encontra o arquivo; a leitura com `sep=";"` devolve uma única coluna; as colunas obrigatórias "somem"; e a conversão que remove pontos de milhar transforma `7771.49` em `777149`, um salário cem vezes maior, **sem erro nenhum**. A quinta mudança é a mais sutil: quem não teve remuneração em dezembro aparecia com zero e passou a aparecer com o campo vazio. Se a silver transformar vazio em NULL, as médias da gold de 2023 deixam de contar esses vínculos e passam a ser calculadas de outro jeito que as de 2022, sem erro nenhum. O projeto trata isso na leitura: a bronze detecta o separador de cada arquivo e renomeia as colunas para os nomes canônicos (`src/bronze.py`), `to_decimal` aceita os dois formatos de decimal e a silver trata remuneração vazia como 0 (`remuneracao` em `src/silver.py`).
+
+**Como o projeto validou a correção com os arquivos reais.** A RAIS traz a remuneração em reais e também em salários mínimos, então `remun_dezembro_nom / remun_dezembro_sm` precisa dar o salário mínimo do ano. Com 20 mil vínculos reais de cada ano, deu 1.104 em 2021 (mínimo de R$ 1.100) e 1.325 em 2023 (mínimo de R$ 1.320); se o ponto decimal estivesse sendo removido, daria 100 vezes isso. Essa é uma validação que não depende do seu código, só da coerência entre duas colunas da fonte: use-a sempre que mexer em conversões.
+
+**Cuidado com amostras do início do arquivo.** As primeiras 20 mil linhas do arquivo real de 2021 eram **todas** de vínculos inativos em 31/12, porque o arquivo vem ordenado; no arquivo inteiro, cerca de 4 em cada 5 vínculos estão ativos. Testar com `head` é ótimo para conferir layout e conversões, mas péssimo para conferir proporções. Para estimar distribuições, sorteie linhas espalhadas pelo arquivo (por exemplo, `df.sample(fraction=0.01, seed=42)` na bronze).
+
+Antes de processar um ano novo, leia a primeira linha do arquivo e compare com o dicionário; o exercício 3 mostra como.
 
 | Sintoma no pipeline | Armadilha provável |
 | --- | --- |

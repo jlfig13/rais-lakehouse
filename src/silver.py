@@ -15,6 +15,19 @@ from src.utils import col_or_null, get_spark, to_decimal, to_int
 OBRIGATORIAS = ["municipio", "vinculo_ativo_31_12", "vl_remun_dezembro_nom"]
 
 
+def remuneracao(b: DataFrame, nome: str):
+    """Remuneração em decimal; campo vazio = sem remuneração no período (0).
+
+    Conferido nos arquivos reais: até 2022 a RAIS grava 0 ("0000000000,00") para quem não
+    recebeu no período; em 2023 passou a deixar o campo vazio. Tratar os dois como 0 mantém as
+    médias da gold comparáveis entre anos. Texto inválido continua virando NULL.
+    """
+    if nome not in b.columns:
+        return to_decimal(b, nome)  # coluna ausente: NULL
+    vazio = F.col(nome).isNull() | (F.trim(F.col(nome)) == "")
+    return F.when(vazio, F.lit(0).cast("decimal(18,2)")).otherwise(to_decimal(b, nome))
+
+
 def transformar_silver(b: DataFrame, ano: int) -> DataFrame:
     """Recebe a bronze de UM ano e devolve a silver desse ano (mesmo número de linhas)."""
     faltando = [c for c in OBRIGATORIAS if c not in b.columns]
@@ -37,10 +50,10 @@ def transformar_silver(b: DataFrame, ano: int) -> DataFrame:
         to_int(b, "motivo_desligamento").alias("motivo_desligamento"),
         to_decimal(b, "tempo_emprego", 10, 1).alias("tempo_emprego_meses"),
         (F.trim(F.col("vinculo_ativo_31_12")) == "1").alias("vinculo_ativo"),
-        to_decimal(b, "vl_remun_dezembro_nom").alias("remun_dezembro_nom"),
-        to_decimal(b, "vl_remun_media_nom").alias("remun_media_nom"),
-        to_decimal(b, "vl_remun_dezembro_sm").alias("remun_dezembro_sm"),
-        to_decimal(b, "vl_remun_media_sm").alias("remun_media_sm"),
+        remuneracao(b, "vl_remun_dezembro_nom").alias("remun_dezembro_nom"),
+        remuneracao(b, "vl_remun_media_nom").alias("remun_media_nom"),
+        remuneracao(b, "vl_remun_dezembro_sm").alias("remun_dezembro_sm"),
+        remuneracao(b, "vl_remun_media_sm").alias("remun_media_sm"),
     )
 
     # 2) Validação: valor fora do padrão vira NULL

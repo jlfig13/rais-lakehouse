@@ -68,6 +68,28 @@ o ADR antigo passa a "substituída por ADR-XXX".
 <!-- Aula 15: registre aqui o ADR-007 com a configuração de threads, memória e
      partições escolhida, e o link para docs/benchmark.csv. -->
 
+## ADR-008 — Vários layouts de arquivo da RAIS no mesmo pipeline
+
+- **Status:** aceita
+- **Data:** 2026-10-13
+- **Contexto:** nos arquivos reais do Nordeste, 2021 e 2022 vêm em `.txt` separado por `;`,
+  com vírgula decimal e zero para remuneração ausente; 2023 vem em `.COMT` separado por `,`,
+  com campos entre aspas, outros nomes de coluna, ponto decimal e campo vazio para remuneração
+  ausente. O pipeline original não encontrava o arquivo de 2023 e, se encontrasse, leria os
+  salários cem vezes maiores.
+- **Decisão:** a bronze lê todos os arquivos da pasta do ano, detecta o separador pelo
+  cabeçalho e renomeia as colunas para os nomes canônicos (`DE_PARA` em `src/bronze.py`);
+  `to_decimal` decide o formato pela presença de vírgula; a silver trata remuneração vazia
+  como 0 (`remuneracao` em `src/silver.py`).
+- **Alternativas consideradas:** um pipeline por layout (duplica código); manter os nomes de
+  cada ano na bronze e unificar só na silver (a bronze ficaria com colunas diferentes por ano,
+  e o `mergeSchema` encheria a tabela de colunas quase vazias).
+- **Consequências:** um ano com layout novo exige só acrescentar entradas ao `DE_PARA`; a
+  bronze deixa de ser cópia literal dos nomes de origem (os valores continuam fiéis). Validado
+  com 20 mil vínculos reais de 2021 e 2023: `remun_dezembro_nom / remun_dezembro_sm` deu 1.104
+  e 1.324, os salários mínimos de cada ano. Um valor `1.234` sem vírgula seria lido como
+  1,234; a RAIS não usa separador de milhar sem decimais, mas confira ao adotar um ano novo.
+
 ## Contratos de camada
 
 ### bronze — rais_vinculos
